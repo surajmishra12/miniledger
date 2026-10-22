@@ -19,12 +19,17 @@ function PendingReceiptField({ loanId }: { loanId: string }) {
   );
 }
 
-/** S06 Add loan; `?personId=&personName=` prefill from Person detail. */
+/**
+ * S06 Add loan. `?direction=LENT|BORROWED&pick=1` from the Add sheet (person picker opens);
+ * `?personId=&personName=` from Person detail (person prefilled).
+ */
 export default function NewLoanScreen() {
   const { user } = useSession();
-  const { personId, personName } = useLocalSearchParams<{
+  const { personId, personName, direction, pick } = useLocalSearchParams<{
     personId?: string;
     personName?: string;
+    direction?: string;
+    pick?: string;
   }>();
   const initialPerson =
     personId && personName ? { kind: 'existing' as const, id: personId, name: personName } : null;
@@ -32,6 +37,8 @@ export default function NewLoanScreen() {
     <LoanForm
       mode="create"
       initialPerson={initialPerson}
+      initialDirection={direction === 'BORROWED' ? 'BORROWED' : 'LENT'}
+      pickPerson={pick === '1'}
       receiptSlot={(loanId) => <PendingReceiptField loanId={loanId} />}
       onCreated={async (loan) => ({
         // The loan is saved either way; a failed move only shows a notice on S07.

@@ -1,19 +1,33 @@
 import { formatPaise, type LoanDto } from '@miniledger/shared';
+import { useEffect } from 'react';
 import { StyleSheet, View } from 'react-native';
+import Animated, { useAnimatedStyle, useSharedValue, withTiming } from 'react-native-reanimated';
 
+import { AnimatedAmount } from '@/components/AnimatedAmount';
 import { AppText } from '@/components/AppText';
 import { StatusChip } from '@/components/StatusChip';
-import { Surface } from '@/components/Surface';
 import { dueStatus, formatDateLong } from '@/lib/format';
+import { curves, durations } from '@/theme/motion';
 import { useTheme } from '@/theme/theme-provider';
 import { radius, space } from '@/theme/tokens';
 
-/** S07 financial hierarchy: Remaining (largest) → Original / Received → progress → due line. */
+/**
+ * S07 financial hierarchy: Remaining (largest) → Original / Received → progress → due line.
+ * The progress fill carries the loan's state and animates after each repayment (design.md §2.7).
+ */
 export function LoanFinancials({ loan }: { loan: LoanDto }) {
-  const { colors } = useTheme();
+  const { colors, shadow, reduceMotion } = useTheme();
   const lent = loan.direction === 'LENT';
   const status = dueStatus(loan);
-  const progress = loan.principalPaise > 0 ? loan.repaidPaise / loan.principalPaise : 0;
+  const repaid = loan.repaymentStatus === 'REPAID';
+  const ratio = loan.principalPaise > 0 ? loan.repaidPaise / loan.principalPaise : 0;
+  const fill = repaid
+    ? colors.successText
+    : loan.isOverdue
+      ? colors.dangerText
+      : lent
+        ? colors.lentText
+        : colors.borrowedText;
   const chip =
     status.tone === 'danger'
       ? 'danger'
@@ -23,8 +37,24 @@ export function LoanFinancials({ loan }: { loan: LoanDto }) {
           ? 'success'
           : null;
 
+  const progress = useSharedValue(reduceMotion ? ratio : 0);
+  useEffect(() => {
+    progress.set(
+      reduceMotion
+        ? ratio
+        : withTiming(ratio, { duration: durations.progress, easing: curves.standard }),
+    );
+  }, [ratio, reduceMotion, progress]);
+  const bar = useAnimatedStyle(() => ({ width: `${Math.min(100, progress.get() * 100)}%` }));
+
   return (
-    <Surface style={styles.card}>
+    <View
+      style={[
+        styles.card,
+        { backgroundColor: colors.surface, borderColor: colors.outline },
+        shadow('s1'),
+      ]}
+    >
       <View style={styles.chips}>
         <StatusChip kind={lent ? 'lent' : 'borrowed'} label={lent ? 'Lent' : 'Borrowed'} />
         {chip ? <StatusChip kind={chip} label={status.label} /> : null}
@@ -32,11 +62,15 @@ export function LoanFinancials({ loan }: { loan: LoanDto }) {
 
       <View>
         <AppText variant="secondary" color="textSecondary">
-          Remaining
+          {repaid ? 'Fully repaid' : 'Remaining'}
         </AppText>
-        <AppText variant="hero" tabular adjustsFontSizeToFit numberOfLines={1}>
-          {formatPaise(loan.outstandingPaise)}
-        </AppText>
+        <AnimatedAmount
+          paise={repaid ? loan.principalPaise : loan.outstandingPaise}
+          variant="hero"
+          color={repaid ? 'successText' : 'textPrimary'}
+          numberOfLines={1}
+          adjustsFontSizeToFit
+        />
       </View>
 
       <View style={styles.columns}>
@@ -52,37 +86,35 @@ export function LoanFinancials({ loan }: { loan: LoanDto }) {
           <AppText variant="secondary" color="textSecondary">
             {lent ? 'Received' : 'Paid back'}
           </AppText>
-          <AppText variant="rowTitle" tabular>
-            {formatPaise(loan.repaidPaise)}
-          </AppText>
+          <AnimatedAmount paise={loan.repaidPaise} variant="rowTitle" />
         </View>
       </View>
 
       <View
         accessibilityRole="progressbar"
         accessibilityLabel="Repaid"
-        accessibilityValue={{ min: 0, max: 100, now: Math.round(progress * 100) }}
+        accessibilityValue={{ min: 0, max: 100, now: Math.round(ratio * 100) }}
         style={[styles.track, { backgroundColor: colors.surfaceMuted }]}
       >
-        <View
-          style={[
-            styles.fill,
-            { width: `${Math.min(100, progress * 100)}%`, backgroundColor: colors.brandPrimary },
-          ]}
-        />
+        <Animated.View style={[styles.fill, { backgroundColor: fill }, bar]} />
       </View>
 
       <AppText color={status.tone === 'danger' ? 'dangerText' : 'textSecondary'}>
-        {loan.repaymentStatus === 'REPAID'
+        {repaid
           ? `Repaid · was due ${formatDateLong(loan.dueDate)}`
           : `${status.label} · Due ${formatDateLong(loan.dueDate)}`}
       </AppText>
-    </Surface>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
-  card: { padding: space.s5, gap: space.s4 },
+  card: {
+    padding: space.s5,
+    gap: space.s4,
+    borderRadius: radius.lg,
+    borderWidth: StyleSheet.hairlineWidth * 2,
+  },
   chips: { flexDirection: 'row', gap: space.s2, flexWrap: 'wrap' },
   columns: { flexDirection: 'row', gap: space.s4 },
   column: { flex: 1, gap: 2 },

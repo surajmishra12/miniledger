@@ -1,26 +1,29 @@
 /**
- * S09 People: Active / Archived, search, add person (design.md S09).
+ * S09 People: Active / Archived, search, add person; people with an open balance first
+ * (design.md S09, §2.7).
  */
-import { normalizeText, type PersonDto } from '@miniledger/shared';
-import { router } from 'expo-router';
+import { normalizeText } from '@miniledger/shared';
+import { router, useScrollToTop } from 'expo-router';
 import { UserPlus } from 'lucide-react-native';
-import { useState } from 'react';
+import { useMemo, useRef, useState, type ComponentRef } from 'react';
 import { FlatList, RefreshControl, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { AppText } from '@/components/AppText';
+import { Button } from '@/components/Button';
 import { ConnectingNotice } from '@/components/ConnectingNotice';
 import { EmptyState } from '@/components/EmptyState';
-import { IconButton } from '@/components/IconButton';
 import { InlineNotice } from '@/components/InlineNotice';
 import { PersonRow } from '@/components/PersonRow';
+import { SearchField } from '@/components/SearchField';
+import { SectionHeader } from '@/components/SectionHeader';
 import { SegmentedControl } from '@/components/SegmentedControl';
 import { SkeletonList } from '@/components/Skeleton';
 import { useSnackbar } from '@/components/Snackbar';
 import { Divider } from '@/components/Surface';
-import { TextField } from '@/components/TextField';
 import { usePeople } from '@/features/ledger/api';
 import { EmptyPeopleIllustration } from '@/features/ledger/illustrations';
+import { peopleRows, type PeopleRow as Row } from '@/features/ledger/people-rows';
 import { PersonNameDialog } from '@/features/ledger/PersonNameDialog';
 import { errorCopy } from '@/lib/error-copy';
 import { useDebounced } from '@/lib/hooks';
@@ -29,10 +32,11 @@ import { useTheme } from '@/theme/theme-provider';
 import { radius, space } from '@/theme/tokens';
 
 type Tab = 'active' | 'archived';
-
 export default function PeopleScreen() {
   const { colors } = useTheme();
   const snackbar = useSnackbar();
+  const list = useRef<ComponentRef<typeof FlatList<Row>>>(null);
+  useScrollToTop(list);
   const [tab, setTab] = useState<Tab>('active');
   const [query, setQuery] = useState('');
   const [adding, setAdding] = useState(false);
@@ -41,7 +45,8 @@ export default function PeopleScreen() {
     ...(search ? { search } : {}),
     ...(tab === 'archived' ? { archived: true } : {}),
   });
-  const items = people.data?.items ?? [];
+  const items = useMemo(() => people.data?.items ?? [], [people.data]);
+  const rows = useMemo(() => peopleRows(items, tab === 'active' && !search), [items, tab, search]);
 
   const empty = people.isPending ? (
     <SkeletonList />
@@ -56,6 +61,7 @@ export default function PeopleScreen() {
     <EmptyState
       title="No matching people"
       actionLabel="Clear search"
+      actionVariant="secondary"
       onAction={() => setQuery('')}
     />
   ) : tab === 'archived' ? (
@@ -66,13 +72,15 @@ export default function PeopleScreen() {
       title="Your people will appear here."
       body="Add someone you lend to or borrow from."
       actionLabel="Add person"
+      actionVariant="secondary"
       onAction={() => setAdding(true)}
     />
   );
 
-  const renderItem = ({ item, index }: { item: PersonDto; index: number }) => {
-    const first = index === 0;
-    const last = index === items.length - 1;
+  const renderItem = ({ item }: { item: Row }) => {
+    if (item.kind === 'section') {
+      return <SectionHeader variant="overline" title={item.title} />;
+    }
     return (
       <View
         style={[
@@ -80,17 +88,17 @@ export default function PeopleScreen() {
           {
             backgroundColor: colors.surface,
             borderColor: colors.outline,
-            borderTopWidth: first ? 1 : 0,
-            borderTopLeftRadius: first ? radius.lg : 0,
-            borderTopRightRadius: first ? radius.lg : 0,
-            borderBottomWidth: last ? 1 : 0,
-            borderBottomLeftRadius: last ? radius.lg : 0,
-            borderBottomRightRadius: last ? radius.lg : 0,
+            borderTopWidth: item.first ? 1 : 0,
+            borderTopLeftRadius: item.first ? radius.lg : 0,
+            borderTopRightRadius: item.first ? radius.lg : 0,
+            borderBottomWidth: item.last ? 1 : 0,
+            borderBottomLeftRadius: item.last ? radius.lg : 0,
+            borderBottomRightRadius: item.last ? radius.lg : 0,
           },
         ]}
       >
-        <PersonRow person={item} onPress={() => router.push(`/people/${item.id}`)} />
-        {last ? null : <Divider />}
+        <PersonRow person={item.person} onPress={() => router.push(`/people/${item.person.id}`)} />
+        {item.last ? null : <Divider inset={72} />}
       </View>
     );
   };
@@ -99,9 +107,11 @@ export default function PeopleScreen() {
     <SafeAreaView style={[styles.fill, { backgroundColor: colors.canvas }]} edges={['top']}>
       <ConnectingNotice />
       <FlatList
-        data={items}
-        keyExtractor={(p) => p.id}
+        ref={list}
+        data={rows}
+        keyExtractor={(r) => (r.kind === 'person' ? r.person.id : `s-${r.title}`)}
         keyboardShouldPersistTaps="handled"
+        keyboardDismissMode="on-drag"
         contentContainerStyle={styles.content}
         ListHeaderComponent={
           <View style={styles.header}>
@@ -109,15 +119,19 @@ export default function PeopleScreen() {
               <AppText variant="title" accessibilityRole="header">
                 People
               </AppText>
-              <IconButton icon={UserPlus} label="Add person" onPress={() => setAdding(true)} />
+              <Button
+                variant="ghost"
+                compact
+                icon={UserPlus}
+                label="Add person"
+                onPress={() => setAdding(true)}
+              />
             </View>
-            <TextField
-              label="Search people"
+            <SearchField
               value={query}
               onChangeText={setQuery}
-              autoCapitalize="none"
-              placeholder="Rahul"
-              returnKeyType="search"
+              placeholder="Search people"
+              accessibilityLabel="Search people by name"
             />
             <SegmentedControl
               label="Show"
@@ -160,7 +174,7 @@ export default function PeopleScreen() {
 const styles = StyleSheet.create({
   fill: { flex: 1 },
   content: { paddingHorizontal: space.s5, paddingBottom: space.s10 },
-  header: { gap: space.s4, paddingBottom: space.s4 },
+  header: { gap: space.s3, paddingBottom: space.s2 },
   titleRow: {
     flexDirection: 'row',
     alignItems: 'center',

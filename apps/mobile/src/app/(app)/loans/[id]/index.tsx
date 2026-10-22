@@ -14,6 +14,7 @@ import { Button } from '@/components/Button';
 import { ConfirmDialog } from '@/components/ConfirmDialog';
 import { EmptyState } from '@/components/EmptyState';
 import { Header } from '@/components/Header';
+import { IconBadge } from '@/components/IconBadge';
 import { IconButton } from '@/components/IconButton';
 import { InlineNotice } from '@/components/InlineNotice';
 import { Screen } from '@/components/Screen';
@@ -46,6 +47,7 @@ type Dialog =
 function RepaymentRow({ repayment, onMenu }: { repayment: RepaymentDto; onMenu: () => void }) {
   return (
     <View style={styles.repayment}>
+      <IconBadge icon={CheckCheck} tone="success" size={32} />
       <View style={styles.flex}>
         <AppText variant="rowTitle" weight="700" tabular>
           {formatPaise(repayment.amountPaise)}
@@ -248,12 +250,16 @@ export default function LoanDetailScreen() {
           Repayment history
         </AppText>
         {data.repayments.length === 0 ? (
-          <AppText color="textSecondary">No repayments recorded yet.</AppText>
+          <Surface>
+            <View style={styles.noRepayments}>
+              <AppText color="textSecondary">No repayments recorded yet.</AppText>
+            </View>
+          </Surface>
         ) : (
           <Surface>
             {data.repayments.map((repayment, index) => (
               <View key={repayment.id}>
-                {index > 0 ? <Divider /> : null}
+                {index > 0 ? <Divider inset={60} /> : null}
                 <RepaymentRow
                   repayment={repayment}
                   onMenu={() => setDialog({ kind: 'repaymentMenu', repayment })}
@@ -370,6 +376,7 @@ const styles = StyleSheet.create({
   person: { flexDirection: 'row', alignItems: 'center', gap: space.s2, minHeight: 48 },
   section: { gap: space.s3 },
   actions: { gap: space.s3 },
+  noRepayments: { padding: space.s4 },
   settled: {
     flexDirection: 'row',
     alignItems: 'center',

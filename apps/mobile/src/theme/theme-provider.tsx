@@ -22,10 +22,12 @@ import {
   useState,
   type ReactNode,
 } from 'react';
-import { AccessibilityInfo, Appearance, useColorScheme } from 'react-native';
+import { AccessibilityInfo, Appearance, useColorScheme, type ViewStyle } from 'react-native';
 
 import { isThemePreference, resolveScheme, type ThemePreference } from './scheme';
-import { darkTheme, lightTheme, type Theme } from './tokens';
+import { darkTheme, lightTheme, shadowRecipes, type ShadowLevel, type Theme } from './tokens';
+
+const NO_SHADOW: ViewStyle = {};
 
 export type { ThemePreference } from './scheme';
 
@@ -47,6 +49,8 @@ export type ThemeValue = Theme & {
   setPreference: (preference: ThemePreference) => void;
   /** Android ripple: 8% ink in light, 12% in dark (design.md §7.3). */
   ripple: string;
+  /** Shadow style for a depth level; empty in dark mode (design.md §2.6). */
+  shadow: (level: ShadowLevel | null) => ViewStyle;
   /** OS "Remove animations" / reduce motion is on (design.md §8.1). */
   reduceMotion: boolean;
   /** The stored preference has been read; the splash stays up until then (no light flash). */
@@ -59,6 +63,7 @@ const ThemeContext = createContext<ThemeValue>({
   preference: 'light',
   setPreference: () => undefined,
   ripple: 'rgba(42, 27, 23, 0.08)',
+  shadow: (level) => (level ? { boxShadow: shadowRecipes[level] } : {}),
   reduceMotion: false,
   ready: true,
 });
@@ -125,6 +130,8 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
       preference,
       setPreference,
       ripple: `${base.colors.textPrimary}${base.scheme === 'dark' ? '1F' : '14'}`,
+      shadow: (level) =>
+        level && base.scheme === 'light' ? { boxShadow: shadowRecipes[level] } : NO_SHADOW,
       reduceMotion,
       ready,
     }),

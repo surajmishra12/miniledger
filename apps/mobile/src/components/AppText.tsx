@@ -40,6 +40,7 @@ export function AppText({
           fontFamily: family,
           // Custom families carry their own weight; only the system fallback needs fontWeight.
           fontWeight: family ? undefined : fontWeight,
+          letterSpacing: token.letterSpacing,
           textAlign: align,
         },
         tabular ? { fontVariant: ['tabular-nums'] } : null,

@@ -1,16 +1,20 @@
 /**
- * Haptics (design.md §8.2): light selection ticks and a small success after confirmed saves.
- * Android applies the user's system touch-feedback setting; failures are always silent.
+ * Haptics map (design.md §8.2). Android applies the system touch-feedback setting;
+ * failures are always silent and haptics are never the only cue.
  */
 import * as Haptics from 'expo-haptics';
 
+const quiet = (p: Promise<void>) => void p.catch(() => undefined);
+
 export const haptics = {
-  /** A selected toggle, segment or chip. */
-  selection: () => void Haptics.selectionAsync().catch(() => undefined),
-  /** After the server confirms a money change. */
-  success: () =>
-    void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success).catch(() => undefined),
-  /** Opening a destructive confirmation. */
-  warning: () =>
-    void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning).catch(() => undefined),
+  /** Add button press. */
+  impact: () => quiet(Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light)),
+  /** Tab change, segment, chip, radio, direction switch. */
+  selection: () => quiet(Haptics.selectionAsync()),
+  /** Confirmed save, settle, repayment. */
+  success: () => quiet(Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success)),
+  /** A destructive dialog opens. */
+  warning: () => quiet(Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning)),
+  /** Validation error on submit (once per submit). */
+  error: () => quiet(Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error)),
 };

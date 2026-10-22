@@ -531,7 +531,7 @@ Each screen has a defined purpose, top-level hierarchy, actions, states and acce
   - in Person detail the person column is dropped: the title becomes `Due 30 October 2026` and the direction chip stays;
   - status chip (`StatusChip`, §2.3 colors with icon): `N days overdue` (danger), `Due today` / `Due tomorrow` (warning) or `Repaid` (success); other outstanding loans show the plain due label without a chip. Never an unlabeled dot.
 - Row tap opens Loan details (press: ripple + 0.985 scale). No swipe actions.
-- **Motion:** when filters, search or sort change, the current rows stay visible until the new page arrives, then the list cross-fades (180 ms); rows entering on scroll fade in without movement. Section headers stay pinned under the filter block while their section is on screen.
+- **Motion:** when filters, search or sort change, the current rows stay visible until the new page arrives, then the list cross-fades (180 ms); rows entering on scroll fade in without movement. Section headers scroll with their rows (only the filter block is pinned, so two sticky layers never fight).
 - Do not show a total count (the API does not provide one). Filters, search and scroll position are preserved on back.
 - Infinite scroll using `nextCursor`, de-duplicated by loan ID; footer spinner while loading more. Changing a filter, search or sort reloads from the first page.
 - No matches: `No matching loans` / `Try another name or filter.` + `Clear filters`. No loans at all: the §9.2 first-use empty state with `Add your first loan` (opens S14).
@@ -660,7 +660,7 @@ Signing out clears tokens and cached data; another account signing in on the dev
 - Two large option rows (72dp, full width, one grouped container):
   1. lent badge `arrow-up-right` · **`I lent money`** · `Someone owes you`
   2. borrowed badge `arrow-down-left` · **`I borrowed money`** · `You owe someone`
-- Tapping a row closes the sheet and pushes S06 with that direction preset. No third option, no Cancel button (scrim tap, swipe down and Android back all close it).
+- Tapping a row closes the sheet and pushes S06 with that direction preset. No third option, no Cancel button (the `×` Add button position, a scrim tap and Android back all close it).
 - Rows announce as `I lent money, someone owes you, button`. Focus starts on the first row and returns to the Add button on dismissal.
 
 ### S13 — Destructive confirmations

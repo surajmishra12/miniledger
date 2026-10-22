@@ -22,7 +22,7 @@ This file sequences the work and tracks progress. It **adds no rules**: behavior
 | 3 | Complete ledger (V1 finance) | Code done; on-device run pending | 22 Oct 2026 | |
 | 4 | Production auth and account lifecycle | Code done; live Resend check needs the production key | 22 Oct 2026 | |
 | 5 | Receipts, themes and polish | Code done; on-device QA and dark logo assets pending | 22 Oct 2026 | |
-| 5b | Navigation and Home redesign (design v1.5) | Specified; not started | 22 Oct 2026 | |
+| 5b | Navigation and Home redesign (design v1.5) | Code done; on-device QA pending | 22 Oct 2026 | |
 | 6 | Deployment and Play release → **production ready** | Repository side done; cloud accounts, store listing and release pending | 22 Oct 2026 | |
 
 ---
@@ -144,16 +144,16 @@ This file sequences the work and tracks progress. It **adds no rules**: behavior
 
 **Goal:** five-slot navigation, an overview Home and a dedicated Loans tab, with no change to financial behavior.
 
-- [ ] API: four summary counts (arch §4.4, §6.2) with tests against the PRD FR-05 example
-- [ ] Tabs: Home · People · Add · Loans · Settings (raised Add circle, sliding active pill); Add `tabPress` opens S14; `backBehavior="firstRoute"`; tap active tab scrolls to top (design §5.1)
-- [ ] S14 Add sheet → S06 with `?direction=`, person picker open, focus to Amount after choosing (design S06, S14)
-- [ ] S04 Home: flat hero with people count, 2×2 `SummaryTile` grid with `IconBadge`s, Needs attention (5 rows, `See all`), caught-up row, shaped skeletons (design S04)
-- [ ] S05 Loans tab: sticky search + filters, status sections for *Needs attention*, filter summary with `Clear`, params from Home (design S05)
-- [ ] Remove FAB, `Metric` and hero decoration; type tokens per design §3.2
-- [ ] Depth: shadow recipes S1–S3 and S2-up as theme tokens (light only), hero tonal depth (design §2.6)
-- [ ] At-a-glance: `StatusRail` on overdue/due-soon rows, state-colored progress bar, People sorted with balances first, icon + label + neutral amount everywhere (design §2.7)
-- [ ] Motion: shared curves and durations, `AnimatedAmount`, first-load stagger, Add plus → ×, sliding segment thumb and tab pill, skeleton pulse, haptics map; all disabled under reduce motion (design §8)
-- [ ] Mobile tests for section grouping and tile context lines; contrast tests for the badge pairs
+- [x] API: four summary counts (arch §4.4, §6.2) with tests against the PRD FR-05 example
+- [x] Tabs: Home · People · Add · Loans · Settings (raised Add circle, sliding active pill); Add `tabPress` opens S14; `backBehavior="firstRoute"`; tap active tab scrolls to top (design §5.1)
+- [x] S14 Add sheet → S06 with `?direction=`, person picker open, focus to Amount after choosing (design S06, S14)
+- [x] S04 Home: flat hero with people count, 2×2 `SummaryTile` grid with `IconBadge`s, Needs attention (5 rows, `See all`), caught-up row, shaped skeletons (design S04)
+- [x] S05 Loans tab: sticky search + filters, status sections for *Needs attention*, filter summary with `Clear`, params from Home (design S05)
+- [x] Remove FAB, `Metric` and hero decoration; type tokens per design §3.2
+- [x] Depth: shadow recipes S1–S3 and S2-up as theme tokens (light only), hero tonal depth (design §2.6)
+- [x] At-a-glance: `StatusRail` on overdue/due-soon rows, state-colored progress bar, People sorted with balances first, icon + label + neutral amount everywhere (design §2.7)
+- [x] Motion: shared curves and durations, `AnimatedAmount`, first-load stagger, Add plus → ×, sliding segment thumb and tab pill, skeleton pulse, haptics map; all disabled under reduce motion (design §8)
+- [x] Mobile tests for section grouping and tile context lines; contrast tests for the badge pairs
 
 **Exit criteria**
 - From any tab, a lent loan can be recorded as Add → I lent → person → amount → due date → Save.

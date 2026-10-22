@@ -1,13 +1,15 @@
 import { formatPaise, type LoanDto } from '@miniledger/shared';
-import { Pressable, StyleSheet, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 
 import { dueStatus, formatDateLong } from '@/lib/format';
+import { pressScale } from '@/theme/motion';
 import { useTheme } from '@/theme/theme-provider';
 import { space } from '@/theme/tokens';
 
 import { AppText } from './AppText';
 import { Avatar } from './Avatar';
 import { StatusChip, type ChipKind } from './StatusChip';
+import { Tappable } from './Tappable';
 
 type Props = { loan: LoanDto; onPress: () => void; showPerson?: boolean };
 
@@ -18,16 +20,22 @@ const TONE_CHIP: Partial<Record<string, ChipKind>> = {
 };
 
 /**
- * Person, direction, remaining balance and due status (design.md S05).
- * Direction always appears as a labelled chip with its arrow (§2.3); the amount stays neutral.
+ * Person, direction, remaining balance and due status (design.md S05, §2.7).
+ * Overdue and due-soon rows carry a status rail; repaid rows are quieter.
  */
 export function LoanRow({ loan, onPress, showPerson = true }: Props) {
-  const { ripple } = useTheme();
+  const { colors } = useTheme();
   const status = dueStatus(loan);
   const lent = loan.direction === 'LENT';
   const partial = loan.repaymentStatus === 'PARTIAL';
   const repaid = loan.repaymentStatus === 'REPAID';
   const chip = TONE_CHIP[status.tone];
+  const rail =
+    status.tone === 'danger'
+      ? colors.dangerText
+      : status.tone === 'warning'
+        ? colors.warningText
+        : null;
 
   const spoken = [
     showPerson ? loan.person.name : null,
@@ -41,16 +49,22 @@ export function LoanRow({ loan, onPress, showPerson = true }: Props) {
     .join(', ');
 
   return (
-    <Pressable
+    <Tappable
       accessibilityRole="button"
       accessibilityLabel={spoken}
       onPress={onPress}
-      android_ripple={{ color: ripple }}
+      ripple
+      scaleTo={pressScale.row}
       style={styles.row}
     >
-      {showPerson ? <Avatar name={loan.person.name} /> : null}
+      {rail ? <View style={[styles.rail, { backgroundColor: rail }]} /> : null}
+      {showPerson ? <Avatar name={loan.person.name} muted={repaid} /> : null}
       <View style={styles.middle}>
-        <AppText variant="rowTitle" numberOfLines={2}>
+        <AppText
+          variant="rowTitle"
+          numberOfLines={2}
+          color={repaid ? 'textSecondary' : 'textPrimary'}
+        >
           {showPerson ? loan.person.name : `Due ${formatDateLong(loan.dueDate)}`}
         </AppText>
         <View style={styles.meta}>
@@ -79,7 +93,7 @@ export function LoanRow({ loan, onPress, showPerson = true }: Props) {
           </AppText>
         ) : null}
       </View>
-    </Pressable>
+    </Tappable>
   );
 }
 
@@ -90,8 +104,9 @@ const styles = StyleSheet.create({
     gap: space.s3,
     paddingHorizontal: space.s4,
     paddingVertical: space.s3,
-    minHeight: 72,
+    minHeight: 76,
   },
+  rail: { position: 'absolute', left: 0, top: 6, bottom: 6, width: 3, borderRadius: 2 },
   middle: { flex: 1, gap: space.s1 },
   meta: { flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center', gap: space.s2 },
   amounts: { alignItems: 'flex-end', gap: 2 },

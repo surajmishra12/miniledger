@@ -46,6 +46,10 @@ type Props =
   | {
       mode: 'create';
       initialPerson?: PersonChoice | null;
+      /** Preset by the Add sheet (design.md S14). */
+      initialDirection?: Direction;
+      /** Open the person picker at once (from the Add sheet). */
+      pickPerson?: boolean;
       receiptSlot?: (loanId: string) => ReactNode;
       /** Runs after the server confirmed the create (e.g. moves a pending receipt into place). */
       onCreated?: (loan: LoanDto) => Promise<{ receiptFailed?: boolean } | void>;
@@ -118,7 +122,9 @@ export function LoanForm(props: Props) {
   const today = editing?.asOfDate ?? deviceToday();
 
   const initial = {
-    direction: (editing?.direction ?? 'LENT') as Direction,
+    direction: (editing?.direction ??
+      (props.mode === 'create' ? props.initialDirection : undefined) ??
+      'LENT') as Direction,
     person: editing
       ? ({ kind: 'existing', id: editing.person.id, name: editing.person.name } as PersonChoice)
       : props.mode === 'create'
@@ -231,6 +237,7 @@ export function LoanForm(props: Props) {
       (key) => found[key],
     );
     if (first) {
+      haptics.error();
       // Return to the first error: focus it if it is a text field, and announce it (§7.1).
       if (first === 'amount') amountRef.current?.focus();
       if (first === 'loanDate' || first === 'note') setMoreOpen(true);
@@ -294,7 +301,13 @@ export function LoanForm(props: Props) {
         />
       }
     >
-      <Header back title={editing ? 'Edit loan' : 'Add loan'} large />
+      <Header
+        back
+        title={
+          editing ? 'Edit loan' : direction === 'LENT' ? 'Money you lent' : 'Money you borrowed'
+        }
+        large
+      />
 
       <View style={styles.section}>
         <DirectionSwitch value={direction} onChange={setDirection} disabled={directionLocked} />
@@ -311,8 +324,11 @@ export function LoanForm(props: Props) {
         onChange={(choice) => {
           setPerson(choice);
           setErrors((e) => ({ ...e, person: undefined }));
+          // Next step of the 10-second flow: amount, with the keyboard up (design.md S06).
+          if (!amount) setTimeout(() => amountRef.current?.focus(), 350);
         }}
         allowNew={!editing}
+        autoOpen={props.mode === 'create' && !!props.pickPerson && !initial.person}
         error={errors.person}
       />
 

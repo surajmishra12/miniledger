@@ -31,11 +31,20 @@ type Props = {
   /** Edit mode: only existing people (design.md S06). */
   allowNew?: boolean;
   error?: string | undefined;
+  /** Open the list immediately (form opened from the Add sheet, design.md S06). */
+  autoOpen?: boolean;
 };
 
-export function PersonPicker({ label, value, onChange, allowNew = true, error }: Props) {
+export function PersonPicker({
+  label,
+  value,
+  onChange,
+  allowNew = true,
+  error,
+  autoOpen = false,
+}: Props) {
   const { colors, reduceMotion } = useTheme();
-  const [open, setOpen] = useState(false);
+  const [open, setOpen] = useState(autoOpen);
   const [query, setQuery] = useState('');
   const search = useDebounced(normalizeText(query));
   const people = usePeople(search ? { search } : {});

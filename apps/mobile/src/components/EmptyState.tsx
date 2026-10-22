@@ -1,23 +1,33 @@
 import type { ReactNode } from 'react';
-import { StyleSheet, View } from 'react-native';
+import { StyleSheet } from 'react-native';
 
 import { space } from '@/theme/tokens';
 
 import { AppText } from './AppText';
-import { Button } from './Button';
+import { Button, type ButtonVariant } from './Button';
+import { Rise } from './Rise';
 
 type Props = {
   title: string;
   body?: string;
   actionLabel?: string;
   onAction?: () => void;
+  /** Tab screens use `secondary` so the bar's Add stays the one filled accent (design.md §7.3). */
+  actionVariant?: ButtonVariant;
   illustration?: ReactNode;
 };
 
-/** One-line explanation + one action (design.md §9.2). */
-export function EmptyState({ title, body, actionLabel, onAction, illustration }: Props) {
+/** One-line explanation + one action (design.md §9.2), with a one-time gentle fade-in. */
+export function EmptyState({
+  title,
+  body,
+  actionLabel,
+  onAction,
+  actionVariant = 'primary',
+  illustration,
+}: Props) {
   return (
-    <View style={styles.wrap}>
+    <Rise style={styles.wrap}>
       {illustration}
       <AppText variant="section" align="center">
         {title}
@@ -28,9 +38,14 @@ export function EmptyState({ title, body, actionLabel, onAction, illustration }:
         </AppText>
       ) : null}
       {actionLabel && onAction ? (
-        <Button label={actionLabel} onPress={onAction} style={styles.button} />
+        <Button
+          label={actionLabel}
+          onPress={onAction}
+          variant={actionVariant}
+          style={styles.button}
+        />
       ) : null}
-    </View>
+    </Rise>
   );
 }
 

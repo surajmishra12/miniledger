@@ -104,7 +104,10 @@ export function RepaymentForm({ loan, repayment }: Props) {
     const found = validate();
     setErrors(found);
     setNotice(null);
-    if (Object.keys(found).length) return;
+    if (Object.keys(found).length) {
+      haptics.error();
+      return;
+    }
     if (editing && !dirty) {
       setSaved(true);
       disablePrevention();

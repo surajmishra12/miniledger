@@ -1,32 +1,43 @@
 import type { PersonDto } from '@miniledger/shared';
-import { ArrowDownLeft, ArrowUpRight, CheckCheck } from 'lucide-react-native';
-import { Pressable, StyleSheet, View } from 'react-native';
+import { ArrowDownLeft, ArrowUpRight, CheckCheck, ChevronRight } from 'lucide-react-native';
+import { StyleSheet, View } from 'react-native';
 
 import { balanceItems, balanceLines } from '@/lib/format';
+import { pressScale } from '@/theme/motion';
 import { useTheme } from '@/theme/theme-provider';
 import { space } from '@/theme/tokens';
 
 import { AppText } from './AppText';
 import { Avatar } from './Avatar';
+import { Tappable } from './Tappable';
 
 const ICONS = { lent: ArrowUpRight, borrowed: ArrowDownLeft, settled: CheckCheck } as const;
 const TONES = { lent: 'lentText', borrowed: 'borrowedText', settled: 'successText' } as const;
 
-/** Initials, name and separate per-direction balances (design.md S09 PersonRow). */
+/**
+ * Initials, name and separate per-direction balances: icon + colored label + neutral amount
+ * (design.md S09, §2.7). Settled people read quieter.
+ */
 export function PersonRow({ person, onPress }: { person: PersonDto; onPress: () => void }) {
-  const { colors, ripple } = useTheme();
+  const { colors } = useTheme();
   const lines = balanceItems(person);
+  const settled = lines[0]?.kind === 'settled';
   return (
-    <Pressable
+    <Tappable
       accessibilityRole="button"
       accessibilityLabel={[person.name, ...balanceLines(person)].join(', ')}
       onPress={onPress}
-      android_ripple={{ color: ripple }}
+      ripple
+      scaleTo={pressScale.row}
       style={styles.row}
     >
-      <Avatar name={person.name} />
+      <Avatar name={person.name} muted={settled} />
       <View style={styles.middle}>
-        <AppText variant="rowTitle" numberOfLines={2}>
+        <AppText
+          variant="rowTitle"
+          numberOfLines={2}
+          color={settled ? 'textSecondary' : 'textPrimary'}
+        >
           {person.name}
         </AppText>
         <View style={styles.lines}>
@@ -34,12 +45,12 @@ export function PersonRow({ person, onPress }: { person: PersonDto; onPress: () 
             const Icon = ICONS[line.kind];
             return (
               <View key={line.kind} style={styles.line}>
-                <Icon size={16} color={colors[TONES[line.kind]]} strokeWidth={1.75} />
+                <Icon size={15} color={colors[TONES[line.kind]]} strokeWidth={2} />
                 <AppText variant="secondary" color={TONES[line.kind]}>
                   {line.label}
                 </AppText>
                 {line.amount ? (
-                  <AppText variant="secondary" weight="600" tabular>
+                  <AppText variant="secondary" weight="700" tabular>
                     {line.amount}
                   </AppText>
                 ) : null}
@@ -48,7 +59,8 @@ export function PersonRow({ person, onPress }: { person: PersonDto; onPress: () 
           })}
         </View>
       </View>
-    </Pressable>
+      <ChevronRight size={18} color={colors.textTertiary} strokeWidth={1.75} />
+    </Tappable>
   );
 }
 
@@ -59,9 +71,9 @@ const styles = StyleSheet.create({
     gap: space.s3,
     paddingHorizontal: space.s4,
     paddingVertical: space.s3,
-    minHeight: 72,
+    minHeight: 76,
   },
-  middle: { flex: 1, gap: 2 },
+  middle: { flex: 1, gap: 3 },
   lines: { flexDirection: 'row', flexWrap: 'wrap', columnGap: space.s4, rowGap: 2 },
   line: { flexDirection: 'row', alignItems: 'center', gap: space.s1 },
 });

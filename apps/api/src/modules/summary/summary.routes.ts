@@ -1,5 +1,5 @@
 /**
- * GET /v1/summary — exact lent/borrowed totals (PRD FR-05, architecture.md §4.4).
+ * GET /v1/summary — exact lent/borrowed totals plus context counts (PRD FR-05, architecture.md §4.4).
  * totalLent, totalRepaid and overdueAmount always refer to LENT loans only.
  */
 import type { SummaryDto } from '@miniledger/shared';
@@ -16,7 +16,11 @@ type SummaryRow = Record<
   | 'overdue_amount'
   | 'total_borrowed'
   | 'total_returned'
-  | 'overdue_borrowed',
+  | 'overdue_borrowed'
+  | 'people_owing_you'
+  | 'people_you_owe'
+  | 'lent_loans'
+  | 'overdue_loans',
   unknown
 >;
 
@@ -38,9 +42,19 @@ export function createSummaryRoutes(ctx: AppContext): Router {
         COALESCE(SUM(repaid) FILTER (WHERE direction = 'BORROWED'), 0) AS total_returned,
         COALESCE(SUM(principal_paise - repaid) FILTER (
           WHERE direction = 'BORROWED' AND principal_paise > repaid AND due_date < ${asOfDate}::date
-        ), 0) AS overdue_borrowed
+        ), 0) AS overdue_borrowed,
+        COUNT(DISTINCT person_id) FILTER (
+          WHERE direction = 'LENT' AND principal_paise > repaid
+        ) AS people_owing_you,
+        COUNT(DISTINCT person_id) FILTER (
+          WHERE direction = 'BORROWED' AND principal_paise > repaid
+        ) AS people_you_owe,
+        COUNT(*) FILTER (WHERE direction = 'LENT') AS lent_loans,
+        COUNT(*) FILTER (
+          WHERE direction = 'LENT' AND principal_paise > repaid AND due_date < ${asOfDate}::date
+        ) AS overdue_loans
       FROM (
-        SELECT l.direction, l.principal_paise, l.due_date, COALESCE(r.repaid, 0) AS repaid
+        SELECT l.direction, l.person_id, l.principal_paise, l.due_date, COALESCE(r.repaid, 0) AS repaid
         FROM loans l
         LEFT JOIN (
           SELECT loan_id, SUM(amount_paise) AS repaid
@@ -62,6 +76,10 @@ export function createSummaryRoutes(ctx: AppContext): Router {
       totalReturned,
       outstandingBorrowed: totalBorrowed - totalReturned,
       overdueBorrowed: toSafeInteger(row?.overdue_borrowed),
+      peopleOwingYou: toSafeInteger(row?.people_owing_you),
+      peopleYouOwe: toSafeInteger(row?.people_you_owe),
+      lentLoans: toSafeInteger(row?.lent_loans),
+      overdueLoans: toSafeInteger(row?.overdue_loans),
       currency: 'INR',
       unit: 'paise',
       asOfDate,

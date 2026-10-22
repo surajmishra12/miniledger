@@ -1,57 +1,67 @@
 import { formatPaise } from '@miniledger/shared';
-import { Pressable, StyleSheet, View } from 'react-native';
+import { ChevronRight } from 'lucide-react-native';
+import { StyleSheet, View } from 'react-native';
 
 import { useTheme } from '@/theme/theme-provider';
-import { radius, space } from '@/theme/tokens';
+import { heroGradient, radius, space } from '@/theme/tokens';
 
+import { AnimatedAmount } from './AnimatedAmount';
 import { AppText } from './AppText';
+import { Tappable } from './Tappable';
 
-type Props = { outstandingLentPaise: number; onPress?: () => void };
+type Props = {
+  outstandingLentPaise: number;
+  peopleOwingYou: number;
+  countUp?: boolean;
+  onPress?: () => void;
+};
 
-/** The single statement card (design.md S04 item 2). */
-export function SummaryHero({ outstandingLentPaise, onPress }: Props) {
-  const { colors } = useTheme();
+/**
+ * The one hero card (design.md S04 item 2): `heroSurface` with subtle tonal depth and the S2
+ * shadow in light mode; no decoration.
+ */
+export function SummaryHero({ outstandingLentPaise, peopleOwingYou, countUp, onPress }: Props) {
+  const { colors, scheme } = useTheme();
+  const context =
+    outstandingLentPaise === 0
+      ? 'Nothing owed to you right now'
+      : `from ${peopleOwingYou} ${peopleOwingYou === 1 ? 'person' : 'people'}`;
   return (
-    <Pressable
+    <Tappable
       accessibilityRole={onPress ? 'button' : 'summary'}
-      accessibilityLabel={`You are owed ${formatPaise(outstandingLentPaise)}, remaining to be received`}
-      onPress={onPress}
+      accessibilityLabel={`You are owed ${formatPaise(outstandingLentPaise)}, ${context}`}
+      accessibilityHint={onPress ? 'Shows the loans people still owe you' : undefined}
       disabled={!onPress}
-      style={[styles.card, { backgroundColor: colors.heroSurface }]}
+      onPress={onPress}
+      shadow="s2"
+      scaleTo={0.985}
+      style={[
+        styles.card,
+        { backgroundColor: colors.heroSurface, backgroundImage: heroGradient[scheme] },
+      ]}
     >
-      {/* Decorative binder-ring strokes echoing the logo (design.md §10.3). */}
-      <View style={styles.rings} importantForAccessibility="no-hide-descendants">
-        {[0, 1, 2].map((i) => (
-          <View key={i} style={[styles.ring, { backgroundColor: colors.onHero }]} />
-        ))}
-      </View>
-      <View style={styles.overline}>
-        <View style={[styles.dot, { backgroundColor: colors.heroAccent }]} />
+      <View style={styles.top}>
         <AppText variant="overline" color="onHeroMuted">
           YOU ARE OWED
         </AppText>
+        {onPress ? <ChevronRight size={20} color={colors.onHeroMuted} strokeWidth={1.75} /> : null}
       </View>
-      <AppText variant="hero" color="onHero" tabular adjustsFontSizeToFit numberOfLines={1}>
-        {formatPaise(outstandingLentPaise)}
-      </AppText>
+      <AnimatedAmount
+        paise={outstandingLentPaise}
+        countUp={countUp}
+        variant="hero"
+        color="onHero"
+        numberOfLines={1}
+        adjustsFontSizeToFit
+      />
       <AppText variant="secondary" color="onHeroMuted">
-        Remaining to be received
+        {context}
       </AppText>
-    </Pressable>
+    </Tappable>
   );
 }
 
 const styles = StyleSheet.create({
-  card: {
-    borderRadius: radius.xl,
-    paddingVertical: space.s6,
-    paddingLeft: space.s8,
-    paddingRight: space.s6,
-    gap: space.s2,
-    overflow: 'hidden',
-  },
-  rings: { position: 'absolute', left: 0, top: 0, bottom: 0, justifyContent: 'center', gap: 10 },
-  ring: { width: 14, height: 5, borderRadius: 3, opacity: 0.1 },
-  overline: { flexDirection: 'row', alignItems: 'center', gap: space.s2 },
-  dot: { width: 6, height: 6, borderRadius: 3 },
+  card: { borderRadius: radius.xl, padding: space.s6, gap: space.s1, overflow: 'hidden' },
+  top: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
 });

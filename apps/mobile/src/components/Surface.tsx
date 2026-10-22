@@ -4,12 +4,17 @@ import { StyleSheet, View, type ViewStyle } from 'react-native';
 import { useTheme } from '@/theme/theme-provider';
 import { radius } from '@/theme/tokens';
 
-/** Level-1 surface: white/charcoal with a hairline outline (design.md §2.6). */
+/** Level-1 surface: white/charcoal, hairline outline, S1 shadow in light (design.md §2.6). */
 export function Surface({ children, style }: { children: ReactNode; style?: ViewStyle }) {
-  const { colors } = useTheme();
+  const { colors, shadow } = useTheme();
   return (
     <View
-      style={[styles.box, { backgroundColor: colors.surface, borderColor: colors.outline }, style]}
+      style={[
+        styles.box,
+        { backgroundColor: colors.surface, borderColor: colors.outline },
+        shadow('s1'),
+        style,
+      ]}
     >
       {children}
     </View>
@@ -31,5 +36,5 @@ export function Divider({ inset = 16 }: { inset?: number }) {
 }
 
 const styles = StyleSheet.create({
-  box: { borderRadius: radius.lg, borderWidth: 1, overflow: 'hidden' },
+  box: { borderRadius: radius.lg, borderWidth: StyleSheet.hairlineWidth * 2, overflow: 'hidden' },
 });

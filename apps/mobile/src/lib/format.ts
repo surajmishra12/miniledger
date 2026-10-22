@@ -52,7 +52,15 @@ export function formatDateLong(date: string): string {
 
 export type Tone = 'danger' | 'warning' | 'success' | 'neutral';
 
-const plural = (n: number, word: string) => `${n} ${word}${n === 1 ? '' : 's'}`;
+/** "1 loan" / "3 loans", "1 person" / "2 people" (design.md §11 plural rules). */
+export const plural = (n: number, word: string, many = `${word}s`) =>
+  `${n} ${n === 1 ? word : many}`;
+
+/** Whole percent of lent money received, rounded down; null when nothing was lent (S04). */
+export function repaidShare(totalRepaidPaise: number, totalLentPaise: number): number | null {
+  if (totalLentPaise <= 0) return null;
+  return Math.floor((totalRepaidPaise * 100) / totalLentPaise);
+}
 
 /** Exact due-status labels (design.md §1.3) from server-computed fields. */
 export function dueStatus(

@@ -1,7 +1,7 @@
 /**
  * S10 Person detail: separate balances, their loans, rename / archive / delete (design.md S10).
  */
-import { formatPaise, type LoanDto } from '@miniledger/shared';
+import type { LoanDto } from '@miniledger/shared';
 import { useMutation } from '@tanstack/react-query';
 import { router, useLocalSearchParams } from 'expo-router';
 import {
@@ -19,6 +19,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { ActionSheet, type SheetAction } from '@/components/ActionSheet';
 import { AppText } from '@/components/AppText';
+import { Avatar } from '@/components/Avatar';
 import { Button } from '@/components/Button';
 import { ConfirmDialog } from '@/components/ConfirmDialog';
 import { ConnectingNotice } from '@/components/ConnectingNotice';
@@ -27,45 +28,21 @@ import { Header } from '@/components/Header';
 import { IconButton } from '@/components/IconButton';
 import { InlineNotice } from '@/components/InlineNotice';
 import { LoanRow } from '@/components/LoanRow';
+import { SectionHeader } from '@/components/SectionHeader';
 import { SkeletonBlock, SkeletonList } from '@/components/Skeleton';
 import { useSnackbar } from '@/components/Snackbar';
-import { Divider, Surface } from '@/components/Surface';
+import { SummaryTile } from '@/components/SummaryTile';
+import { Divider } from '@/components/Surface';
 import { deletePerson, updatePerson, useLoanList, usePerson } from '@/features/ledger/api';
 import { PersonNameDialog } from '@/features/ledger/PersonNameDialog';
 import { ApiError } from '@/lib/api-client';
 import { errorCopy } from '@/lib/error-copy';
+import { plural } from '@/lib/format';
 import { invalidateLedger } from '@/lib/query-client';
 import { useTheme } from '@/theme/theme-provider';
 import { radius, space } from '@/theme/tokens';
 
 type Dialog = 'menu' | 'rename' | 'archive' | 'delete' | null;
-
-function Figure({
-  label,
-  amount,
-  tone,
-}: {
-  label: string;
-  amount: number;
-  tone: 'lent' | 'borrowed';
-}) {
-  const { colors } = useTheme();
-  const Icon = tone === 'lent' ? ArrowUpRight : ArrowDownLeft;
-  const color = tone === 'lent' ? 'lentText' : 'borrowedText';
-  return (
-    <View style={styles.figure} accessible accessibilityLabel={`${label}, ${formatPaise(amount)}`}>
-      <View style={styles.figureLabel}>
-        <Icon size={18} color={colors[color]} strokeWidth={1.75} />
-        <AppText variant="secondary" color={color}>
-          {label}
-        </AppText>
-      </View>
-      <AppText variant="cardAmount" tabular adjustsFontSizeToFit numberOfLines={1}>
-        {formatPaise(amount)}
-      </AppText>
-    </View>
-  );
-}
 
 export default function PersonDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -100,7 +77,12 @@ export default function PersonDetailScreen() {
       <SafeAreaView style={[styles.fill, { backgroundColor: colors.canvas }]}>
         <View style={styles.page}>
           <Header back />
-          <SkeletonBlock height={140} />
+          <SkeletonBlock height={56} width="70%" />
+          <View style={styles.tiles}>
+            <SkeletonBlock height={132} width="48%" rounded={16} />
+            <SkeletonBlock height={132} width="48%" rounded={16} />
+          </View>
+          <SkeletonList rows={3} />
         </View>
       </SafeAreaView>
     );
@@ -178,7 +160,6 @@ export default function PersonDetailScreen() {
     <View style={styles.header}>
       <Header
         back
-        title={data.name}
         right={
           <IconButton
             icon={EllipsisVertical}
@@ -187,6 +168,18 @@ export default function PersonDetailScreen() {
           />
         }
       />
+      <View style={styles.identity}>
+        <Avatar name={data.name} size={56} muted={data.archived} />
+        <View style={styles.flex}>
+          <AppText variant="title" accessibilityRole="header" numberOfLines={2}>
+            {data.name}
+          </AppText>
+          <AppText variant="secondary" color="textSecondary">
+            {plural(data.loanCount, 'loan')}
+            {data.archived ? ' · Archived' : ''}
+          </AppText>
+        </View>
+      </View>
       {data.archived ? (
         <InlineNotice
           message="Archived. Unarchive to add loans."
@@ -195,14 +188,23 @@ export default function PersonDetailScreen() {
         />
       ) : null}
       {error ? <InlineNotice tone="danger" message={error} /> : null}
-      <Surface style={styles.figures}>
-        <Figure label="They owe you" amount={data.owesYouPaise} tone="lent" />
-        <View style={[styles.rule, { backgroundColor: colors.outline }]} />
-        <Figure label="You owe them" amount={data.youOwePaise} tone="borrowed" />
-      </Surface>
-      <AppText variant="section" accessibilityRole="header">
-        Loans
-      </AppText>
+      <View style={styles.tiles}>
+        <SummaryTile
+          icon={ArrowUpRight}
+          tone="lent"
+          label="They owe you"
+          paise={data.owesYouPaise}
+          context={data.owesYouPaise > 0 ? 'Still to receive' : 'Nothing owed'}
+        />
+        <SummaryTile
+          icon={ArrowDownLeft}
+          tone="borrowed"
+          label="You owe them"
+          paise={data.youOwePaise}
+          context={data.youOwePaise > 0 ? 'Still to pay back' : 'Nothing to pay back'}
+        />
+      </View>
+      <SectionHeader title="Loans" />
     </View>
   );
 
@@ -216,7 +218,10 @@ export default function PersonDetailScreen() {
       onAction={() => void loans.refetch()}
     />
   ) : (
-    <AppText color="textSecondary">No loans with {data.name} yet.</AppText>
+    <EmptyState
+      title={`No loans with ${data.name} yet.`}
+      body="Loans you add for them appear here."
+    />
   );
 
   return (
@@ -252,7 +257,7 @@ export default function PersonDetailScreen() {
                 showPerson={false}
                 onPress={() => router.push(`/loans/${item.id}`)}
               />
-              {last ? null : <Divider />}
+              {last ? null : <Divider inset={16} />}
             </View>
           );
         }}
@@ -335,10 +340,9 @@ const styles = StyleSheet.create({
   page: { paddingHorizontal: space.s5, gap: space.s4 },
   content: { paddingHorizontal: space.s5, paddingBottom: space.s10 },
   header: { gap: space.s4, paddingBottom: space.s3 },
-  figures: { flexDirection: 'row', padding: space.s5, gap: space.s4 },
-  figure: { flex: 1, gap: space.s1 },
-  figureLabel: { flexDirection: 'row', alignItems: 'center', gap: space.s1 },
-  rule: { width: StyleSheet.hairlineWidth * 2 },
+  flex: { flex: 1 },
+  identity: { flexDirection: 'row', alignItems: 'center', gap: space.s4 },
+  tiles: { flexDirection: 'row', gap: space.s3, flexWrap: 'wrap' },
   rowWrap: { borderLeftWidth: 1, borderRightWidth: 1, overflow: 'hidden' },
   footer: { paddingHorizontal: space.s5, paddingTop: space.s3, paddingBottom: space.s4 },
 });

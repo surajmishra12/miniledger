@@ -132,6 +132,7 @@ type TextStyleToken = {
   fontSize: number;
   lineHeight: number;
   fontWeight: '400' | '500' | '600' | '700';
+  letterSpacing?: number;
 };
 
 /** Type scale in sp (design.md §3.2). Numerals use tabular figures where amounts are shown. */
@@ -140,6 +141,7 @@ export const typography: Record<
   | 'title'
   | 'section'
   | 'cardAmount'
+  | 'tileAmount'
   | 'body'
   | 'rowTitle'
   | 'secondary'
@@ -147,16 +149,36 @@ export const typography: Record<
   | 'button',
   TextStyleToken
 > = {
-  hero: { fontSize: 34, lineHeight: 40, fontWeight: '700' },
-  title: { fontSize: 27, lineHeight: 34, fontWeight: '700' },
-  section: { fontSize: 19, lineHeight: 26, fontWeight: '600' },
+  hero: { fontSize: 40, lineHeight: 48, fontWeight: '700', letterSpacing: -0.5 },
+  title: { fontSize: 28, lineHeight: 34, fontWeight: '700', letterSpacing: -0.3 },
+  section: { fontSize: 18, lineHeight: 24, fontWeight: '600' },
   cardAmount: { fontSize: 22, lineHeight: 29, fontWeight: '700' },
+  tileAmount: { fontSize: 20, lineHeight: 26, fontWeight: '700' },
   body: { fontSize: 16, lineHeight: 24, fontWeight: '400' },
   rowTitle: { fontSize: 15, lineHeight: 22, fontWeight: '600' },
   secondary: { fontSize: 14, lineHeight: 21, fontWeight: '400' },
-  overline: { fontSize: 12, lineHeight: 17, fontWeight: '600' },
+  overline: { fontSize: 12, lineHeight: 17, fontWeight: '600', letterSpacing: 0.6 },
   button: { fontSize: 15, lineHeight: 22, fontWeight: '600' },
 };
+
+/**
+ * Two-layer warm shadows (design.md §2.6), light mode only. Ink is espresso #2A1B17.
+ * S2-up lifts the bottom bar off the content above it.
+ */
+const ink = (alpha: number) => `rgba(42, 27, 23, ${alpha})`;
+export const shadowRecipes = {
+  s1: `0px 1px 2px ${ink(0.04)}, 0px 2px 8px ${ink(0.04)}`,
+  s2: `0px 2px 6px ${ink(0.06)}, 0px 10px 24px ${ink(0.1)}`,
+  s2up: `0px -6px 20px ${ink(0.06)}`,
+  s3: `0px 4px 12px ${ink(0.08)}, 0px 16px 40px ${ink(0.14)}`,
+} as const;
+export type ShadowLevel = keyof typeof shadowRecipes;
+
+/** Hero tonal depth: the one permitted gradient (design.md §2.6). */
+export const heroGradient = {
+  light: 'linear-gradient(180deg, #56302A 0%, #4A2620 100%)',
+  dark: 'linear-gradient(180deg, #9A432B 0%, #8E3B24 100%)',
+} as const;
 
 export type Theme = {
   scheme: 'light' | 'dark';

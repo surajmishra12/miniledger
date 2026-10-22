@@ -268,6 +268,10 @@ describe('GET /v1/summary', () => {
       totalReturned: 100000,
       outstandingBorrowed: 300000,
       overdueBorrowed: 0,
+      peopleOwingYou: 1,
+      peopleYouOwe: 1,
+      lentLoans: 2,
+      overdueLoans: 1,
       currency: 'INR',
       unit: 'paise',
       asOfDate: TODAY,
@@ -291,7 +295,34 @@ describe('GET /v1/summary', () => {
   it('is zero for a new user and never includes other users', async () => {
     await newLoan({ personName: 'A', amount: '100' });
     const other = await signIn(t);
-    expect(await summary(other)).toMatchObject({ totalLent: 0, totalRepaid: 0, overdueAmount: 0 });
+    expect(await summary(other)).toMatchObject({
+      totalLent: 0,
+      totalRepaid: 0,
+      overdueAmount: 0,
+      peopleOwingYou: 0,
+      peopleYouOwe: 0,
+      lentLoans: 0,
+      overdueLoans: 0,
+    });
+  });
+
+  it('counts distinct people with an open balance and overdue lent loans', async () => {
+    const rahul = await newLoan({
+      personName: 'Rahul',
+      amount: '100',
+      loanDate: '2026-10-01',
+      dueDate: YESTERDAY,
+    });
+    await newLoan({ personId: rahul.person.id, amount: '200', dueDate: YESTERDAY });
+    const priya = await newLoan({ personName: 'Priya', amount: '300' });
+    await settle(priya.id);
+    await newLoan({ personId: rahul.person.id, amount: '50', direction: 'BORROWED' });
+    expect(await summary()).toMatchObject({
+      peopleOwingYou: 1, // Priya is settled; Rahul counted once
+      peopleYouOwe: 1,
+      lentLoans: 3,
+      overdueLoans: 2,
+    });
   });
 });
 

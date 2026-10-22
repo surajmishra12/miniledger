@@ -73,6 +73,11 @@ export const summaryDtoSchema = z.strictObject({
   totalReturned: paise,
   outstandingBorrowed: paise,
   overdueBorrowed: paise,
+  /** Context counts for the Home tiles (architecture.md §4.4). */
+  peopleOwingYou: z.number().int().nonnegative(),
+  peopleYouOwe: z.number().int().nonnegative(),
+  lentLoans: z.number().int().nonnegative(),
+  overdueLoans: z.number().int().nonnegative(),
   currency: z.literal('INR'),
   unit: z.literal('paise'),
   asOfDate: isoDate,

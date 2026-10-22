@@ -4,6 +4,8 @@ import {
   formatDateLong,
   formatDateShort,
   initials,
+  plural,
+  repaidShare,
   repaymentMaxPaise,
 } from './format';
 
@@ -52,6 +54,20 @@ describe('balanceLines', () => {
     ]);
     expect(balanceLines({ owesYouPaise: 0, youOwePaise: 5050 })).toEqual(['You owe ₹50.50']);
     expect(balanceLines({ owesYouPaise: 0, youOwePaise: 0 })).toEqual(['Settled']);
+  });
+});
+
+describe('plural and repaidShare', () => {
+  it('uses singular for one and the given plural otherwise', () => {
+    expect(plural(1, 'loan')).toBe('1 loan');
+    expect(plural(3, 'loan')).toBe('3 loans');
+    expect(plural(2, 'person', 'people')).toBe('2 people');
+  });
+
+  it('rounds the received share down and hides it when nothing was lent', () => {
+    expect(repaidShare(555000, 1800000)).toBe(30);
+    expect(repaidShare(1800000, 1800000)).toBe(100);
+    expect(repaidShare(0, 0)).toBeNull();
   });
 });
 
