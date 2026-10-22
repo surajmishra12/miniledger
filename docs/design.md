@@ -1,11 +1,11 @@
 # MiniLedger — Product Design Specification
 
-**Version:** 1.3  
+**Version:** 1.4  
 **Status:** Implementation-ready  
 **Last reviewed:** 22 October 2026  
 **Platform:** Android • React Native + Expo  
 **Themes:** Light (P0 and default), Dark and Use device setting (required for public V1)  
-**Visual identity:** Forest & Ivory (light) · Obsidian & Emerald (dark)  
+**Visual identity:** Terracotta & Cream (light) · Onyx & Ember (dark), derived from the MiniLedger logo  
 **Companion documents:** [`prd.md`](./prd.md) (behavior and scope), [`architecture.md`](./architecture.md) (implementation and API contracts)  
 **Terminology:** "person / people" for anyone in the user's ledger (PRD §0). The word "friend" never appears in UI copy.
 
@@ -19,12 +19,12 @@ This document is the **single source of truth for MiniLedger's visual language a
 
 1. **Financial clarity over decoration.** At a glance, users must distinguish *money owed to them* from *money they owe*, original amount from outstanding balance, and overdue from partially paid.
 2. **Fast recurring flows.** A returning user with a saved person should be able to record a loan in about 10 seconds; minimize steps and re-entry.
-3. **Premium restraint.** Warm ivory in light mode; neutral obsidian and graphite in dark mode. Use intentional typography, rhythm, carefully placed emerald accents and subtle, purposeful animation. Avoid fintech clichés, busy gradients, 3D coins, charts without analytical value and overloaded dashboards.
+3. **Premium restraint.** Warm cream paper and espresso ink in light mode; true onyx black and charcoal in dark mode. Use intentional typography, rhythm, carefully placed terracotta/ember accents and subtle, purposeful animation. Avoid fintech clichés, busy gradients, 3D coins, charts without analytical value and overloaded dashboards.
 4. **Accessible by design.** Contrast, labels, targets, legible scaling, feedback and reduced motion are required in **both** themes.
 5. **Android-native behavior.** Respect system bars, keyboard, back navigation, haptics, permissions, safe areas and loading/error conventions.
 6. **Privacy and integrity.** Receipts are local-only. Never imply transactions were verified, processed or synchronized. Never show a success state before the server confirms a financial mutation.
 7. **Performance is a design constraint.** The app should remain responsive on modest Android phones and during Render free-tier cold starts; prefer static composition to visual effects.
-8. **One design system, not two unrelated themes.** Both modes use identical component geometry, information hierarchy, accessibility and interaction behavior; color and elevation map deliberately to each theme. Dark-mode backgrounds must be **neutral black/charcoal, never green-tinted**.
+8. **One design system, not two unrelated themes.** Both modes use identical component geometry, information hierarchy, accessibility and interaction behavior; color and elevation map deliberately to each theme. Dark-mode backgrounds must be **neutral black/charcoal, never brown- or orange-tinted**.
 
 **Design-review question:** Can the user answer “Who owes what, how much remains, and what can I do next?” within a few seconds without explanation?
 
@@ -38,7 +38,8 @@ This document is the **single source of truth for MiniLedger's visual language a
 
 **Quietly confident, human, reliable, warm, precise.** Think a beautifully laid-out personal notebook with modern financial rigor, not a trading terminal or playful wallet app.
 
-- **Forest & Ivory (light):** warm, airy and reassuring. **Obsidian & Emerald (dark):** true neutral black/charcoal backgrounds, selective green accents and high-quality tonal layering. The dark UI should feel like a beautifully finished native Android app, not a green filter over light mode.
+- **Terracotta & Cream (light):** a well-made leather notebook on warm paper. Cream canvas, white cards, espresso ink for text, one espresso statement card, terracotta for actions. Warm, airy and reassuring.
+- **Onyx & Ember (dark):** true neutral black and charcoal surfaces with cream-white text; terracotta becomes a glowing **ember** accent used sparingly for actions and the single featured balance card. It should feel like a finished native Android dark theme, not a brown filter over light mode.
 - Money amounts are editorial focal points, never competing with multiple equally loud cards.
 - Use hairline separation, meaningful whitespace and tonal surfaces before adding elevation.
 - Corners are modestly rounded; avoid exaggerated pill-shaped *everything*.
@@ -47,10 +48,33 @@ This document is the **single source of truth for MiniLedger's visual language a
 ### 1.2 Brand system
 
 - **Name:** `MiniLedger` with title case; no unnecessary tagline on transactional screens.
-- **Wordmark:** Plus Jakarta Sans SemiBold with tight but natural spacing; system font fallback if the custom font is unavailable.
-- **Mark:** A minimal geometric ledger-book / folded-page monogram suggesting two balanced vertical strokes. One-color vector. No coins, banknotes, cartoon mascot, generic gradient wallet or prominent rupee symbol as logo.
-- **App icon:** Deep forest background `#103D35`; ivory monogram `#F7F8F4`; generous negative space, works at small launcher sizes. Android adaptive icon foreground should be a single vector form centered within the safe area.
-- **Imagery:** Product UI is largely iconographic and typographic. Never insert stock photos on dashboard, loans or people screens. The app should be attractive when every optional illustration is disabled. For light mode, SVG fills use warm ivory/forest; for dark mode, SVG backgrounds are transparent and strokes use neutral gray plus a restrained mint/emerald accent.
+- **Mark (approved):** the MiniLedger logo, a flat wallet-notebook: espresso frame and clasp, terracotta cover, cream pages and binder rings. Source artwork: `apps/mobile/assets/brand/mark.png` (mark only) and `logo.png` (mark + wordmark). Keep it flat; never add gradients, shadows, outlines or a second mark.
+- **Wordmark:** "Mini" in terracotta + "Ledger" in espresso, rounded geometric bold, as in `miniledger-logo.png`. In the app, use the artwork where the mark appears (S01, S02); where live text is needed, set `MiniLedger` in Plus Jakarta Sans Bold with "Mini" in `brandPrimary` and "Ledger" in `textPrimary` (cream-white in dark mode, so the wordmark always reads on black).
+- **Logo source colors** (brand artwork only, not UI tokens; sampled from the artwork):
+
+  | Name | Hex | Where |
+  |---|---|---|
+  | Espresso | `#4A2620` | Frame, clasp, "Ledger" |
+  | Terracotta | `#C65A3A` | Cover, "Mini" |
+  | Terracotta light | `#E07650` | Cover edge highlight |
+  | Cream | `#FBF3E6` | Pages, rings, clasp button |
+  | Parchment | `#F2D9BF` | Page shading |
+
+  UI tokens (§2) are tuned from these for contrast; for example `brandPrimary` is a deepened terracotta because white text on the logo terracotta falls below 4.5:1.
+- **App icon:** the mark on a **cream `#FDFBF7`** adaptive-icon background, with the mark inside the central 66dp safe zone so every launcher mask (circle, squircle, rounded square) keeps it whole. The mark must stay recognizable at 48dp.
+- **Brand asset files** (`apps/mobile/assets/brand/`; Expo generates every Android density from these):
+
+  | File | Spec | Used for |
+  |---|---|---|
+  | `icon.png` | 512×512, full-bleed cream square | Legacy launcher icon and the Play Store listing icon |
+  | `adaptive-foreground.png` | 432×432 (108dp @ xxxhdpi), transparent, mark in the safe zone | Adaptive launcher icon foreground |
+  | `mark.png` | 1254×1254, transparent | Splash screen and in-app mark |
+  | `logo.png` | 1254×1254, opaque cream | README and documents only |
+  | `adaptive-monochrome.png` | *pending* — 432×432 single-color silhouette | Android 13+ themed icon |
+  | `mark-dark.png`, `logo-dark.png` | *pending* — frame and clasp lightened (≈ `#9A6656`), "Ledger" in `#F5F0EB` | Dark splash and dark-mode sign-in (Phase 5) |
+
+- **Splash:** the mark (no wordmark), 120dp wide, centered on `canvas` (`#FAF7F2` light; `#0B0B0C` dark with `mark-dark.png`). No animation beyond the system fade.
+- **Imagery:** Product UI is largely iconographic and typographic. Never insert stock photos on dashboard, loans or people screens. The app must look complete with every optional illustration disabled. Light-mode SVGs use espresso strokes, cream fills and a small terracotta accent; dark-mode SVGs have transparent backgrounds, neutral gray strokes and a small ember accent.
 
 ### 1.3 Tone and microcopy
 
@@ -82,91 +106,135 @@ Use Indian date conventions for clarity: list rows `22 Oct 2026` (omit the year 
 
 Use **semantic tokens**, never scatter raw hex values through components. The source colors below are design targets; adjustments are acceptable only to improve verified accessibility without changing the art direction.
 
-### 2.1 Light theme (default)
+### 2.1 Light theme — Terracotta & Cream (default)
 
 | Token | Hex | Intended use |
 |---|---|---|
-| `canvas` | `#F7F8F4` | Main app background; warm ivory |
-| `surface` | `#FFFFFF` | Cards, fields, sheets |
-| `surfaceMuted` | `#F0F3ED` | Segmented controls, subtle grouped areas |
-| `surfaceRaised` | `#FFFFFF` | Dialogs, menus, overlays |
-| `textPrimary` | `#172A27` | Titles, values, body |
-| `textSecondary` | `#51645E` | Labels, dates, explanatory text |
-| `textTertiary` | `#6D7B76` | Decorative/de-emphasized only; use with contrast checks |
-| `outline` | `#DAE3DC` | Dividers, input borders |
-| `brandForest` | `#103D35` | Feature / summary card |
-| `brandPrimary` | `#12654F` | Buttons, active tabs, links, focus indicators |
-| `brandPressed` | `#0A503D` | Pressed primary controls |
-| `onBrand` | `#FFFFFF` | Text on `brandPrimary` buttons |
-| `onHero` | `#FFFFFF` | Main text and amounts on the dark forest summary card |
-| `onHeroMuted` | `#D4E6DC` | Supporting text on the forest summary card |
-| `brandSubtle` | `#E2F1E9` | Secondary selection surfaces |
-| `successText` | `#136C4F` | Repaid/received status text |
-| `successSurface` | `#E9F6ED` | Repaid state background |
-| `dangerText` | `#A7443B` | Overdue/destructive labels |
-| `dangerSurface` | `#FFF0ED` | Overdue state background |
-| `borrowedText` | `#8A531B` | Borrowed informational accent |
-| `borrowedSurface` | `#FFF3DF` | Borrowed informational background |
-| `focusRing` | `#12654F` | Visible keyboard/assistive focus |
+| `canvas` | `#FAF7F2` | Main app background; warm cream paper |
+| `surface` | `#FFFFFF` | Cards, fields, list groups |
+| `surfaceMuted` | `#F3EDE5` | Segmented-control tracks, grouped sub-areas, avatar circles |
+| `surfaceRaised` | `#FFFFFF` | Sheets, dialogs, menus (separated by scrim and soft shadow) |
+| `textPrimary` | `#2A1B17` | Titles, amounts, body; espresso ink |
+| `textSecondary` | `#6B5A53` | Labels, dates, supporting text |
+| `textTertiary` | `#8C7B73` | Placeholders and decorative metadata only, never essential text |
+| `outline` | `#E6DCD2` | Hairline dividers and card borders (decorative) |
+| `outlineStrong` | `#A08F86` | Input and segmented-control boundaries (meaningful, 3:1) |
+| `heroSurface` | `#4A2620` | The one espresso statement card (Home summary) |
+| `onHero` | `#FFF8EF` | Amount and title on `heroSurface` |
+| `onHeroMuted` | `#E3CBBE` | Supporting text on `heroSurface` |
+| `heroAccent` | `#F0936E` | Small accent on `heroSurface` only (overline dot, decoration) |
+| `brandPrimary` | `#B4472B` | Primary buttons, links, active tab, selected segment, progress fill |
+| `brandPressed` | `#963821` | Pressed primary controls |
+| `onBrand` | `#FFFFFF` | Text and icons on `brandPrimary` |
+| `brandSubtle` | `#FBEAE3` | Selected chip/segment background, subtle brand tint |
+| `focusRing` | `#B4472B` | Visible keyboard/assistive focus |
+| `lentText` | `#A8432A` | "Lent" / "Owes you" labels and icons |
+| `lentSurface` | `#FBEAE3` | Lent chip background |
+| `borrowedText` | `#34558A` | "Borrowed" / "You owe" labels and icons |
+| `borrowedSurface` | `#E9EFF8` | Borrowed chip background |
+| `successText` | `#2F6B45` | Repaid / settled / received confirmations |
+| `successSurface` | `#E8F3EB` | Repaid chip background |
+| `warningText` | `#8A5710` | Due today / due tomorrow |
+| `warningSurface` | `#FCF1DC` | Due-soon chip background |
+| `dangerText` | `#B3203F` | Overdue, destructive actions, field errors |
+| `dangerSurface` | `#FDECEF` | Overdue chip background |
 | `scrim` | `#000000` @ 48% | Modal backdrop |
 
-### 2.2 Dark theme — Obsidian & Emerald (revised)
+### 2.2 Dark theme — Onyx & Ember
 
-**Critical art-direction correction:** Use truly **neutral black and charcoal** for the full-screen canvas, cards, fields, bottom navigation, sheets, menus, and dialogs. **Do not tint those surfaces forest-green or teal.** Green is reserved for the primary CTA, active selections, a few status details and the **single optional featured balance card**. Black must remain the dominant perceived color across the screen. The theme should evoke refined Android dark mode—not a neon trading dashboard.
+**Art direction:** every large surface is **neutral black or charcoal**: canvas, cards, fields, bottom navigation, sheets, menus and dialogs. **Never use brown, espresso or orange-tinted backgrounds.** Ember (the brightened terracotta) appears only on primary actions, active indicators, focus, a few semantic labels and the **single featured balance card**. Black stays the dominant perceived color on every screen.
 
 | Token | Hex | Intended use |
 |---|---|---|
-| `canvas` | `#0B0D0F` | Full-screen near-black background; all safe-area regions |
-| `surface` | `#171A1E` | Cards, form fields and grouped rows; neutral charcoal |
-| `surfaceMuted` | `#20252A` | Segmented controls, selected-neutral chips, secondary list areas |
-| `surfaceRaised` | `#262C32` | Sheets, dialogs and menus; a discernible neutral elevation step |
-| `textPrimary` | `#F4F6F7` | Headlines, amounts, main body text; soft white |
-| `textSecondary` | `#BBC3C8` | Dates, field labels and descriptions |
-| `textTertiary` | `#9CA7AF` | Nonessential metadata only; never rely on it for required instructions |
-| `outline` | `#3B444B` | Thin neutral charcoal-gray separators, focused card boundaries |
-| `brandForest` | `#075A45` | **Only** the featured Home balance card / narrow featured accent region |
-| `brandPrimary` | `#44D7A6` | Bright-but-controlled emerald/mint actions, active indicators and links |
-| `brandPressed` | `#2FB98B` | Pressed primary control |
-| `onBrand` | `#071B13` | Text/icons on mint buttons; dark foreground is mandatory |
-| `onHero` | `#FFFFFF` | Large amount and title on featured forest card |
-| `onHeroMuted` | `#D0F2E2` | Smaller descriptive text on featured forest card |
-| `brandSubtle` | `#163229` | Small selected-state pills or compact accent background **only** |
-| `successText` | `#81E2B5` | Repaid/received text and icons |
-| `successSurface` | `#193229` | Small settled status chips, not full-page sections |
-| `dangerText` | `#FFAD9F` | Overdue/destructive labels |
-| `dangerSurface` | `#392321` | Small overdue status chips |
-| `borrowedText` | `#F5CC8C` | Borrowed informational text, not an error |
-| `borrowedSurface` | `#352C20` | Small borrowed information chips |
-| `focusRing` | `#44D7A6` | Keyboard/assistive focus boundary |
-| `scrim` | `#000000` @ 68% | Modal/sheet backdrop; transparent enough for spatial context |
+| `canvas` | `#0B0B0C` | Full-screen onyx background; all safe-area regions and system bars |
+| `surface` | `#161618` | Cards, fields, list rows, bottom bar |
+| `surfaceMuted` | `#1F1F22` | Segmented-control tracks, avatar circles, secondary areas |
+| `surfaceRaised` | `#27272B` | Sheets, dialogs, menus; a clear neutral elevation step |
+| `textPrimary` | `#F5F0EB` | Headlines, amounts, body; warm cream-white |
+| `textSecondary` | `#BFB8B2` | Labels, dates, supporting text |
+| `textTertiary` | `#948D88` | Placeholders and decorative metadata only |
+| `outline` | `#2F2F33` | Hairline dividers and card borders (decorative) |
+| `outlineStrong` | `#6B6663` | Input and segmented-control boundaries (meaningful, 3:1) |
+| `heroSurface` | `#8E3B24` | **Only** the featured Home balance card; deep ember |
+| `onHero` | `#FFF8EF` | Amount and title on `heroSurface` |
+| `onHeroMuted` | `#F6D8C9` | Supporting text on `heroSurface` |
+| `heroAccent` | `#FFD3BF` | Small accent on `heroSurface` only |
+| `brandPrimary` | `#F08A65` | Primary buttons, links, active tab, selected segment, progress fill |
+| `brandPressed` | `#E07450` | Pressed primary controls |
+| `onBrand` | `#2A0F07` | Text and icons on ember buttons (dark foreground is mandatory) |
+| `brandSubtle` | `#221916` | Small selected chip/segment background only |
+| `focusRing` | `#F08A65` | Keyboard/assistive focus boundary |
+| `lentText` | `#F39A78` | "Lent" / "Owes you" labels and icons |
+| `lentSurface` | `#221916` | Lent chip background |
+| `borrowedText` | `#9DB7E6` | "Borrowed" / "You owe" labels and icons |
+| `borrowedSurface` | `#161D29` | Borrowed chip background |
+| `successText` | `#7FCB98` | Repaid / settled / received confirmations |
+| `successSurface` | `#13211A` | Repaid chip background |
+| `warningText` | `#F2C46B` | Due today / due tomorrow |
+| `warningSurface` | `#241E12` | Due-soon chip background |
+| `dangerText` | `#FF8A9E` | Overdue, destructive actions, field errors |
+| `dangerSurface` | `#28141A` | Overdue chip background |
+| `scrim` | `#000000` @ 68% | Modal/sheet backdrop |
 
-**Dark-mode layering specification:**
+Chip surfaces (`*Surface`, `brandSubtle`) are near-black tints that must read as **black** at chip size; they never fill rows, cards or screens.
 
-- App background / headers / system-bar backing: `canvas` (`#0B0D0F`). **Never use `brandForest` as a page background.**
-- Ordinary content card / loan row / email or amount field: `surface` (`#171A1E`). A thin `outline` separator should provide structure without glowing edges or strong drop shadows.
-- Secondary control tracks and subdued sub-panels: `surfaceMuted` (`#20252A`), with an active state that is either a neutral raised segment or a small emerald highlight. Don't paint entire segmented control backgrounds green.
-- Elevated pop-ups and sheets: `surfaceRaised` (`#262C32`). Dim the background without a frosted or colored blur effect.
-- Hero on Home: one contained `brandForest` card is acceptable and visually intentional, as in the approved visual direction. Prefer a flat, richly colored surface; if a gradient is desired, it must be **extremely subtle and confined to this card**, never the whole screen. All other financial metrics stay on neutral charcoal cards or directly on canvas.
-- The dark-mode color distribution should read as **predominantly near-black + neutral gray**, with emerald used as a functional accent rather than ambient lighting. Avoid turquoise-tinted gray, glowing borders, green nav bars and large green background illustrations.
+**Dark-mode layering:**
 
-### 2.3 Semantic color rules
+- Page background, headers and system-bar backing: `canvas`. **Never use `heroSurface` or any tinted color as a page background.**
+- Cards, loan rows and fields: `surface` with an `outline` hairline; no glowing edges or drop shadows.
+- Segmented tracks and sub-panels: `surfaceMuted`; the active segment is a raised neutral thumb with ember label, not a full ember bar.
+- Sheets and dialogs: `surfaceRaised` over the black scrim; no frosted or colored blur.
+- Home hero: one contained `heroSurface` card. Flat; if a gradient is used it is subtle and confined to the card.
+- Overall distribution: predominantly onyx and charcoal with ember as a functional accent, never ambient lighting.
 
-- **Primary green is for actions, not for every monetary value.** Neutral primary text is the default for amounts.
-- **Overdue** = danger surface + readable text + `Overdue` wording + optional warning icon; *never color only*.
-- **Repaid** = success text/tonal pill + explicit `Repaid` label.
-- **Borrowed** is a category, not an error. Use warm amber subtly, not alarming red.
-- **Lent** is a category, not guaranteed profit. Use forest/brand subtle with an arrow-direction icon and label.
-- **Hero card contrast:** Use `onHero` and `onHeroMuted` over `brandForest`, **not** `onBrand` in dark mode; dark `onBrand` is deliberately deep green for mint buttons. The hero is the **only** acceptable large green surface in dark mode.
-- **No visual netting** of lent vs borrowed accounts in summaries or per-person balances.
-- Never use opacity-reduced body text as a shortcut. All textual colors must be measured against their *actual* local background. Dark `textPrimary` should appear white, not mint; dark backgrounds should appear charcoal, not green.
+### 2.3 Semantic color system
 
-**Contrast rules:** Aim for WCAG AA: 4.5:1 minimum for normal text, 3:1 for large text and meaningful control boundaries/icons. Calculated pairings for this palette: light `onBrand` / `brandPrimary` ≈ **7.0:1**; dark `onBrand` / `brandPrimary` ≈ **9.8:1**; dark `textPrimary` / `canvas` ≈ **18.0:1**; dark `textSecondary` / `surface` ≈ **9.8:1**; dark `onHero` / `brandForest` ≈ **8.2:1**. Contrast must still be re-checked for every actual component state. Light `textTertiary` is not suitable for small, essential text on ivory; use `textSecondary` instead.
+Each financial meaning has one color family, always paired with **text and an icon** so it never depends on hue alone:
+
+| Meaning | Tokens | Icon | Example |
+|---|---|---|---|
+| Lent / You are owed | `lentText`, `lentSurface` | `arrow-up-right` | `Lent` chip, `Owes you ₹3,000` |
+| Borrowed / You owe | `borrowedText`, `borrowedSurface` | `arrow-down-left` | `Borrowed` chip, `You owe ₹4,500` |
+| Repaid / settled | `successText`, `successSurface` | `check-check` | `Repaid` chip, `All settled.` |
+| Due today / tomorrow | `warningText`, `warningSurface` | `calendar-clock` | `Due today` |
+| Overdue | `dangerText`, `dangerSurface` | `circle-alert` | `8 days overdue` |
+| Destructive action | `dangerText` | `trash-2` | `Delete loan` |
+| Primary action / selection | `brandPrimary`, `onBrand`, `brandSubtle` | — | `Save loan`, active tab |
+
+Rules:
+
+- **Amounts are neutral.** Monetary figures use `textPrimary` (or `onHero` on the hero card); the semantic color goes on the label, chip or icon next to them, never on the whole number.
+- **Brand is not a status.** Terracotta/ember means "act here" or "lent"; it never signals an error. Overdue and destructive states use the cooler crimson `danger` family, which must always carry the word `Overdue`/`Delete` and its icon.
+- **Lent vs borrowed** are complementary (warm terracotta vs cool indigo) so they are distinguishable side by side, including for common color-vision deficiencies, and both always show their label.
+- **Hero contrast:** text on the hero card uses `onHero` / `onHeroMuted`, never `onBrand`.
+- **No visual netting** of lent vs borrowed in summaries or per-person balances.
+- Never fake hierarchy with reduced opacity on text; measure every text color against its actual background. Disabled controls use `textTertiary` on `surfaceMuted` plus a non-color cue (no ripple, disabled role).
+
+**Contrast (WCAG AA, verified for this palette):** 4.5:1 for normal text, 3:1 for large text and meaningful boundaries/icons. Computed ratios:
+
+| Pair | Light | Dark |
+|---|---:|---:|
+| `textPrimary` / `canvas` | 15.5 | 17.4 |
+| `textSecondary` / `canvas` (light) · `surface` (dark) | 6.1 | 9.2 |
+| `onBrand` / `brandPrimary` | 5.4 | 7.3 |
+| `onBrand` / `brandPressed` | 7.3 | 5.8 |
+| `brandPrimary` / `canvas` (links) | 5.1 | 8.0 |
+| `onHero` / `heroSurface` | 12.5 | 7.1 |
+| `onHeroMuted` / `heroSurface` | 8.5 | 5.6 |
+| `lentText` / `lentSurface` | 5.1 | 7.6+ |
+| `borrowedText` / `borrowedSurface` | 6.5 | 8.1+ |
+| `successText` / `successSurface` | 5.6 | 8.4+ |
+| `warningText` / `warningSurface` | 5.4 | 9.6+ |
+| `dangerText` / `dangerSurface` | 5.8 | 7.5+ |
+| `outlineStrong` / `surface` (field boundary) | 3.1 | 3.2 |
+
+`textTertiary` (4.0 light on white) is for placeholders and decoration only. Re-check contrast for every new component state.
 
 ### 2.4 Theme behavior
 
 - **First-run theme:** Light. Provide a settings selector: `Light` / `Dark` / `Use device setting`.
 - **Release gating:** P0 (assignment) ships the light theme only and may hide the Appearance selector. Dark and Use device setting are required for the public V1 release; every rule in this document applies to them from that point.
-- Switching modes updates **all** surfaces, Android status/navigation bar icon appearance, text, icons, focused fields, modal scrims and local illustrations without reloading or losing form state. The bottom bar, keyboard surroundings, status bar and any full-screen loading surface must be neutral near-black in dark mode.
+- Switching modes updates **all** surfaces, Android status/navigation bar icon appearance, text, icons, focused fields, modal scrims and local illustrations without reloading or losing form state. The bottom bar, keyboard surroundings, status bar and any full-screen loading surface must be neutral onyx in dark mode.
 - On dark screens, use light on dark for primary text; on light screens, use dark on light. Prefer native, theme-aware date pickers and keyboard/system UI without forcing custom skins.
 - Persist theme preference locally; when `Use device setting` is selected, react to OS appearance changes.
 - Do not force dark screenshots behind light dialogs or vice versa. No light flashes during app startup/navigation.
@@ -176,17 +244,31 @@ Use **semantic tokens**, never scatter raw hex values through components. The so
 
 | UI element | Light mode | Dark mode | Invariant |
 |---|---|---|---|
-| Full-screen background | Warm ivory `canvas` | Neutral obsidian `canvas` | Same information order |
+| Full-screen background | Cream `canvas` | Onyx `canvas` | Same information order |
 | Ordinary cards and loan rows | White `surface` | Charcoal `surface` | Same size, spacing and content |
-| Main featured Home card | Deep forest `brandForest` | Contained emerald-forest `brandForest` | Same single leading amount |
-| Text and key monetary amounts | Forest-charcoal `textPrimary` | Soft white `textPrimary` | Amounts stay neutral, apart from contextual labels |
-| Primary save/continue button | Forest green | Mint/emerald | High-contrast label and 48dp+ target |
-| Segmented control track | Light neutral | Neutral `surfaceMuted` | Only active thumb/indicator gets accent |
-| Tabs, search, inputs, sheets | Ivory/white neutrals | Black/gray neutrals | No surrounding green tint |
-| Due/overdue/repaid indicators | Semantic accent chips | Small semantic accent chips | Status words always visible |
-| Empty-state SVG | Ivory + forest strokes | Gray + restrained mint strokes | Decorative, never essential |
+| Featured Home card | Espresso `heroSurface` | Deep ember `heroSurface` | Same single leading amount |
+| Text and key monetary amounts | Espresso `textPrimary` | Cream-white `textPrimary` | Amounts stay neutral; semantics on labels |
+| Primary save/continue button | Terracotta `brandPrimary`, white label | Ember `brandPrimary`, dark label | High-contrast label and 48dp+ target |
+| Segmented control track | `surfaceMuted` | `surfaceMuted` | Only the active thumb/label gets the accent |
+| Tabs, search, inputs, sheets | Cream/white neutrals | Black/charcoal neutrals | No brown or orange surface tint |
+| Status chips | Light semantic tints | Near-black semantic tints | Status words and icons always visible |
+| Empty-state SVG | Espresso strokes, cream fills, terracotta accent | Gray strokes, small ember accent | Decorative, never essential |
 
-**Theme parity rule:** Each layout must have the same navigational and functional affordances in both themes. Dark mode may not replace card hierarchy with glowing outlines, high-saturation neon, colored shadows or larger/denser widgets.
+**Theme parity rule:** Each layout has the same navigational and functional affordances in both themes. Dark mode may not replace card hierarchy with glowing outlines, neon saturation, colored shadows or denser widgets.
+
+### 2.6 Elevation and depth
+
+Premium comes from restraint: tone and hairlines first, shadow last.
+
+| Level | Light | Dark |
+|---|---|---|
+| 0 Canvas | `canvas` | `canvas` |
+| 1 Cards, rows, fields | `surface` + 1dp `outline` | `surface` + 1dp `outline` |
+| 2 FAB, snackbar | `surface`/brand + shadow `#2A1B17` @ 8%, y 2, blur 8 (Android elevation 2) | No shadow; `surfaceRaised` or brand fill |
+| 3 Sheets, dialogs | `surfaceRaised` + scrim + shadow @ 12%, y 8, blur 24 | `surfaceRaised` + scrim |
+| Hero card | `heroSurface`, no border, no shadow | `heroSurface`, no border, no shadow |
+
+Shadows use warm espresso ink in light mode (never pure gray-blue) and are never used in dark mode.
 
 ---
 
@@ -253,7 +335,7 @@ Use **semantic tokens**, never scatter raw hex values through components. The so
 
 ### 4.1 Surface hierarchy
 
-1. App canvas: warm ivory in light mode / **neutral obsidian black** in dark mode.
+1. App canvas: warm cream in light mode / **neutral onyx black** in dark mode.
 2. Content surfaces: white cards in light / **neutral charcoal cards and fields** in dark.
 3. One higher-emphasis hero card per screen **when needed**, not repeated everywhere.
 4. Bottom sheet/dialog elevated above backdrop with a **neutral charcoal raised layer** in dark mode.
@@ -294,7 +376,7 @@ These indicate **information order**, not equally weighted blocks or a requireme
 
 ### 5.1 Primary navigation
 
-Three bottom destinations: **Home** (`house`), **People** (`users-round`), **Settings** (`settings-2`). Labels are always visible. Active tab uses `brandPrimary` (light) or `brandPrimary` mint (dark), an active label and a subtle indicator; inactive items use secondary text.
+Three bottom destinations: **Home** (`house`), **People** (`users-round`), **Settings** (`settings-2`). Labels are always visible. The active tab uses `brandPrimary` (terracotta in light, ember in dark) for its icon and label plus a small `brandSubtle` pill behind the icon; inactive items use `textSecondary`.
 
 - **Home:** the summary card at the top (S04) followed by the complete, searchable and filterable loan list (S05) in one scrolling screen.
 - **People:** everyone in the ledger and their separate lent/borrowed balances.
@@ -361,9 +443,9 @@ Each screen has a defined purpose, top-level hierarchy, actions, states and acce
 **Order from top to bottom:**
 
 1. Quiet header: `MiniLedger` mark/name and the S05 search icon button. No greeting, notification bell or profile photo.
-2. **Primary statement card:** Deep forest surface (light) / **one isolated emerald-forest card on a near-black page** (dark), `YOU ARE OWED` small overline; large **outstanding lent** amount; supporting descriptor `Remaining to be received`.
-3. **Borrowed summary strip/card:** `You owe` + outstanding borrowed amount, distinctly separated, warm informational accent only.
-4. **Assignment-required summary group:** three compact labeled figures `Total lent` (`totalLent`), `Repaid to you` (`totalRepaid`), `Overdue owed to you` (`overdueAmount`). Show overdue even when zero. On compact widths use stacked rows rather than microtype. When `overdueBorrowed > 0`, show one extra line under the borrowed strip: `₹X overdue` in borrowed styling.
+2. **Primary statement card** (`SummaryHero`, `heroSurface`): espresso in light, **one isolated deep-ember card on an onyx page** in dark. `YOU ARE OWED` overline in `onHeroMuted` with a small `heroAccent` dot, a large **outstanding lent** amount in `onHero`, and the descriptor `Remaining to be received`.
+3. **Borrowed summary strip:** `You owe` + outstanding borrowed amount on a `surface` row with a `borrowedText` label and `arrow-down-left` icon; the amount itself stays `textPrimary`.
+4. **Assignment-required summary group:** three compact labeled figures `Total lent` (`totalLent`), `Repaid to you` (`totalRepaid`), `Overdue owed to you` (`overdueAmount`). Show overdue even when zero. On compact widths use stacked rows rather than microtype. When `overdueBorrowed > 0`, show one extra line under the borrowed strip: `₹X overdue` in `dangerText` with the `circle-alert` icon.
 5. **The loan list (S05)** directly below; the summary scrolls away and the S05 list header becomes sticky.
 6. **Add loan** FAB; the list has enough bottom padding that the FAB never covers the last row.
 
@@ -383,7 +465,7 @@ Each screen has a defined purpose, top-level hierarchy, actions, states and acce
   - left: person initials in a subtle circle (§11 initials rule) and **person name**;
   - second line: direction chip `Lent` / `Borrowed` + due-status label (§1.3);
   - right: **remaining balance** bold; when partially repaid, a smaller `of ₹5,000` beneath it;
-  - status chip `Overdue` or `Repaid` as text, never an unlabeled dot.
+  - status chip (`StatusChip`, §2.3 colors with icon): `N days overdue` (danger), `Due today` / `Due tomorrow` (warning) or `Repaid` (success); other outstanding loans show the plain due label without a chip. Never an unlabeled dot.
 - Row tap opens Loan details. No swipe actions.
 - Do not show a total count (the API does not provide one). Filters, search and scroll position are preserved on back.
 - Infinite scroll using `nextCursor`, de-duplicated by loan ID; footer spinner while loading more. Changing a filter, search or sort reloads from the first page.
@@ -518,21 +600,21 @@ Signing out clears tokens and cached data; another account signing in on the dev
 
 The approved concept boards communicate **composition and restraint**, not literal screen copy, counts, avatars or additional features. The detailed screen requirements above remain authoritative. Use the same page structures in both themes, and apply these screen-specific art-direction decisions:
 
-| Screen | Light — Forest & Ivory | Dark — Obsidian & Emerald |
+| Screen | Light — Terracotta & Cream | Dark — Onyx & Ember |
 |---|---|---|
-| S01 Launch | Warm ivory background; forest mark | Near-black background; mint/ivory mark; **no green wash** |
-| S02 Sign-in | Spacious ivory canvas, white field, forest CTA | Obsidian canvas, charcoal email field, mint CTA; no large green leaves |
-| S03 OTP | Ivory page, white 6-cell containers, visible focus | Obsidian page, charcoal cells, thin neutral borders and mint focused cell |
-| S04 Home | Forest featured balance, white secondary cards | **One green featured balance** on black canvas; all other cards graphite |
-| S05 Loan list | White grouped loan rows on warm canvas | Charcoal rows on black; neutral separators, compact semantic overdue chip |
-| S06 Add/Edit | White/ivory form; forest direction active control | Charcoal fields, graphite segmented track, emerald active thumb and CTA |
-| S07 Loan detail | White financial summary, subtle progress | Black canvas + graphite detail panels; progress track gray, fill emerald |
-| S08 Repayment | White focused bottom sheet, forest CTA | Raised graphite sheet, gray numeric field, mint CTA, no green sheet backdrop |
-| S09 People | Warm canvas, understated initials avatars | Black canvas, charcoal rows, muted slate avatars, restrained mint for active |
-| S10 Person detail | White split balances, forest micro-accents | Graphite balance groups; use white figures, emerald only for select status |
-| S11 Receipt | White local-only information and media viewer | Dark viewer controls on neutral black; don't tint images/receipts green |
-| S12 Settings | Grouped white settings cards with readable dividers | Neutral charcoal grouped rows; Light/Dark/System selector with small mint active state |
-| S13 Confirmations | White modal, neutral Cancel and restrained danger | Raised charcoal modal, clear white body, coral danger, neutral Cancel |
+| S01 Launch | Cream canvas; full-color mark centered | Onyx canvas; full-color mark centered; **no brown wash** |
+| S02 Sign-in | Spacious cream canvas, logo artwork, white field, terracotta CTA | Onyx canvas, mark + cream-white wordmark, charcoal field, ember CTA |
+| S03 OTP | Cream page, white 6-cell containers, terracotta focused cell | Onyx page, charcoal cells, neutral borders, ember focused cell |
+| S04 Home | Espresso featured balance, white secondary rows | **One deep-ember featured balance** on onyx; everything else charcoal |
+| S05 Loan list | White grouped loan rows on cream | Charcoal rows on onyx; hairline separators, compact semantic chips |
+| S06 Add/Edit | White fields on cream; terracotta active direction thumb | Charcoal fields, `surfaceMuted` track, ember active thumb and CTA |
+| S07 Loan detail | White financial panel; progress track `surfaceMuted`, fill `brandPrimary` | Charcoal panels; progress track `surfaceMuted`, fill ember |
+| S08 Repayment | White bottom sheet, terracotta CTA | Raised charcoal sheet, ember CTA, black scrim |
+| S09 People | Cream canvas, `surfaceMuted` initials circles | Onyx canvas, charcoal rows, `surfaceMuted` initials circles |
+| S10 Person detail | White split balances with lent/borrowed labels | Charcoal balance groups, cream-white figures, semantic labels only |
+| S11 Receipt | White local-only notice; neutral viewer | Neutral black viewer; never tint the photo |
+| S12 Settings | Grouped white rows with hairline dividers | Grouped charcoal rows; Light/Dark/System selector with ember active state |
+| S13 Confirmations | White dialog, neutral Cancel, crimson destructive text | Raised charcoal dialog, cream-white body, crimson destructive text, neutral Cancel |
 
 **Priority on smaller phones:** Keep the primary amount, direction, and next action visible; move secondary figures into sequential rows and allow longer labels to wrap. Never solve density by reducing text below accessible sizes.
 
@@ -551,7 +633,7 @@ The approved concept boards communicate **composition and restraint**, not liter
 | `DirectionSwitch` | Lent/Borrowed explicit, accessible, can be disabled with helper | Selected tinted background, labels + icon |
 | `PersonPicker` | Search active people (alphabetical), `Add "<name>" as new person` row | Sheet/list with initials rows |
 | `OtpInput` | One logical 6-digit field, paste/autofill, single auto-submit | Six cells, visible focus |
-| `SummaryHero` | One most important amount | Forest tonal card + prominent type |
+| `SummaryHero` | One most important amount | `heroSurface` card, 22dp radius, `onHero` hero figure |
 | `Metric` | Label + formatted amount | Minimal, no unnecessary icon for each |
 | `LoanRow` | Person, direction, remaining, due status | Large hit target; text status, subtle separator |
 | `StatusChip` | Text + semantic color + screen-reader label | Compact pill, adequate contrast |
@@ -578,18 +660,28 @@ All interactive components must define **default, pressed, focused, disabled, lo
 
 ### 7.2 Dark-theme component rules (required)
 
-- **App shell and tab bar:** `canvas` behind content and system insets; bottom bar may use `surface`, separated by a subtle neutral top divider. Selected icon/text mint; other icons monochrome gray.
-- **Cards:** `surface` background; mostly flat and softly outlined. No green borders around neutral cards. The featured balance card is the one intentional exception.
-- **Inputs and OTP slots:** `surface` with `outline` border; focused border `focusRing`, optional 1–2dp focus outline. Validation error uses `dangerText` plus a specific message; no colored field flood-fill.
-- **Primary actions:** mint `brandPrimary` background with dark `onBrand` label; secondary actions are neutral charcoal with primary text or subtle outline.
-- **Segmented controls:** neutral `surfaceMuted` track; active state through position, contrast and a small mint/forest treatment, not a bright green full-width bar.
-- **Chips and statuses:** compact dark tonal backgrounds. Only the status text/icon receives a bright semantic color; chips never become oversized attention magnets.
-- **Avatars/initials:** neutral dark grays or quiet muted blue/slate tones; no randomized rainbow gradient. Do not imply social profile photos are required.
-- **Sheets and dialogs:** `surfaceRaised`, neutral handle/divider, black scrim, soft white text. No translucent jade glass or green shadow.
-- **Skeletons and progress indicators:** neutral gray shimmer/static placeholder; emerald progress only where it communicates real progress. Avoid a permanently pulsing background.
-- **Financial values:** white by default. Label `You owe` / `You are owed` explicitly; never paint the whole number green/red as the only cue.
+- **App shell and tab bar:** `canvas` behind content and system insets; the bottom bar uses `surface` with a hairline `outline` top divider. Selected icon/label ember with a `brandSubtle` pill; other icons `textSecondary`.
+- **Cards:** `surface`, flat, with an `outline` hairline. No colored borders around neutral cards. The featured balance card is the one intentional color surface.
+- **Inputs and OTP cells:** `surface` with an `outlineStrong` border; focused border `focusRing` at 2dp. Errors use `dangerText` plus a specific message below; never flood-fill the field.
+- **Primary actions:** ember `brandPrimary` fill with dark `onBrand` label. Secondary actions: `surfaceMuted` fill or `outlineStrong` border with `textPrimary` label.
+- **Segmented controls:** `surfaceMuted` track; the active segment is a `surfaceRaised` thumb with an ember label, never a full-width ember bar.
+- **Chips and statuses:** near-black semantic tints (§2.2) with the semantic text color and icon; compact, never attention magnets.
+- **Avatars/initials:** `surfaceMuted` circle with `textSecondary` initials; no random rainbow colors, no implied profile photos.
+- **Sheets and dialogs:** `surfaceRaised`, neutral handle and divider, black scrim, cream-white text. No translucent or tinted glass, no colored shadow.
+- **Skeletons and progress:** static `surfaceMuted` placeholders (no long shimmer loops); ember fill only for real progress.
+- **Financial values:** `textPrimary` cream-white by default; semantics live on labels, chips and icons, never on the whole number.
 
-A designer or agent must reject dark-theme screenshots in which the **base background, most card surfaces or bottom navigation appear forest-green, teal, or tinted mint**. This is a visual defect, not a valid alternate theme.
+Reject any dark-theme screenshot where the **base background, most card surfaces or the bottom navigation look brown, espresso, orange or warm-tinted** instead of black/charcoal. That is a visual defect, not an alternate theme.
+
+### 7.3 Premium finish details (both themes)
+
+- **Numerals:** all amounts use tabular figures (`fontVariant: ['tabular-nums']`) so columns align and counts don't jitter.
+- **Hairlines over boxes:** group related rows in one `surface` container with 1dp `outline` dividers inset by the 16dp row padding, rather than separate stacked cards.
+- **One accent per view:** at most one filled brand element (primary button or FAB) visible at a time, plus the hero card on Home.
+- **Pressed states:** buttons darken to `brandPressed` with a 0.98 scale over 120 ms; rows use an Android ripple in `textPrimary` at 8% (light) / 12% (dark) opacity.
+- **Focus:** a 2dp `focusRing` outline offset by 2dp, never only a color change.
+- **Icons:** Lucide at 1.75 stroke width, sized 20/24dp, colored `textSecondary` unless semantic.
+- **Corners:** follow the radius tokens exactly; the hero card and sheets use 22dp, cards 16dp, fields and buttons 12dp, chips 8dp.
 
 ---
 
@@ -706,21 +798,21 @@ The app maps `error.code` (`architecture.md` §6.6) to copy; it never displays s
 
 - Use a **consistent 2dp-ish stroke line-icon family** (e.g., Lucide) throughout; ship icons as scalable vectors (React Native SVG-compatible), never emoji or rasterized icon PNGs in core UI.
 - Standard visual sizes: **20dp** beside compact labels, **22–24dp** in tab actions, **28–32dp** in empty-state line art; interactive wrapper at least **48dp**.
-- Useful icons: `arrow-up-right` for lent, `arrow-down-left` for borrowed (confirm arrow semantics with label), `calendar-days`, `check-check`, `search`, `plus`, `receipt`, `pencil`, `trash-2`, `chevron-left`, `more-horizontal`, `shield-check`.
+- Useful icons: `arrow-up-right` for lent, `arrow-down-left` for borrowed (confirm arrow semantics with label), `calendar-days`, `calendar-clock` (due soon), `circle-alert` (overdue), `check-check` (repaid), `search`, `plus`, `receipt`, `pencil`, `trash-2`, `chevron-left`, `more-horizontal`, `shield-check`.
 - Icons are supporting cues, never the only carrier of meaning. Provide accessibility labels for icon-only buttons.
 
 ### 10.2 Deliberate SVG illustrations (optional, small)
 
 Define **exactly two** reusable empty-state concepts if time permits; both must work in light and dark mode by consuming tokens, not hard-coded colors:
 
-1. **`EmptyLedgerIllustration`** — front-on outline of a slim ledger notebook, two understated horizontal entries, a small circular check. Canvas ~156×126dp; light-theme forest strokes and pale fills; dark-theme gray strokes with just a small mint accent, no green backing rectangle. Use on the empty Home screen; do not repeat it on the same page.
+1. **`EmptyLedgerIllustration`** — the logo's wallet-notebook drawn in outline: an open page with two understated entry lines, three binder rings and a small circular check. Canvas ~156×126dp; light theme espresso strokes, cream fill and one terracotta accent; dark theme neutral gray strokes and one small ember accent, transparent background. Use on the empty Home screen; do not repeat it on the same page.
 2. **`EmptyPeopleIllustration`** — two overlapping rounded initial circles with a gentle connecting stroke. Canvas ~128×104dp; no faces, no stock people. Use only on an empty People screen.
 
 **Vector construction rules:** 1.5–2dp line weight, round line caps, no more than 3 tonal fills, plenty of whitespace, no detailed texture, gradients, glows, blur filters, animated paths or heavyweight Lottie bundles. Export as viewBox-based vectors, not screenshots. The illustrations are optional enhancements; screens remain complete without them. Do not create a decorative logo as a third competing hero illustration.
 
 ### 10.3 Decorative hero treatment
 
-One possible enhancement: a low-opacity, abstract **single curved leaf/ledger-line motif** placed in the far upper-right of the Home forest statement card (the **only** decorative green area on dark screens). It must be ornamental (accessibility-hidden), stay clear of text, occupy less than one-quarter of card area and never reduce amount contrast. Remove it if it causes clipping, contrast or frame-time regressions.
+One optional enhancement, echoing the logo: three short, rounded **binder-ring strokes** in `onHero` at 10% opacity, set into the left edge of the Home statement card. It must be ornamental (accessibility-hidden), stay clear of text, cover less than one-tenth of the card and never reduce amount contrast. Remove it if it causes clipping, contrast or frame-time regressions.
 
 ---
 
@@ -735,7 +827,7 @@ One possible enhancement: a low-opacity, abstract **single curved leaf/ledger-li
 - **Color independence:** Overdue, direction, disabled and selected states use text and/or icon/shape, not hue alone.
 - **System UI:** Dynamic status/nav icon contrast, safe-area insets, device cutouts, keyboard and Android back gesture handled correctly. On edge-to-edge Android, never obscure a field or sticky CTA with nav bars.
 - **Language:** English-first UI, India-first INR. Person names accept Unicode (including Devanagari); choose a font with suitable fallback. **Initials rule:** take the first grapheme of the first and last words (one grapheme if the name is a single word), using `Intl.Segmenter` when available or a grapheme-splitting fallback, never the first UTF-16 unit; uppercase only where the script has case. Do not use flags for currency.
-- **Readable formatting:** Use Indian grouping, correct singular/plural (`1 day`, `2 days`), absolute date on details and meaningful due labels in lists. Do not rely on red/green to indicate who pays whom.
+- **Readable formatting:** Use Indian grouping, correct singular/plural (`1 day`, `2 days`), absolute date on details and meaningful due labels in lists. Never rely on color alone to indicate who pays whom.
 - **Accessibility checks:** Run Android Accessibility Scanner and real TalkBack walkthrough, not only visual review.
 
 ---
@@ -779,8 +871,10 @@ An AI coding agent or developer must verify these gates **screen by screen**; ne
 
 ### Gate A — visual fidelity
 
-- [ ] Forest & Ivory light theme applied consistently; Obsidian & Emerald dark theme uses neutral black/charcoal `canvas`, `surface`, `surfaceMuted`, and `surfaceRaised` throughout.
-- [ ] One primary visual hierarchy on each screen; no generic all-equal card grid. Dark Home has **at most one large green featured card**; no green ambient backgrounds elsewhere.
+- [ ] Terracotta & Cream light theme applied consistently; Onyx & Ember dark theme uses neutral black/charcoal `canvas`, `surface`, `surfaceMuted` and `surfaceRaised` throughout.
+- [ ] One primary visual hierarchy on each screen; no generic all-equal card grid. Home has **exactly one hero card**; no brand-colored ambient backgrounds anywhere.
+- [ ] Semantic colors follow §2.3: lent terracotta, borrowed indigo, repaid sage, due-soon amber, overdue crimson, each with its label and icon.
+- [ ] The app icon, splash and wordmark use the approved MiniLedger artwork (§1.2).
 - [ ] Spacing, typography, radii, labels and button geometry follow tokens.
 - [ ] Amounts and loan direction are unmistakable; overdue labels visible without color.
 - [ ] Screens feel calm, breathable and native—not a miniature desktop dashboard.
@@ -799,11 +893,11 @@ An AI coding agent or developer must verify these gates **screen by screen**; ne
 
 ### Gate C — accessibility and polish
 
-- [ ] Contrast audited in both modes for all critical text and meaningful controls; dark CTA text is dark on mint and default dark-theme financial text is off-white.
+- [ ] Contrast audited in both modes for all critical text and meaningful controls; dark CTA text is dark on ember and default dark-theme financial text is cream-white.
 - [ ] ≥48dp tap targets, TalkBack labels, logical focus, and 200% font-scale usability.
 - [ ] Standard Android back/gesture/3-button navigation and edge-to-edge safe areas.
 - [ ] Reduced motion respected; animations smooth, subtle, and nonblocking.
-- [ ] Visual regression review performed with screenshots of **all** screens in both light and dark modes, including a side-by-side scan for unwanted green-tinted charcoal in dark mode.
+- [ ] Visual regression review performed with screenshots of **all** screens in both light and dark modes, including a side-by-side scan for unwanted brown- or orange-tinted surfaces in dark mode.
 - [ ] Performance tested on at least one modest Android device or emulator profile.
 
 **Definition of design done:** Every core scenario from `prd.md` is easy to understand, visually cohesive in both themes, accessible with basic assistive technology, fast under normal conditions, and honest about network/receipt behavior.
@@ -824,7 +918,7 @@ An AI coding agent or developer must verify these gates **screen by screen**; ne
 
 **Versioning rule:** Changes to product behavior belong first in `prd.md`; changes to palette/screen hierarchy/interaction belong here; implementation choices belong in `architecture.md`. No divergence between documents is allowed without an explicit update.
 
-**v1.1 design revision (22 October 2026):** Retain the approved Forest & Ivory light mode and screen geometry; replace the previous dark green-tinted canvas/cards with neutral near-black and graphite. Constrain emerald to CTA/focus/status accents and a single optional featured balance card. Add theme parity and per-screen treatment rules. This supersedes all dark-green backgrounds shown in earlier visual concepts.
+**v1.1 design revision (22 October 2026):** Neutral near-black dark mode, single featured balance card, theme parity and per-screen treatment rules. (Palette superseded by v1.4.)
 
 **v1.2 revision (22 October 2026):**
 - "Friends" renamed to **People** throughout: tab, S09 People, S10 Person detail, `PersonRow`, `PersonPicker`, `EmptyPeopleIllustration`, `Lent to` / `Borrowed from` labels.
@@ -843,3 +937,10 @@ An AI coding agent or developer must verify these gates **screen by screen**; ne
 - Home now shows the summary card at the top followed by the complete loan list (S05), matching the assignment brief; the separate Loans tab is removed (three tabs: Home, People, Settings).
 - Retries rely on client-generated record IDs; `ID_CONFLICT` copy added; idempotency, reauth-window and cursor-expiry copy removed.
 - Repayment history shows all repayments; account deletion always asks for a code (no auto-submit) and has no separate final dialog.
+
+**v1.4 revision (22 October 2026):**
+- New brand palette derived from the approved MiniLedger logo (`assets/brand/logo.png`, `mark.png`): **Terracotta & Cream** (light) and **Onyx & Ember** (dark), replacing Forest & Ivory / Obsidian & Emerald.
+- Logo source colors, app icon, splash and wordmark rules (§1.2).
+- Token changes: `brandForest` → `heroSurface`; added `outlineStrong`, `heroAccent`, `lentText`/`lentSurface`, `warningText`/`warningSurface`. Borrowed moves from amber to indigo; amber now means due soon; overdue and destructive use crimson.
+- Semantic color system table (§2.3), contrast table verified for every pairing, elevation rules (§2.6), premium finish details (§7.3).
+- Dark mode: all large surfaces are neutral black/charcoal; brown or orange surface tints are defects.

@@ -1,0 +1,89 @@
+# CI quality gates (architecture.md §12.2). Never publishes builds or touches production.
+name: CI
+
+on:
+  push:
+    branches: [master, main]
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: miniledger
+          POSTGRES_PASSWORD: miniledger
+          POSTGRES_DB: miniledger_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U miniledger -d miniledger_test"
+          --health-interval 5s
+          --health-timeout 3s
+          --health-retries 10
+
+    env:
+      # Test-only values; never real secrets.
+      NODE_ENV: test
+      AUTH_MODE: assignment
+      DATABASE_URL: postgresql://miniledger:miniledger@localhost:5432/miniledger_test
+      DIRECT_URL: postgresql://miniledger:miniledger@localhost:5432/miniledger_test
+      TEST_DATABASE_URL: postgresql://miniledger:miniledger@localhost:5432/miniledger_test
+      JWT_SECRET: ci-jwt-secret-0123456789abcdef0123456789
+      OTP_HMAC_SECRET: ci-otp-secret-0123456789abcdef0123456789
+      REFRESH_TOKEN_HMAC_SECRET: ci-refresh-secret-0123456789abcdef01234
+
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      - uses: pnpm/action-setup@v4
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - name: Install
+        run: pnpm install --frozen-lockfile
+
+      - name: Lint
+        run: pnpm lint
+
+      - name: Format check
+        run: pnpm format:check
+
+      - name: Typecheck
+        run: pnpm typecheck
+
+      - name: Apply migrations
+        run: pnpm --filter @miniledger/api exec prisma migrate deploy
+
+      - name: Check schema drift
+        run: pnpm --filter @miniledger/api exec prisma migrate diff --from-config-datasource --to-schema prisma/schema.prisma --exit-code
+
+      - name: Unit and integration tests
+        run: pnpm test
+
+      - name: Build shared and API
+        run: pnpm build
+
+      - name: Bundle Android app
+        run: pnpm --filter @miniledger/mobile exec expo export --platform android --output-dir dist
+
+      - name: Secret scan
+        uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

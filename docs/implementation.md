@@ -16,8 +16,8 @@ This file sequences the work and tracks progress. It **adds no rules**: behavior
 
 | Phase | Outcome | Status | Started | Done |
 |---|---|---|---|---|
-| 0 | Repository foundations | Not started | | |
-| 1 | P0 backend | Not started | | |
+| 0 | Repository foundations | Done except the on-phone check | 22 Oct 2026 | |
+| 1 | P0 backend | Done | 22 Oct 2026 | 22 Oct 2026 |
 | 2 | P0 Android → **assignment can be submitted** | Not started | | |
 | 3 | Complete ledger (V1 finance) | Not started | | |
 | 4 | Production auth and account lifecycle | Not started | | |
@@ -30,13 +30,13 @@ This file sequences the work and tracks progress. It **adds no rules**: behavior
 
 **Goal:** an empty but fully wired monorepo where every later task has a home.
 
-- [ ] pnpm workspace with `apps/mobile`, `apps/api`, `packages/shared`, `web/` (arch §3); ESLint, Prettier, TypeScript strict, `.editorconfig`, `.gitignore`
-- [ ] `packages/shared`: `money.ts` (arch §4.4), `dates.ts` (arch §4.5), `text.ts` (arch §4.1), error codes (arch §6.6), Zod schemas and DTO types (arch §6.2–6.5), with Vitest tests (arch §12.1 Money, Dates)
-- [ ] `apps/api` skeleton: ESM, `config/env.ts` with fail-closed validation (arch §7.1, §11.1), pino with redaction, request ID, helmet, JSON limits, 404 and error handler (arch §10.1), `GET /health`
-- [ ] Prisma 7 setup (arch §11.1) and the **complete** schema: all tables, indexes, composite FKs, CHECK constraints (arch §4.1–4.3)
-- [ ] `docker-compose.yml` (PostgreSQL 16) and `.env.example`
-- [ ] Expo app skeleton: Expo Router, light token registry (design §2.1, §3, §4), application IDs per profile (arch §11.2), `allowBackup: false`
-- [ ] CI workflow (arch §12.2) and README skeleton
+- [x] pnpm workspace with `apps/mobile`, `apps/api`, `packages/shared`, `web/` (arch §3); ESLint, Prettier, TypeScript strict, `.editorconfig`, `.gitignore`
+- [x] `packages/shared`: `money.ts` (arch §4.4), `dates.ts` (arch §4.5), `text.ts` (arch §4.1), error codes (arch §6.6), Zod schemas and DTO types (arch §6.2–6.5), with Vitest tests (arch §12.1 Money, Dates)
+- [x] `apps/api` skeleton: ESM, `config/env.ts` with fail-closed validation (arch §7.1, §11.1), pino with redaction, request ID, helmet, JSON limits, 404 and error handler (arch §10.1), `GET /health`
+- [x] Prisma 7 setup (arch §11.1) and the **complete** schema: all tables, indexes, composite FKs, CHECK constraints (arch §4.1–4.3)
+- [x] `docker-compose.yml` (PostgreSQL 16, host port 5433, plus `miniledger_test`) and `.env.example`
+- [x] Expo app skeleton: Expo Router, light token registry (design §2.1, §3, §4), application IDs per profile (arch §11.2), `allowBackup: false`
+- [x] CI workflow (arch §12.2) and README skeleton — first GitHub run pending a pushed remote
 
 **Exit criteria**
 - `pnpm install --frozen-lockfile && pnpm lint && pnpm typecheck && pnpm test` pass locally and in CI.
@@ -50,13 +50,13 @@ This file sequences the work and tracks progress. It **adds no rules**: behavior
 
 **Goal:** every API the assignment needs, with production-grade correctness.
 
-- [ ] Assignment OTP: `auth/config`, `otp/request`, `otp/verify` with normalization, advisory lock, cooldown and limits counted from `otp_challenges`, attempts, inline housekeeping, logged code (arch §7.2)
-- [ ] Sessions: JWT access tokens, `require-auth`, refresh rotation with previous-digest grace and replay revocation, logout (arch §7.3)
-- [ ] `GET /v1/me`, `PATCH /v1/me` (timezone, display name) (arch §4.5, §6.3)
-- [ ] People: `GET /v1/people` (search), `POST /v1/people` with client ID (arch §5.1, §6.3)
-- [ ] Loans: `POST /v1/loans` with client ID and person resolution (arch §5.1, §6.4); `GET /v1/loans` with all filters, sorts and cursor (arch §6.5); `GET /v1/loans/:id`; `POST /v1/loans/:id/settle` under the loan lock (arch §5.2)
-- [ ] `GET /v1/summary` (arch §4.4, §6.2)
-- [ ] Integration tests on real PostgreSQL (arch §12.1: Calculation, People, Isolation, Auth (assignment), Sessions, Retry safety for people/loans/settle, Contract)
+- [x] Assignment OTP: `auth/config`, `otp/request`, `otp/verify` with normalization, advisory lock, cooldown and limits counted from `otp_challenges`, attempts, inline housekeeping, logged code (arch §7.2)
+- [x] Sessions: JWT access tokens, `require-auth`, refresh rotation with previous-digest grace and replay revocation, logout (arch §7.3)
+- [x] `GET /v1/me`, `PATCH /v1/me` (timezone, display name) (arch §4.5, §6.3)
+- [x] People: `GET /v1/people` (search), `POST /v1/people` with client ID (arch §5.1, §6.3)
+- [x] Loans: `POST /v1/loans` with client ID and person resolution (arch §5.1, §6.4); `GET /v1/loans` with all filters, sorts and cursor (arch §6.5); `GET /v1/loans/:id`; `POST /v1/loans/:id/settle` under the loan lock (arch §5.2)
+- [x] `GET /v1/summary` (arch §4.4, §6.2)
+- [x] Integration tests on real PostgreSQL (arch §12.1: Calculation, People, Isolation, Auth (assignment), Sessions, Retry safety for people/loans/settle, Contract) — 64 API tests
 
 **Exit criteria**
 - HTTP-only walkthrough: request OTP → read it in the log → verify → create loans with `personName` → settle one → the summary shows the PRD FR-05 lent figures exactly.
@@ -75,6 +75,8 @@ This file sequences the work and tracks progress. It **adds no rules**: behavior
 - [ ] S06 Add loan without direction control (`LENT`): `PersonPicker`, amount, due date
 - [ ] Minimal S07: amounts, due status, `Mark as repaid` dialog
 - [ ] Minimal S12: Sign out
+- [x] Brand assets (design §1.2): icon, adaptive foreground, splash mark and logo in `apps/mobile/assets/brand/` and wired in `app.config.ts`
+- [ ] Monochrome themed icon (`adaptive-monochrome.png`) — waiting for the asset
 - [ ] Core components: buttons, `TextField`, `MoneyField`, `DateField`, `OtpInput`, `PersonPicker`, `LoanRow`, `StatusChip`, `SummaryHero`, `Metric`, `EmptyState`, `InlineNotice`, `ConfirmDialog`, `Snackbar` (design §7)
 - [ ] Loading, cold-start, offline and error states for these screens (design §9.1, §9.4)
 - [ ] README: what MiniLedger is, setup, reading the OTP from the log, API examples (the brief's "friend name" = `personName`), running tests, running on a phone
@@ -125,7 +127,7 @@ This file sequences the work and tracks progress. It **adds no rules**: behavior
 **Goal:** the app meets the full design quality bar.
 
 - [ ] S11 receipts: capture, compression, cache-then-move on save, attach/replace/remove, viewer, disclosure, cleanup (arch §8)
-- [ ] Dark and Use device setting themes on every screen and system bar (design §2.2–2.5, §7.2); Appearance selector live
+- [ ] Dark and Use device setting themes on every screen and system bar (design §2.2–2.5, §7.2); Appearance selector live; dark splash and dark logo (`mark-dark.png`, `logo-dark.png`, design §1.2)
 - [ ] Motion, haptics and reduced motion (design §8)
 - [ ] Empty states and optional illustrations (design §9.2, §10)
 - [ ] Accessibility: TalkBack labels, 200% font, 48dp targets, contrast audit in both themes (design §11)
@@ -179,4 +181,9 @@ Record every case where implementation needed a spec change. Update the spec in 
 
 | Date | Phase | Change | Reason | Spec section updated |
 |---|---|---|---|---|
-| | | | | |
+| 22 Oct 2026 | 0 | Expo routes live in `apps/mobile/src/app/` | Expo SDK 58 template default | arch §3 |
+| 22 Oct 2026 | 0 | Local PostgreSQL on host port 5433 | Port 5432 already used by a local PostgreSQL install | arch §3, README |
+| 22 Oct 2026 | 0 | Shared package exports TS source via conditions; esbuild bundles shared and API for production | Lets Metro, tsx and Vitest use source while Node runs plain JS | arch §3 |
+| 22 Oct 2026 | 0 | Prisma pinned to 7.10.1, TypeScript to 6.0.3 | npm `latest` for Prisma is an 8.0 release candidate; typescript-eslint supports TS < 6.1 | — |
+| 22 Oct 2026 | 1 | OTP cooldown ignores `FAILED` challenges | Otherwise a failed email delivery would block the retry for 60 s | arch §7.2 |
+| 22 Oct 2026 | 1 | Timezones keep the supplied canonical name | ICU's `resolvedOptions()` returns the legacy `Asia/Calcutta` for `Asia/Kolkata` | arch §4.5 |

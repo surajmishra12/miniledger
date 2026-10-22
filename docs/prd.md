@@ -240,7 +240,7 @@ Provide an authenticated summary endpoint and a home-screen summary card. All fi
 ### FR-08 — UI, navigation, and interaction
 
 1. Core screens: Sign-in; OTP verification; Home (summary card at the top, then the full loan list); Add/Edit loan; Loan detail with repayment history; Record/Edit repayment; People list; Person detail; Settings/account; account deletion.
-2. Visual direction: **Forest & Ivory** light theme and **Obsidian & Emerald** dark theme, specified in `design.md`.
+2. Visual direction: **Terracotta & Cream** light theme and **Onyx & Ember** dark theme, derived from the MiniLedger logo and specified in `design.md`.
 3. Keep primary actions discoverable (**Add loan**, **Record repayment**). Make **Lent** vs **Borrowed** visible throughout.
 4. Accessible tap targets, readable text, labels for icons, correct keyboards, inline form errors, confirmation dialogs for destructive actions, and loading/success/error/empty states.
 5. **Theme:** P0 requires the light theme. Public V1 requires Light, Dark and Use device setting, with light as the first-run default.
@@ -409,7 +409,7 @@ Contract requirements: one error format with stable codes, correct HTTP status c
 6. **Deletion:** Hard deletes for loans, repayments, people and accounts. No soft delete, no undo.
 7. **Hosting:** Render Free API + Neon Free PostgreSQL initially, subject to provider limits.
 8. **Receipts:** On-device persistent private storage only.
-9. **Visual direction:** Forest & Ivory (light, default) and Obsidian & Emerald (dark), per `design.md`.
+9. **Visual direction:** Terracotta & Cream (light, default) and Onyx & Ember (dark), derived from the MiniLedger logo, per `design.md`.
 
 **Definition of done:** The project meets the internship specification exactly, core flows and financial calculations are reliable, public authentication is real and secure, and the Android app is polished enough to publish without exposing mock authentication or misleading users about receipt storage.
 

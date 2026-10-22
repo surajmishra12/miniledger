@@ -1,0 +1,161 @@
+// MiniLedger database schema (architecture.md §4).
+// CHECK constraints live in the migration SQL because Prisma cannot express them.
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum IdentifierType {
+  PHONE
+  EMAIL
+}
+
+enum Direction {
+  LENT
+  BORROWED
+}
+
+enum OtpPurpose {
+  LOGIN
+  REAUTH
+}
+
+enum OtpState {
+  PENDING
+  ACTIVE
+  CONSUMED
+  INVALIDATED
+  FAILED
+}
+
+enum RevokeReason {
+  LOGOUT
+  REPLAY_DETECTED
+}
+
+model User {
+  id             String         @id @db.Uuid
+  identifierType IdentifierType @map("identifier_type")
+  identifier     String
+  displayName    String?        @map("display_name") @db.VarChar(60)
+  timezone       String         @default("Asia/Kolkata")
+  createdAt      DateTime       @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt      DateTime       @updatedAt @map("updated_at") @db.Timestamptz(3)
+
+  people     Person[]
+  loans      Loan[]
+  repayments Repayment[]
+  sessions   Session[]
+
+  @@unique([identifierType, identifier])
+  @@map("users")
+}
+
+model Person {
+  id         String    @id @db.Uuid
+  userId     String    @map("user_id") @db.Uuid
+  name       String    @db.VarChar(80)
+  nameKey    String    @map("name_key")
+  archivedAt DateTime? @map("archived_at") @db.Timestamptz(3)
+  createdAt  DateTime  @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt  DateTime  @updatedAt @map("updated_at") @db.Timestamptz(3)
+
+  user  User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  loans Loan[]
+
+  @@unique([id, userId])
+  @@index([userId, archivedAt, nameKey, id])
+  @@map("people")
+}
+
+model Loan {
+  id             String    @id @db.Uuid
+  userId         String    @map("user_id") @db.Uuid
+  personId       String    @map("person_id") @db.Uuid
+  direction      Direction
+  principalPaise BigInt    @map("principal_paise")
+  loanDate       DateTime  @map("loan_date") @db.Date
+  dueDate        DateTime  @map("due_date") @db.Date
+  note           String?   @db.VarChar(500)
+  version        Int       @default(1)
+  lastActivityAt DateTime  @default(now()) @map("last_activity_at") @db.Timestamptz(3)
+  createdAt      DateTime  @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt      DateTime  @updatedAt @map("updated_at") @db.Timestamptz(3)
+
+  user       User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  // Composite FK: a loan can only reference a person owned by the same user.
+  person     Person      @relation(fields: [personId, userId], references: [id, userId], onDelete: NoAction)
+  repayments Repayment[]
+
+  @@unique([id, userId])
+  @@index([userId, dueDate, id])
+  @@index([userId, lastActivityAt(sort: Desc), id(sort: Desc)])
+  @@index([userId, personId])
+  @@map("loans")
+}
+
+model Repayment {
+  id          String   @id @db.Uuid
+  userId      String   @map("user_id") @db.Uuid
+  loanId      String   @map("loan_id") @db.Uuid
+  amountPaise BigInt   @map("amount_paise")
+  paidOn      DateTime @map("paid_on") @db.Date
+  note        String?  @db.VarChar(500)
+  createdAt   DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt   DateTime @updatedAt @map("updated_at") @db.Timestamptz(3)
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  // Composite FK: a repayment can only reference a loan owned by the same user.
+  loan Loan @relation(fields: [loanId, userId], references: [id, userId], onDelete: Cascade)
+
+  @@index([loanId, paidOn(sort: Desc), createdAt(sort: Desc)])
+  @@index([userId])
+  @@map("repayments")
+}
+
+model OtpChallenge {
+  id             String         @id @db.Uuid
+  purpose        OtpPurpose
+  identifierType IdentifierType @map("identifier_type")
+  identifier     String
+  ipHash         String         @map("ip_hash")
+  sessionId      String?        @map("session_id") @db.Uuid
+  codeDigest     String         @map("code_digest")
+  attempts       Int            @default(0)
+  state          OtpState
+  expiresAt      DateTime       @map("expires_at") @db.Timestamptz(3)
+  createdAt      DateTime       @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt      DateTime       @updatedAt @map("updated_at") @db.Timestamptz(3)
+
+  session Session? @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+
+  @@index([identifierType, identifier, createdAt(sort: Desc)])
+  @@index([ipHash, createdAt(sort: Desc)])
+  @@index([createdAt])
+  @@map("otp_challenges")
+}
+
+model Session {
+  id                         String        @id @db.Uuid
+  userId                     String        @map("user_id") @db.Uuid
+  refreshTokenDigest         String        @unique @map("refresh_token_digest")
+  previousRefreshTokenDigest String?       @unique @map("previous_refresh_token_digest")
+  rotatedAt                  DateTime?     @map("rotated_at") @db.Timestamptz(3)
+  refreshExpiresAt           DateTime      @map("refresh_expires_at") @db.Timestamptz(3)
+  absoluteExpiresAt          DateTime      @map("absolute_expires_at") @db.Timestamptz(3)
+  revokedAt                  DateTime?     @map("revoked_at") @db.Timestamptz(3)
+  revokeReason               RevokeReason? @map("revoke_reason")
+  createdAt                  DateTime      @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt                  DateTime      @updatedAt @map("updated_at") @db.Timestamptz(3)
+
+  user          User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  otpChallenges OtpChallenge[]
+
+  @@index([userId])
+  @@map("sessions")
+}

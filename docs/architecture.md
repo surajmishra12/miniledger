@@ -90,7 +90,7 @@ MiniLedger is a **personal recordkeeping app**, not a payment or lending platfor
 miniledger/
 ├── apps/
 │   ├── mobile/
-│   │   ├── app/                                   # Expo Router (screen IDs from design.md)
+│   │   ├── src/app/                               # Expo Router routes (SDK 58 default location)
 │   │   │   ├── _layout.tsx                        # Providers: theme, query, session; S01 routing
 │   │   │   ├── (auth)/
 │   │   │   │   ├── sign-in.tsx                    # S02
@@ -109,7 +109,7 @@ miniledger/
 │   │   │   │   └── [id]/repayments/[repaymentId].tsx  # S08 edit
 │   │   │   ├── people/[id].tsx                    # S10
 │   │   │   └── settings/delete-account.tsx        # S12 deletion flow
-│   │   ├── src/
+│   │   ├── src/                                   # non-route code (imported as @/…)
 │   │   │   ├── components/                        # Design-system components (design.md §7)
 │   │   │   ├── features/{auth,dashboard,loans,repayments,people,receipts,settings}/
 │   │   │   ├── lib/
@@ -127,8 +127,9 @@ miniledger/
 │       │   ├── app.ts                             # Express app + middleware order
 │       │   ├── server.ts                          # listen, graceful shutdown
 │       │   ├── config/env.ts                      # Zod-validated environment
-│       │   ├── lib/{prisma.ts,clock.ts,jwt.ts,crypto.ts,mailer.ts,logger.ts,dates.ts}
-│       │   ├── middleware/{request-id.ts,require-auth.ts,error-handler.ts}
+│       │   ├── lib/{prisma.ts,errors.ts,clock.ts,jwt.ts,crypto.ts,mailer.ts,logger.ts,dates.ts}
+│       │   ├── middleware/{request-id.ts,json-body.ts,require-auth.ts,error-handler.ts}
+│       │   ├── generated/prisma/                  # Prisma Client output (git-ignored)
 │       │   ├── modules/{auth,users,people,loans,repayments,summary}/
 │       │   └── routes.ts                          # mounts /health and /v1 module routers
 │       ├── prisma/
@@ -145,13 +146,14 @@ miniledger/
 │       │   ├── money.ts                           # parse/format paise
 │       │   ├── dates.ts                           # YYYY-MM-DD validation and arithmetic
 │       │   ├── text.ts                            # name normalization, code-point length
+│       │   ├── identifiers.ts                     # phone/email normalization and masking
 │       │   └── index.ts
 │       └── package.json
 ├── web/                                           # static privacy + deletion-request pages
 │   ├── privacy.html
 │   └── delete-account.html
 ├── .github/workflows/ci.yml
-├── docker-compose.yml                             # db service
+├── docker-compose.yml                             # db service on host port 5433 (+ miniledger_test DB)
 ├── pnpm-workspace.yaml
 ├── .env.example                                   # placeholders only
 ├── docs/{prd.md,design.md,architecture.md,implementation.md}
@@ -159,6 +161,8 @@ miniledger/
 ```
 
 **Layering:** router → Zod schema → controller (HTTP mapping only) → service (rules, ownership, transactions) → repository. Controllers contain no money math or SQL. `packages/shared` is **pure TypeScript** whose only runtime dependency is Zod; it never imports Prisma, Express, `jose` or secrets.
+
+**Shared package resolution:** `@miniledger/shared` exports its TypeScript source through the `types`, `react-native` (Metro) and `development` (tsx, Vitest) conditions, and an esbuild bundle (`dist/index.js`) as `default` for the production API. The API is bundled with esbuild (`--packages=external`); `tsc` only typechecks. The workspace uses pnpm's hoisted `node_modules` layout for React Native compatibility.
 
 **Package names:** `@miniledger/mobile`, `@miniledger/api`, `@miniledger/shared`. **Android application ID:** `com.surajmishra.miniledger` (production), `com.surajmishra.miniledger.dev` (development/preview).
 
@@ -317,7 +321,7 @@ No stored status, overdue flag or balance column. The Home hero shows `outstandi
 
 - `loan_date`, `due_date`, `paid_on` are PostgreSQL `date`. Wire format is exactly `YYYY-MM-DD`. Validation (`shared/dates.ts`): regex `^\d{4}-\d{2}-\d{2}$`, a real calendar date (leap years included), within **2000-01-01 … 2099-12-31**.
 - **Today** is computed only on the server: `new Intl.DateTimeFormat('en-CA', { timeZone: user.timezone, year: 'numeric', month: '2-digit', day: '2-digit' }).format(clock.now())`. The clock is injectable for tests. Clients never send "today".
-- **Timezone validation:** `new Intl.DateTimeFormat('en-US', { timeZone: tz })` must not throw; store `resolvedOptions().timeZone`.
+- **Timezone validation:** `new Intl.DateTimeFormat('en-US', { timeZone: tz })` must not throw; store the supplied name with canonical casing from `Intl.supportedValuesOf('timeZone')` (not `resolvedOptions().timeZone`, which turns `Asia/Kolkata` into the legacy alias `Asia/Calcutta`).
   - `POST /v1/auth/otp/verify` accepts optional `timezone`. If valid, it is stored (on create and on every login). If missing or invalid it is ignored (new users get `Asia/Kolkata`); login never fails because of the timezone.
   - `PATCH /v1/me` with an invalid `timezone` returns `422 VALIDATION_FAILED`.
   - The app sends `PATCH /v1/me { timezone }` on launch/resume when the device timezone differs from `me.timezone`.
@@ -673,7 +677,7 @@ No query parameter, header or body field can change the mode. A request whose id
 
    | Limit | Rule | Error |
    |---|---|---|
-   | Cooldown | Latest challenge for this identifier and purpose is younger than 60 s | `429 OTP_RESEND_COOLDOWN` |
+   | Cooldown | Latest non-`FAILED` challenge for this identifier and purpose is younger than 60 s (a failed delivery can be retried at once) | `429 OTP_RESEND_COOLDOWN` |
    | Per identifier | ≥ 5 challenges for the identifier in the last 60 min | `429 RATE_LIMITED` |
    | Per IP | ≥ 20 challenges with this `ip_hash` in the last 60 min | `429 RATE_LIMITED` |
    | Daily (production only) | ≥ `OTP_DAILY_SEND_LIMIT` (default 90) non-`FAILED` challenges since 00:00 UTC | `503 OTP_DAILY_LIMIT_REACHED` |
@@ -837,7 +841,7 @@ Separate application IDs let both builds coexist. Before release, verify the pro
 5. `pnpm test` runs all suites.
 
 **Production:**
-1. Create the Neon project (pooled + direct URLs), verify `mail.surajmishra.me` in Resend, create the Render web service (build: `pnpm install --frozen-lockfile && pnpm --filter @miniledger/shared build && pnpm --filter @miniledger/api build`; start: `node dist/server.js`; health check `/health`).
+1. Create the Neon project (pooled + direct URLs), verify `mail.surajmishra.me` in Resend, create the Render web service (build: `pnpm install --frozen-lockfile && pnpm build`; start: `pnpm --filter @miniledger/api start`; health check `/health`).
 2. Run `prisma migrate deploy` with `DIRECT_URL` from a protected manual GitHub Actions workflow **before** deploying code that needs the schema. Never migrate on server boot.
 3. Deploy; verify `/health`, that `curl` phone OTP returns `422`, and real email delivery.
 4. Build the production AAB with EAS; test on the Play internal track.

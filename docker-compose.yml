@@ -1,0 +1,22 @@
+# Local PostgreSQL for assignment mode and tests.
+# Host port 5433 avoids clashing with a locally installed PostgreSQL on 5432.
+services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: miniledger
+      POSTGRES_PASSWORD: miniledger
+      POSTGRES_DB: miniledger
+    ports:
+      - '5433:5432'
+    volumes:
+      - db-data:/var/lib/postgresql/data
+      - ./docker/initdb:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U miniledger -d miniledger']
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+volumes:
+  db-data:
