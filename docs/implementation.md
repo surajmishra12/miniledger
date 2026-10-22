@@ -19,7 +19,7 @@ This file sequences the work and tracks progress. It **adds no rules**: behavior
 | 0 | Repository foundations | Done except the on-phone check | 22 Oct 2026 | |
 | 1 | P0 backend | Done | 22 Oct 2026 | 22 Oct 2026 |
 | 2 | P0 Android → **assignment can be submitted** | Code done; on-device run pending | 22 Oct 2026 | |
-| 3 | Complete ledger (V1 finance) | Not started | | |
+| 3 | Complete ledger (V1 finance) | Code done; on-device run pending | 22 Oct 2026 | |
 | 4 | Production auth and account lifecycle | Not started | | |
 | 5 | Receipts, themes and polish | Not started | | |
 | 6 | Deployment and Play release → **production ready** | Not started | | |
@@ -94,14 +94,14 @@ This file sequences the work and tracks progress. It **adds no rules**: behavior
 
 **Goal:** all ledger features of the public V1.
 
-- [ ] Backend: `PATCH`/`DELETE /v1/loans/:id` (version, direction lock, principal minimum), repayment create/edit/delete under the loan lock, people `GET/PATCH/DELETE /:id` (arch §5.2, §6.3)
-- [ ] S04 borrowed strip, `overdueBorrowed` line, metric taps that set the list filters
-- [ ] S05 search, direction/status filters, sort sheet, no-results state
-- [ ] S06 direction control, More details (loan date, note), edit mode with all error handling
-- [ ] Full S07 (history, overflow edit/delete), S08 record/edit repayment, S13 confirmations
-- [ ] S09 People (Active/Archived, add person, same-name warning), S10 Person detail (rename, archive, delete without loans)
-- [ ] Error copy for every code in design §9.4
-- [ ] Integration tests for the new endpoints, including the repayment cases of Retry safety, and mobile unit tests (arch §12.1)
+- [x] Backend: `PATCH`/`DELETE /v1/loans/:id` (version, direction lock, principal minimum), repayment create/edit/delete under the loan lock, people `GET/PATCH/DELETE /:id` (arch §5.2, §6.3)
+- [x] S04 borrowed strip, `overdueBorrowed` line, metric taps that set the list filters (done in Phase 2)
+- [x] S05 search, direction/status filters, sort sheet, no-results state (done in Phase 2)
+- [x] S06 direction control, More details (loan date, note), edit mode with all error handling
+- [x] Full S07 (person link, overflow edit/delete, repayment row Edit/Remove), S08 record/edit repayment (full-screen), S13 confirmations
+- [x] S09 People tab (Active/Archived, search, add person, same-name warning), S10 Person detail (balances, loans, rename, archive/unarchive, delete without loans, `Add loan with <name>`)
+- [x] Error copy for every code in design §9.4
+- [x] Integration tests for the new endpoints, including the repayment cases of Retry safety (82 API tests), and mobile unit tests (17)
 
 **Exit criteria**
 - Every PRD §7 edge case is demonstrable in the app.
@@ -190,3 +190,4 @@ Record every case where implementation needed a spec change. Update the spec in 
 | 22 Oct 2026 | 2 | Sign-in routes are top-level (`sign-in`, `verify-otp`); signed-in screens live in an `(app)` group behind `Stack.Protected` | Expo Router's documented auth-guard pattern | arch §3 |
 | 22 Oct 2026 | 2 | Forms use component state + the shared Zod schemas; React Hook Form not used | Forms are small; one less dependency to explain | arch §2 |
 | 22 Oct 2026 | 2 | Typed routes disabled | Generated route types are git-ignored, so CI typecheck could not rely on them | — |
+| 22 Oct 2026 | 3 | S08 is always a full-screen route (`loans/[id]/repayments/new`, `/[repaymentId]`) | Design allows full screen; one presentation avoids keyboard/large-text sheet issues | design S08 |

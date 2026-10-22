@@ -522,14 +522,14 @@ Each screen has a defined purpose, top-level hierarchy, actions, states and acce
 
 **Purpose:** Record partial or full money movement without arithmetic mistakes.
 
-- Use a focused bottom sheet on normal phones; full-screen presentation if keyboard, large text or small viewport makes the sheet cramped.
+- Full-screen presentation (a pushed form screen), so the keyboard, large text and small viewports never make it cramped.
 - Context header `Record money received` for lent / `Record money paid back` for borrowed; small line `Remaining ₹3,000`.
 - Amount input (`MoneyField`, empty by default) with a `Use full amount` chip that fills the remaining balance.
 - Date defaults to today; picker maximum is today. If it is before the loan date, show the non-blocking hint `This is before the loan date.` Optional note (500 characters).
 - Primary action `Save repayment`. Errors: `Enter an amount greater than ₹0`; `AMOUNT_EXCEEDS_OUTSTANDING` → `Maximum is ₹3,000.`
 - When editing, the maximum shown is the remaining balance plus this repayment's current amount; title `Edit repayment`.
-- On success close the sheet, refresh detail and summary, and show `Repayment saved`. On failure keep the values.
-- **Mark as repaid** (from S07) is a confirmation dialog, not this sheet: `Record ₹3,000 as received?` (lent) or `Record ₹3,000 as paid back?` (borrowed), dated today, actions `Cancel` / `Mark as repaid`.
+- On success return to S07, refresh detail and summary, and show `Repayment saved`. On failure keep the values.
+- **Mark as repaid** (from S07) is a confirmation dialog, not this form: `Record ₹3,000 as received?` (lent) or `Record ₹3,000 as paid back?` (borrowed), dated today, actions `Cancel` / `Mark as repaid`.
 - Warnings are plain language, never raw error codes.
 
 ### S09 — People
@@ -609,7 +609,7 @@ The approved concept boards communicate **composition and restraint**, not liter
 | S05 Loan list | White grouped loan rows on cream | Charcoal rows on onyx; hairline separators, compact semantic chips |
 | S06 Add/Edit | White fields on cream; terracotta active direction thumb | Charcoal fields, `surfaceMuted` track, ember active thumb and CTA |
 | S07 Loan detail | White financial panel; progress track `surfaceMuted`, fill `brandPrimary` | Charcoal panels; progress track `surfaceMuted`, fill ember |
-| S08 Repayment | White bottom sheet, terracotta CTA | Raised charcoal sheet, ember CTA, black scrim |
+| S08 Repayment | White fields on cream, terracotta CTA | Charcoal fields on onyx, ember CTA |
 | S09 People | Cream canvas, `surfaceMuted` initials circles | Onyx canvas, charcoal rows, `surfaceMuted` initials circles |
 | S10 Person detail | White split balances with lent/borrowed labels | Charcoal balance groups, cream-white figures, semantic labels only |
 | S11 Receipt | White local-only notice; neutral viewer | Neutral black viewer; never tint the photo |

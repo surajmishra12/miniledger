@@ -1,7 +1,7 @@
 /**
  * Display helpers (design.md §1.3, §11). Deterministic; no Intl dependency for dates.
  */
-import { daysBetween, type LoanDto } from '@miniledger/shared';
+import { daysBetween, formatPaise, type LoanDto, type PersonDto } from '@miniledger/shared';
 
 const MONTHS_SHORT = [
   'Jan',
@@ -119,4 +119,17 @@ export function dateFromIso(value: string): Date {
 export function isoFromDate(value: Date): string {
   const pad = (n: number) => String(n).padStart(2, '0');
   return `${value.getFullYear()}-${pad(value.getMonth() + 1)}-${pad(value.getDate())}`;
+}
+
+/** Person balances as separate figures per direction, never netted (design.md S09). */
+export function balanceLines(person: Pick<PersonDto, 'owesYouPaise' | 'youOwePaise'>): string[] {
+  const lines: string[] = [];
+  if (person.owesYouPaise > 0) lines.push(`Owes you ${formatPaise(person.owesYouPaise)}`);
+  if (person.youOwePaise > 0) lines.push(`You owe ${formatPaise(person.youOwePaise)}`);
+  return lines.length ? lines : ['Settled'];
+}
+
+/** Largest repayment allowed: remaining balance, plus the edited repayment's own amount (S08). */
+export function repaymentMaxPaise(outstandingPaise: number, editingAmountPaise = 0): number {
+  return outstandingPaise + editingAmountPaise;
 }

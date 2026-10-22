@@ -10,7 +10,7 @@ A small Android app for keeping track of money you lend to (and borrow from) peo
 - **App:** React Native + Expo (Expo Router), TypeScript
 - **Specs:** [`docs/prd.md`](docs/prd.md), [`docs/architecture.md`](docs/architecture.md), [`docs/design.md`](docs/design.md), progress in [`docs/implementation.md`](docs/implementation.md)
 
-> Status: the assignment scope is complete in code: backend (Phase 1) and the Android app's sign-in, Home summary with the loan list, add loan and mark as repaid (Phase 2).
+> Status: the assignment scope is complete (Phases 1–2), plus the full ledger (Phase 3): partial repayments, editing and deleting loans and repayments, and a People tab with per-person balances, rename, archive and delete.
 
 ## Repository layout
 
@@ -122,17 +122,21 @@ With the API running (`pnpm --filter @miniledger/api dev`), every step below can
 5. **Summary**: `GET /v1/summary` returns `totalLent`, `totalRepaid` and `overdueAmount` (lent loans only), plus borrowed figures.
 6. **List loans**: `GET /v1/loans` (overdue first; `?status=overdue`, `?direction=LENT`, `?search=rah`, `?sort=dueDate|recent`, cursor pagination).
 
-| Endpoint                                     | Purpose                             |
-| -------------------------------------------- | ----------------------------------- |
-| `GET /health`                                | Liveness                            |
-| `GET /v1/auth/config`                        | Sign-in mode (`assignment` → phone) |
-| `POST /v1/auth/otp/request`, `/otp/verify`   | Mock phone OTP sign-in              |
-| `POST /v1/auth/refresh`, `/logout`           | Rotate or end the session           |
-| `GET`, `PATCH /v1/me`                        | Account, timezone, display name     |
-| `GET`, `POST /v1/people`                     | People and their separate balances  |
-| `GET`, `POST /v1/loans`, `GET /v1/loans/:id` | Loans                               |
-| `POST /v1/loans/:id/settle`                  | Mark as repaid                      |
-| `GET /v1/summary`                            | Totals                              |
+| Endpoint                                                | Purpose                               |
+| ------------------------------------------------------- | ------------------------------------- |
+| `GET /health`                                           | Liveness                              |
+| `GET /v1/auth/config`                                   | Sign-in mode (`assignment` → phone)   |
+| `POST /v1/auth/otp/request`, `/otp/verify`              | Mock phone OTP sign-in                |
+| `POST /v1/auth/refresh`, `/logout`                      | Rotate or end the session             |
+| `GET`, `PATCH /v1/me`                                   | Account, timezone, display name       |
+| `GET`, `POST /v1/people`                                | People and their separate balances    |
+| `GET`, `PATCH`, `DELETE /v1/people/:id`                 | One person: rename, archive, delete   |
+| `GET`, `POST /v1/loans`                                 | List (filters, sorts) and add loans   |
+| `GET`, `PATCH`, `DELETE /v1/loans/:id`                  | Loan detail, edit (`version`), delete |
+| `POST /v1/loans/:id/settle`                             | Mark as repaid                        |
+| `POST /v1/loans/:id/repayments`                         | Record a partial repayment            |
+| `PATCH`, `DELETE /v1/loans/:id/repayments/:repaymentId` | Edit or remove a repayment            |
+| `GET /v1/summary`                                       | Totals                                |
 
 Errors always use one envelope: `{"error":{"code","message","fieldErrors","details","requestId"}}`. Full contracts: [`docs/architecture.md` §6](docs/architecture.md).
 

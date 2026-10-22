@@ -1,5 +1,5 @@
 import { Tabs } from 'expo-router';
-import { House, Settings2 } from 'lucide-react-native';
+import { House, Settings2, Users } from 'lucide-react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { useTheme } from '@/theme/theme-provider';
@@ -31,6 +31,13 @@ export default function TabsLayout() {
         options={{
           title: 'Home',
           tabBarIcon: ({ color }) => <House size={24} color={color} strokeWidth={1.75} />,
+        }}
+      />
+      <Tabs.Screen
+        name="people"
+        options={{
+          title: 'People',
+          tabBarIcon: ({ color }) => <Users size={24} color={color} strokeWidth={1.75} />,
         }}
       />
       <Tabs.Screen

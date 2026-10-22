@@ -6,6 +6,7 @@ import { randomUUID } from 'node:crypto';
 
 import {
   DATE_MESSAGES,
+  formatPaise,
   nameKey,
   type CreateLoanData,
   type LoanDetailDto,
@@ -280,7 +281,92 @@ export function createLoansService(ctx: AppContext) {
     return { loan, repayment: repayment ? toRepaymentDto(repayment) : null };
   }
 
-  return { list, detail, create, settle };
+  /** Edit under the loan lock with optimistic `version` (architecture.md §5.2). */
+  async function update(
+    user: User,
+    loanId: string,
+    input: {
+      version: number;
+      personId?: string | undefined;
+      direction?: 'LENT' | 'BORROWED' | undefined;
+      amount?: number | undefined;
+      loanDate?: string | undefined;
+      dueDate?: string | undefined;
+      note?: string | null | undefined;
+    },
+  ): Promise<LoanDto> {
+    await prisma.$transaction(async (tx) => {
+      const now = clock.now();
+      const asOfDate = todayIn(user.timezone, now);
+      const locked = await lockLoan(tx, user.id, loanId);
+      if (!locked) throw notFound();
+      if (locked.version !== input.version) {
+        throw new AppError(
+          'RECORD_CHANGED',
+          'This loan was changed on another device.',
+          {},
+          { currentVersion: locked.version },
+        );
+      }
+
+      const current = await tx.loan.findUniqueOrThrow({ where: { id: loanId } });
+      if (
+        input.direction !== undefined &&
+        input.direction !== current.direction &&
+        locked.repaidPaise > 0
+      ) {
+        throw new AppError(
+          'DIRECTION_LOCKED',
+          "Direction can't change after repayments are recorded.",
+        );
+      }
+      if (input.amount !== undefined && input.amount < locked.repaidPaise) {
+        throw new AppError(
+          'PRINCIPAL_BELOW_REPAID',
+          "The amount can't be less than what has already been repaid.",
+          {
+            amount: `Amount can't be less than ${formatPaise(locked.repaidPaise)} already repaid.`,
+          },
+          { minAmountPaise: locked.repaidPaise },
+        );
+      }
+      if (input.loanDate !== undefined && input.loanDate > asOfDate) {
+        throw validationError('loanDate', DATE_MESSAGES.future);
+      }
+      if (input.personId !== undefined && input.personId !== current.personId) {
+        await resolvePerson(tx, user.id, { personId: input.personId } as CreateLoanData);
+      }
+
+      await tx.loan.update({
+        where: { id: loanId },
+        data: {
+          ...(input.personId !== undefined ? { personId: input.personId } : {}),
+          ...(input.direction !== undefined ? { direction: input.direction } : {}),
+          ...(input.amount !== undefined ? { principalPaise: BigInt(input.amount) } : {}),
+          ...(input.loanDate !== undefined ? { loanDate: toDbDate(input.loanDate) } : {}),
+          ...(input.dueDate !== undefined ? { dueDate: toDbDate(input.dueDate) } : {}),
+          ...(input.note !== undefined ? { note: input.note } : {}),
+          version: { increment: 1 },
+          lastActivityAt: now,
+        },
+      });
+    }, TX_OPTIONS);
+
+    const loan = await getLoanDto(prisma, user.id, loanId, today(user));
+    if (!loan) throw notFound();
+    return loan;
+  }
+
+  /** Permanent delete; repayments cascade (PRD FR-03.8). */
+  async function remove(user: User, loanId: string): Promise<void> {
+    await prisma.$transaction(async (tx) => {
+      const locked = await lockLoan(tx, user.id, loanId);
+      if (!locked) throw notFound();
+      await tx.loan.delete({ where: { id: loanId } });
+    }, TX_OPTIONS);
+  }
+
+  return { list, detail, create, settle, update, remove };
 }
 
 export type LoansService = ReturnType<typeof createLoansService>;

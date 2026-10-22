@@ -10,6 +10,7 @@ import { createLoanRoutes } from './modules/loans/loans.routes';
 import { createLoansService } from './modules/loans/loans.service';
 import { createPeopleRoutes } from './modules/people/people.routes';
 import { createPeopleService } from './modules/people/people.service';
+import { createRepaymentsService } from './modules/repayments/repayments.service';
 import { createSummaryRoutes } from './modules/summary/summary.routes';
 import { createUserRoutes } from './modules/users/users.routes';
 
@@ -30,7 +31,7 @@ export function createRoutes(ctx: AppContext): Router {
   v1.use('/auth', createAuthRoutes(ctx, otp, sessions, auth));
   v1.use('/me', auth, createUserRoutes(ctx));
   v1.use('/people', auth, createPeopleRoutes(createPeopleService(ctx)));
-  v1.use('/loans', auth, createLoanRoutes(createLoansService(ctx)));
+  v1.use('/loans', auth, createLoanRoutes(createLoansService(ctx), createRepaymentsService(ctx)));
   v1.use('/summary', auth, createSummaryRoutes(ctx));
   router.use('/v1', v1);
 

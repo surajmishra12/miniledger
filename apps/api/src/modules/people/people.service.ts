@@ -5,7 +5,7 @@ import { nameKey, type PeopleListQuery, type PersonDto } from '@miniledger/share
 
 import type { AppContext } from '../../context';
 import { Prisma, type PrismaClient } from '../../generated/prisma/client';
-import { AppError, isUniqueViolation } from '../../lib/errors';
+import { AppError, isForeignKeyViolation, isUniqueViolation, notFound } from '../../lib/errors';
 import { toSafeInteger } from '../../lib/numbers';
 
 type Db = PrismaClient | Prisma.TransactionClient;
@@ -113,7 +113,46 @@ export function createPeopleService(ctx: AppContext) {
     return { status: 201, person: (await get(prisma, userId, input.id))! };
   }
 
-  return { list, get, create };
+  /** Rename and/or archive; history stays linked by ID (PRD FR-02.3–4). */
+  async function update(
+    userId: string,
+    personId: string,
+    input: { name?: string | undefined; archived?: boolean | undefined },
+  ): Promise<PersonDto> {
+    const existing = await prisma.person.findFirst({ where: { id: personId, userId } });
+    if (!existing) throw notFound();
+    const archivedAt =
+      input.archived === undefined
+        ? undefined
+        : input.archived
+          ? (existing.archivedAt ?? clock.now())
+          : null;
+    await prisma.person.update({
+      where: { id: personId },
+      data: {
+        ...(input.name !== undefined ? { name: input.name, nameKey: nameKey(input.name) } : {}),
+        ...(archivedAt !== undefined ? { archivedAt } : {}),
+      },
+    });
+    return (await get(prisma, userId, personId))!;
+  }
+
+  /** Only people without loans can be deleted; the FK decides atomically (architecture.md §4.2). */
+  async function remove(userId: string, personId: string): Promise<void> {
+    try {
+      const deleted = await prisma.person.deleteMany({ where: { id: personId, userId } });
+      if (deleted.count === 0) throw notFound();
+    } catch (error) {
+      if (isForeignKeyViolation(error)) {
+        throw new AppError('PERSON_HAS_LOANS', 'This person has loans. Archive them instead.');
+      }
+      throw error;
+    }
+  }
+
+  const find = (userId: string, personId: string) => get(prisma, userId, personId);
+
+  return { list, get, find, create, update, remove };
 }
 
 export type PeopleService = ReturnType<typeof createPeopleService>;

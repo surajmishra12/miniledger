@@ -30,3 +30,8 @@ export const validationError = (field: string, message: string) =>
 export function isUniqueViolation(error: unknown): boolean {
   return error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2002';
 }
+
+/** True for a foreign-key violation (SQLSTATE 23503), e.g. deleting a person who still has loans. */
+export function isForeignKeyViolation(error: unknown): boolean {
+  return error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2003';
+}

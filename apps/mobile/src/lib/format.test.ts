@@ -1,4 +1,11 @@
-import { dueStatus, formatDateLong, formatDateShort, initials } from './format';
+import {
+  balanceLines,
+  dueStatus,
+  formatDateLong,
+  formatDateShort,
+  initials,
+  repaymentMaxPaise,
+} from './format';
 
 const base = {
   repaymentStatus: 'UNPAID' as const,
@@ -34,5 +41,23 @@ describe('initials', () => {
     expect(initials('  Priya ')).toBe('P');
     expect(initials('राहुल शर्मा')).toBe('राश');
     expect(initials('')).toBe('?');
+  });
+});
+
+describe('balanceLines', () => {
+  it('shows each direction separately and never nets them', () => {
+    expect(balanceLines({ owesYouPaise: 400000, youOwePaise: 150000 })).toEqual([
+      'Owes you ₹4,000',
+      'You owe ₹1,500',
+    ]);
+    expect(balanceLines({ owesYouPaise: 0, youOwePaise: 5050 })).toEqual(['You owe ₹50.50']);
+    expect(balanceLines({ owesYouPaise: 0, youOwePaise: 0 })).toEqual(['Settled']);
+  });
+});
+
+describe('repaymentMaxPaise', () => {
+  it('adds the edited repayment back to the remaining balance', () => {
+    expect(repaymentMaxPaise(10000)).toBe(10000);
+    expect(repaymentMaxPaise(10000, 40000)).toBe(50000);
   });
 });
