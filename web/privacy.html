@@ -4,11 +4,94 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>MiniLedger — Privacy policy</title>
+    <meta
+      name="description"
+      content="What MiniLedger stores, why, who processes it, and how to delete it."
+    />
+    <link rel="stylesheet" href="styles.css" />
   </head>
   <body>
     <main>
-      <h1>MiniLedger privacy policy</h1>
-      <p>This page is completed in Phase 6 (architecture.md §10.2) before public release.</p>
+      <p class="brand"><span>Mini</span>Ledger</p>
+      <h1>Privacy policy</h1>
+      <p class="meta">Effective 22 October 2026</p>
+
+      <p>
+        MiniLedger is a personal record-keeping app for money you lend to and borrow from people. It
+        does not offer, arrange or process loans or payments, and the people you record never
+        receive anything from MiniLedger. This policy explains what the app stores and why.
+      </p>
+
+      <h2>What we store in your account</h2>
+      <ul>
+        <li><strong>Your email address</strong>, to sign you in with one-time codes.</li>
+        <li>
+          <strong>An optional display name</strong> and your <strong>timezone</strong>, so due dates
+          and "overdue" use your local day.
+        </li>
+        <li>
+          <strong>Your records:</strong> the names you give to people, and each loan and repayment
+          you enter (direction, amounts, dates and optional notes).
+        </li>
+        <li>
+          <strong>Security data:</strong> sign-in sessions (only a keyed hash of the refresh token),
+          and one-time code records (a keyed hash of the code and of the requesting IP address) that
+          are deleted within about 24 hours.
+        </li>
+      </ul>
+
+      <h2>What stays on your phone</h2>
+      <p>
+        <strong>Receipt photos never leave your device.</strong> They are stored in the app's
+        private storage, are not uploaded, and are excluded from Android backup, so they are lost if
+        you uninstall the app or change phones. Sign-in credentials are kept in Android's encrypted
+        secure storage.
+      </p>
+
+      <h2>Why we use it</h2>
+      <p>
+        Only to provide the app: signing you in, showing your records and totals, and keeping your
+        account secure. We do not use your data for advertising, we do not sell or share it, and the
+        app contains no analytics, advertising or crash-reporting SDKs.
+      </p>
+
+      <h2>Service providers</h2>
+      <ul>
+        <li><strong>Neon</strong> hosts the database that holds your account and records.</li>
+        <li>
+          <strong>Render</strong> runs the MiniLedger server; its request logs contain no amounts,
+          names or codes.
+        </li>
+        <li><strong>Resend</strong> receives your email address to deliver sign-in codes.</li>
+      </ul>
+      <p>
+        Data is encrypted in transit (HTTPS) between the app, the server and these providers, who
+        process it only on our behalf.
+      </p>
+
+      <h2>Permissions</h2>
+      <p>
+        The app asks for the camera only when you choose to photograph a receipt. Choosing a photo
+        uses Android's photo picker, which needs no storage permission. MiniLedger never accesses
+        your contacts, location or SMS.
+      </p>
+
+      <h2>Retention and deletion</h2>
+      <p>
+        Your data is kept until you delete your account. Deleting it (in the app:
+        <em>Settings → Delete account</em>) permanently removes your account, people, loans,
+        repayments and sessions, and removes receipt photos from that phone. Encrypted backups roll
+        off within 30 days. See <a href="delete-account.html">how to delete your data</a>.
+      </p>
+
+      <h2>Children</h2>
+      <p>MiniLedger is not directed at children under 13.</p>
+
+      <h2>Changes and contact</h2>
+      <p>
+        We will update this page and its effective date if anything changes. Questions:
+        <a href="mailto:support@surajmishra.me">support@surajmishra.me</a>.
+      </p>
     </main>
   </body>
 </html>

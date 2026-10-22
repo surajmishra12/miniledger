@@ -1,0 +1,61 @@
+# Weekly encrypted production backup (architecture.md §13).
+# The dump is encrypted with age to a public key before it leaves the runner and kept as a
+# workflow artifact for 30 days (outside the repository contents).
+# Setup in the "production" environment:
+#   secret   DIRECT_URL          Neon direct URL (sslmode=require)
+#   variable BACKUP_AGE_RECIPIENT public key from `age-keygen` (keep the private key offline)
+# Restore: age -d -i key.txt miniledger-*.dump.age > db.dump && pg_restore --no-owner -d "$URL" db.dump
+name: Backup production database
+
+on:
+  schedule:
+    - cron: '30 20 * * 0' # Sundays 20:30 UTC (02:00 IST Monday)
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: backup-production
+  cancel-in-progress: false
+
+jobs:
+  backup:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    environment: production
+    env:
+      DIRECT_URL: ${{ secrets.DIRECT_URL }}
+      AGE_RECIPIENT: ${{ vars.BACKUP_AGE_RECIPIENT }}
+
+    steps:
+      - name: Check configuration
+        run: |
+          if [ -z "$DIRECT_URL" ] || [ -z "$AGE_RECIPIENT" ]; then
+            echo "::error::DIRECT_URL secret and BACKUP_AGE_RECIPIENT variable are required"
+            exit 1
+          fi
+
+      - name: Install PostgreSQL 17 client and age
+        run: |
+          sudo install -d /usr/share/postgresql-common/pgdg
+          sudo curl -fsSL -o /usr/share/postgresql-common/pgdg/apt.postgresql.org.asc https://www.postgresql.org/media/keys/ACCC4CF8.asc
+          echo "deb [signed-by=/usr/share/postgresql-common/pgdg/apt.postgresql.org.asc] https://apt.postgresql.org/pub/repos/apt $(lsb_release -cs)-pgdg main" | sudo tee /etc/apt/sources.list.d/pgdg.list
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq postgresql-client-17 age
+
+      - name: Dump and encrypt
+        run: |
+          set -euo pipefail
+          name="miniledger-$(date -u +%Y%m%dT%H%M%SZ).dump.age"
+          /usr/lib/postgresql/17/bin/pg_dump --format=custom --no-owner --no-privileges "$DIRECT_URL" \
+            | age -r "$AGE_RECIPIENT" -o "$name"
+          echo "BACKUP_FILE=$name" >> "$GITHUB_ENV"
+          ls -lh "$name"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ${{ env.BACKUP_FILE }}
+          path: ${{ env.BACKUP_FILE }}
+          retention-days: 30
+          if-no-files-found: error

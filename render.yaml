@@ -1,0 +1,46 @@
+# Render Blueprint for the production API (architecture.md §11.3).
+# Secrets use `sync: false`: Render asks for them when the Blueprint is created; they never live in Git.
+# Migrations are NOT run here: use the manual "Migrate production database" workflow first.
+services:
+  - type: web
+    name: miniledger-api
+    runtime: node
+    plan: free
+    region: singapore
+    branch: master
+    autoDeploy: true
+    # NODE_ENV=production would skip devDependencies, but the build needs prisma and esbuild.
+    buildCommand: corepack enable && NODE_ENV=development pnpm install --frozen-lockfile && pnpm build
+    # Plain node at runtime (same as `pnpm --filter @miniledger/api start`), no package manager needed.
+    startCommand: node --enable-source-maps apps/api/dist/server.js
+    healthCheckPath: /health
+    envVars:
+      - key: NODE_VERSION
+        value: '22'
+      - key: NODE_ENV
+        value: production
+      - key: AUTH_MODE
+        value: production
+      - key: TRUST_PROXY_HOPS
+        value: '1'
+      - key: LOG_LEVEL
+        value: info
+      - key: OTP_DAILY_SEND_LIMIT
+        value: '90'
+      - key: RESEND_FROM_EMAIL
+        value: MiniLedger <no-reply@mail.surajmishra.me>
+      # Neon pooled URL with sslmode=require
+      - key: DATABASE_URL
+        sync: false
+      # https://<service>.onrender.com
+      - key: PUBLIC_API_ORIGIN
+        sync: false
+      - key: RESEND_API_KEY
+        sync: false
+      # Three different values of at least 32 random bytes each (e.g. `openssl rand -base64 48`)
+      - key: JWT_SECRET
+        sync: false
+      - key: OTP_HMAC_SECRET
+        sync: false
+      - key: REFRESH_TOKEN_HMAC_SECRET
+        sync: false

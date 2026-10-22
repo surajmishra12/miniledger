@@ -826,7 +826,7 @@ Routes are listed in §3 and map to `design.md` S01–S13. Three tabs (Home with
 | Profile | Application ID | `EXPO_PUBLIC_API_URL` | Notes |
 |---|---|---|---|
 | `development` | `com.surajmishra.miniledger.dev` | `http://localhost:4000/v1` with `adb reverse tcp:4000 tcp:4000` (USB), or the PC's LAN IP | Cleartext allowed only here |
-| `preview` | `com.surajmishra.miniledger.dev` | Evaluator's local/private server | Internal APK |
+| `preview` | `com.surajmishra.miniledger.dev` | The HTTPS production API (release builds block cleartext) | Internal APK |
 | `production` | `com.surajmishra.miniledger` | `https://<service>.onrender.com/v1` | Signed AAB; cleartext disabled |
 
 Separate application IDs let both builds coexist. Before release, verify the production AAB has no cleartext permission and no local URL, and that sign-in shows email.

@@ -1,0 +1,70 @@
+/* MiniLedger public pages: Terracotta & Cream / Onyx & Ember (design.md §2). */
+:root {
+  color-scheme: light dark;
+  --canvas: #faf7f2;
+  --text: #2a1b17;
+  --muted: #6b5a53;
+  --brand: #b4472b;
+  --outline: #e6dcd2;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --canvas: #0b0b0c;
+    --text: #f5f0eb;
+    --muted: #bfb8b2;
+    --brand: #f08a65;
+    --outline: #2f2f33;
+  }
+}
+
+body {
+  margin: 0;
+  background: var(--canvas);
+  color: var(--text);
+  font:
+    16px/1.6 system-ui,
+    -apple-system,
+    'Segoe UI',
+    Roboto,
+    sans-serif;
+}
+
+main {
+  max-width: 680px;
+  margin: 0 auto;
+  padding: 40px 20px 64px;
+}
+
+.brand {
+  font-weight: 700;
+  font-size: 19px;
+  margin: 0 0 24px;
+}
+
+.brand span,
+a {
+  color: var(--brand);
+}
+
+h1 {
+  font-size: 27px;
+  line-height: 1.25;
+  margin: 0;
+}
+
+h2 {
+  font-size: 19px;
+  margin: 32px 0 8px;
+  padding-top: 16px;
+  border-top: 1px solid var(--outline);
+}
+
+.meta {
+  color: var(--muted);
+  margin-top: 4px;
+}
+
+li {
+  margin: 6px 0;
+}

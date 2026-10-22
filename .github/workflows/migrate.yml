@@ -1,0 +1,55 @@
+# Production schema migration (architecture.md §11.3). Manual only, never on server boot.
+# Run it BEFORE deploying code that needs the new schema.
+# Setup: Settings → Environments → "production" with required reviewers and the secret DIRECT_URL
+# (Neon direct, non-pooled URL with sslmode=require).
+name: Migrate production database
+
+on:
+  workflow_dispatch:
+    inputs:
+      confirm:
+        description: 'Type "migrate" to apply pending migrations to production'
+        required: true
+
+permissions:
+  contents: read
+
+concurrency:
+  group: migrate-production
+  cancel-in-progress: false
+
+jobs:
+  migrate:
+    if: ${{ inputs.confirm == 'migrate' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    environment: production
+    env:
+      DIRECT_URL: ${{ secrets.DIRECT_URL }}
+
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: pnpm/action-setup@v4
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - name: Install
+        run: pnpm install --frozen-lockfile
+
+      - name: Check the secret is configured
+        run: |
+          if [ -z "$DIRECT_URL" ]; then
+            echo "::error::DIRECT_URL is not set for the production environment"
+            exit 1
+          fi
+
+      - name: Pending migrations
+        # Exits non-zero when migrations are pending; that is expected here.
+        run: pnpm --filter @miniledger/api exec prisma migrate status || true
+
+      - name: Apply migrations
+        run: pnpm --filter @miniledger/api exec prisma migrate deploy

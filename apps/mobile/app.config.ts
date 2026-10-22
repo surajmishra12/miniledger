@@ -6,6 +6,14 @@ import type { ConfigContext, ExpoConfig } from 'expo/config';
 
 const IS_PRODUCTION = process.env.APP_VARIANT === 'production';
 
+// Release safety (architecture.md §11.2): a production build must talk HTTPS to a public host.
+if (IS_PRODUCTION) {
+  const url = process.env.EXPO_PUBLIC_API_URL ?? '';
+  if (!/^https:\/\//.test(url) || /localhost|127\.0\.0\.1|192\.168\.|10\.\d/.test(url)) {
+    throw new Error('Production builds need EXPO_PUBLIC_API_URL set to a public https:// URL.');
+  }
+}
+
 export default ({ config }: ConfigContext): ExpoConfig => ({
   ...config,
   name: IS_PRODUCTION ? 'MiniLedger' : 'MiniLedger (Dev)',

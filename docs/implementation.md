@@ -22,7 +22,7 @@ This file sequences the work and tracks progress. It **adds no rules**: behavior
 | 3 | Complete ledger (V1 finance) | Code done; on-device run pending | 22 Oct 2026 | |
 | 4 | Production auth and account lifecycle | Code done; live Resend check needs the production key | 22 Oct 2026 | |
 | 5 | Receipts, themes and polish | Code done; on-device QA and dark logo assets pending | 22 Oct 2026 | |
-| 6 | Deployment and Play release → **production ready** | Not started | | |
+| 6 | Deployment and Play release → **production ready** | Repository side done; cloud accounts, store listing and release pending | 22 Oct 2026 | |
 
 ---
 
@@ -144,14 +144,18 @@ This file sequences the work and tracks progress. It **adds no rules**: behavior
 **Goal:** a publicly available, supportable Android app.
 
 - [ ] Neon project (pooled and direct URLs); Resend with `mail.surajmishra.me` verified; Render web service with the production env (arch §11)
-- [ ] Protected manual migration workflow; first `prisma migrate deploy` (arch §11.3)
-- [ ] Weekly encrypted backup and one tested restore (arch §13)
-- [ ] `web/privacy.html` and `web/delete-account.html` on GitHub Pages at `miniledger.surajmishra.me`, linked in Settings (arch §10.2)
-- [ ] EAS production AAB with the HTTPS API; verify no cleartext and no local URL (arch §11.2)
+- [x] Protected manual migration workflow (`.github/workflows/migrate.yml`) and Render Blueprint (`render.yaml`)
+- [ ] First `prisma migrate deploy` against Neon (arch §11.3) — needs the Neon project
+- [x] Weekly encrypted backup workflow (`backup.yml`, `pg_dump` + `age`, 30-day artifacts)
+- [ ] One tested restore (arch §13) — needs the Neon project
+- [x] `web/privacy.html` and `web/delete-account.html` written, Pages workflow added, linked in Settings (arch §10.2)
+- [ ] Pages custom domain `miniledger.surajmishra.me` configured — needs the pushed repository and DNS
+- [x] `eas.json` profiles; `app.config.ts` refuses a production build without a public HTTPS API URL; production manifest checked (no storage/audio permissions, release build blocks cleartext)
+- [ ] EAS production AAB built and verified (arch §11.2) — needs the Expo account
 - [ ] Play Console: listing (described as a personal record-keeping tool that does not offer or arrange loans), Data Safety, financial-features declaration, deletion URL, reviewer test mailbox (arch §7.4)
 - [ ] Internal testing track, then the full manual smoke test (arch §12.3)
 - [ ] If Play Console requires a closed test for this app, run it (12 testers, 14 days) before applying for production
-- [ ] README: production deployment and operations
+- [x] README: production deployment and operations
 
 **Exit criteria (production gate)**
 - Every PRD §10 **P1** checkbox and every arch §15 checkbox passes.
