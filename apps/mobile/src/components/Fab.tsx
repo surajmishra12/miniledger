@@ -9,7 +9,7 @@ import { AppText } from './AppText';
 
 /** Extended "+ Add loan" FAB above the tab bar (design.md §5.1). */
 export function Fab({ label, onPress }: { label: string; onPress: () => void }) {
-  const { colors } = useTheme();
+  const { colors, reduceMotion } = useTheme();
   const insets = useSafeAreaInsets();
   return (
     <Pressable
@@ -22,7 +22,7 @@ export function Fab({ label, onPress }: { label: string; onPress: () => void }) 
           bottom: space.s4 + Math.max(insets.bottom - 40, 0),
           backgroundColor: pressed ? colors.brandPressed : colors.brandPrimary,
           shadowColor: colors.textPrimary,
-          transform: [{ scale: pressed ? 0.98 : 1 }],
+          transform: [{ scale: pressed && !reduceMotion ? 0.98 : 1 }],
         },
       ]}
     >

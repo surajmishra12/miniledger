@@ -11,13 +11,13 @@ type Props = { visible: boolean; title: string; onClose: () => void; children: R
 
 /** Raised sheet over a scrim; Android back closes it (design.md §7 BottomSheet). */
 export function BottomSheet({ visible, title, onClose, children }: Props) {
-  const { colors } = useTheme();
+  const { colors, reduceMotion } = useTheme();
   const insets = useSafeAreaInsets();
   return (
     <Modal
       visible={visible}
       transparent
-      animationType="slide"
+      animationType={reduceMotion ? 'fade' : 'slide'}
       onRequestClose={onClose}
       statusBarTranslucent
     >

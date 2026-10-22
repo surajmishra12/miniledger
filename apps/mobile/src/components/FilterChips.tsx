@@ -1,6 +1,7 @@
 import { Check } from 'lucide-react-native';
 import { Pressable, ScrollView, StyleSheet } from 'react-native';
 
+import { haptics } from '@/lib/haptics';
 import { useTheme } from '@/theme/theme-provider';
 import { radius, space } from '@/theme/tokens';
 
@@ -30,7 +31,10 @@ export function FilterChips<T extends string>({ options, value, onChange, label 
             key={option.value}
             accessibilityRole="radio"
             accessibilityState={{ selected }}
-            onPress={() => onChange(option.value)}
+            onPress={() => {
+              if (!selected) haptics.selection();
+              onChange(option.value);
+            }}
             style={[
               styles.chip,
               {

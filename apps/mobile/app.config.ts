@@ -17,8 +17,8 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
   scheme: 'miniledger',
   // Android colorPrimary (recents/task tint) = brandPrimary (design.md §2.1).
   primaryColor: '#B4472B',
-  // P0 ships the light theme only (design.md §2.4); switches to "automatic" in Phase 5.
-  userInterfaceStyle: 'light',
+  // Light / Dark / Use device setting (design.md §2.4); the in-app preference overrides it.
+  userInterfaceStyle: 'automatic',
   android: {
     package: IS_PRODUCTION ? 'com.surajmishra.miniledger' : 'com.surajmishra.miniledger.dev',
     // Receipts and credentials are never backed up (architecture.md §8).
@@ -31,6 +31,18 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
       // monochromeImage: add './assets/brand/adaptive-monochrome.png' when the themed-icon asset exists.
     },
     predictiveBackGestureEnabled: false,
+    // Receipts use the camera and the Android photo picker only (architecture.md §10.1):
+    // no storage, media or audio access.
+    permissions: ['android.permission.CAMERA'],
+    blockedPermissions: [
+      'android.permission.READ_EXTERNAL_STORAGE',
+      'android.permission.WRITE_EXTERNAL_STORAGE',
+      'android.permission.READ_MEDIA_IMAGES',
+      'android.permission.READ_MEDIA_VIDEO',
+      'android.permission.RECORD_AUDIO',
+      // Only the development error overlay needs it.
+      ...(IS_PRODUCTION ? ['android.permission.SYSTEM_ALERT_WINDOW'] : []),
+    ],
   },
   plugins: [
     'expo-router',
@@ -40,9 +52,13 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
         backgroundColor: '#FAF7F2',
         image: './assets/brand/mark.png',
         imageWidth: 120,
+        // Onyx canvas with the full-colour mark, no brown wash (design.md §6.1 S01).
+        dark: { backgroundColor: '#0B0B0C', image: './assets/brand/mark.png' },
       },
     ],
     'expo-secure-store',
+    // Applies userInterfaceStyle and the root background on Android.
+    'expo-system-ui',
     '@react-native-community/datetimepicker',
     'expo-image',
     'expo-font',

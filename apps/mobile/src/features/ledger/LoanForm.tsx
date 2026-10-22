@@ -31,6 +31,7 @@ import { TextField } from '@/components/TextField';
 import { api, ApiError } from '@/lib/api-client';
 import { errorCopy, isConnectionProblem, OFFLINE_SAVE_COPY } from '@/lib/error-copy';
 import { deviceToday } from '@/lib/format';
+import { haptics } from '@/lib/haptics';
 import { newId } from '@/lib/ids';
 import { invalidateLedger } from '@/lib/query-client';
 import { useTheme } from '@/theme/theme-provider';
@@ -46,7 +47,8 @@ type Props =
       mode: 'create';
       initialPerson?: PersonChoice | null;
       receiptSlot?: (loanId: string) => ReactNode;
-      onCreated?: (loan: LoanDto) => Promise<void>;
+      /** Runs after the server confirmed the create (e.g. moves a pending receipt into place). */
+      onCreated?: (loan: LoanDto) => Promise<{ receiptFailed?: boolean } | void>;
     }
   | {
       mode: 'edit';
@@ -90,7 +92,10 @@ function DirectionSwitch({
             accessibilityRole="radio"
             accessibilityState={{ selected, disabled }}
             disabled={disabled}
-            onPress={() => onChange(option.value)}
+            onPress={() => {
+              if (!selected) haptics.selection();
+              onChange(option.value);
+            }}
             style={[
               styles.directionOption,
               selected && {
@@ -206,10 +211,15 @@ export function LoanForm(props: Props) {
 
   const finish = async (loan: LoanDto) => {
     allowLeave();
+    haptics.success();
     await invalidateLedger(loan.id, loan.person.id);
     if (props.mode === 'create') {
-      await props.onCreated?.(loan);
-      router.replace(`/loans/${loan.id}`);
+      const outcome = await props.onCreated?.(loan);
+      router.replace(
+        outcome?.receiptFailed
+          ? { pathname: '/loans/[id]', params: { id: loan.id, receiptFailed: '1' } }
+          : `/loans/${loan.id}`,
+      );
       snackbar('Loan saved');
     } else {
       router.back();

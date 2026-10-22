@@ -60,7 +60,7 @@ export function Button({
   style,
   accessibilityHint,
 }: Props) {
-  const { colors } = useTheme();
+  const { colors, reduceMotion } = useTheme();
   const p = palette(variant, colors);
   const inactive = disabled || loading;
   const textColor = inactive && variant !== 'primary' ? 'textTertiary' : p.text;
@@ -81,7 +81,7 @@ export function Button({
           borderColor: p.border ?? 'transparent',
           borderWidth: p.border ? 1 : 0,
           opacity: inactive && variant === 'primary' ? 0.55 : 1,
-          transform: [{ scale: pressed ? 0.98 : 1 }],
+          transform: [{ scale: pressed && !reduceMotion ? 0.98 : 1 }],
         },
         style,
       ]}

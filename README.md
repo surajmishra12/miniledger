@@ -10,7 +10,7 @@ A small Android app for keeping track of money you lend to (and borrow from) peo
 - **App:** React Native + Expo (Expo Router), TypeScript
 - **Specs:** [`docs/prd.md`](docs/prd.md), [`docs/architecture.md`](docs/architecture.md), [`docs/design.md`](docs/design.md), progress in [`docs/implementation.md`](docs/implementation.md)
 
-> Status: the assignment scope is complete (Phases 1–2), plus the full ledger (Phase 3): partial repayments, editing and deleting loans and repayments, and a People tab with per-person balances, rename, archive and delete.
+> Status: the assignment scope is complete (Phases 1–2), plus the full V1: partial repayments, editing and deleting loans and repayments, a People tab (Phase 3), production email sign-in and account deletion (Phase 4), device-only receipt photos (the bonus), Light / Dark / Use device setting themes, haptics and reduced motion (Phase 5).
 
 ## Repository layout
 

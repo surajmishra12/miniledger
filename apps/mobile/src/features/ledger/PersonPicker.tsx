@@ -34,7 +34,7 @@ type Props = {
 };
 
 export function PersonPicker({ label, value, onChange, allowNew = true, error }: Props) {
-  const { colors } = useTheme();
+  const { colors, reduceMotion } = useTheme();
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState('');
   const search = useDebounced(normalizeText(query));
@@ -85,7 +85,11 @@ export function PersonPicker({ label, value, onChange, allowNew = true, error }:
         </AppText>
       ) : null}
 
-      <Modal visible={open} animationType="slide" onRequestClose={() => setOpen(false)}>
+      <Modal
+        visible={open}
+        animationType={reduceMotion ? 'fade' : 'slide'}
+        onRequestClose={() => setOpen(false)}
+      >
         <SafeAreaView style={[styles.fill, { backgroundColor: colors.canvas }]}>
           <View style={styles.sheetHeader}>
             <AppText variant="section" style={styles.fill} accessibilityRole="header">

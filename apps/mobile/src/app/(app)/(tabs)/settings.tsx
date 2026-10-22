@@ -13,6 +13,7 @@ import { AppText } from '@/components/AppText';
 import { Button } from '@/components/Button';
 import { ConfirmDialog } from '@/components/ConfirmDialog';
 import { Header } from '@/components/Header';
+import { RadioRow } from '@/components/RadioRow';
 import { Screen } from '@/components/Screen';
 import { useSnackbar } from '@/components/Snackbar';
 import { Divider, Surface } from '@/components/Surface';
@@ -21,7 +22,8 @@ import { updateMe } from '@/features/auth/api';
 import { useSession } from '@/features/auth/session';
 import { DELETE_DATA_URL, PRIVACY_URL } from '@/lib/config';
 import { errorCopy } from '@/lib/error-copy';
-import { useTheme } from '@/theme/theme-provider';
+import { haptics } from '@/lib/haptics';
+import { useTheme, type ThemePreference } from '@/theme/theme-provider';
 import { MIN_TOUCH_TARGET, radius, space } from '@/theme/tokens';
 
 function Section({ title, children }: { title: string; children: ReactNode }) {
@@ -151,8 +153,15 @@ function DisplayNameDialog({
   );
 }
 
+const APPEARANCE: { value: ThemePreference; label: string }[] = [
+  { value: 'light', label: 'Light' },
+  { value: 'dark', label: 'Dark' },
+  { value: 'system', label: 'Use device setting' },
+];
+
 export default function SettingsScreen() {
   const { user, signOut } = useSession();
+  const { preference, setPreference } = useTheme();
   const snackbar = useSnackbar();
   const [confirm, setConfirm] = useState(false);
   const [busy, setBusy] = useState(false);
@@ -162,6 +171,22 @@ export default function SettingsScreen() {
   return (
     <Screen scroll edges={['top']}>
       <Header title="Settings" large />
+
+      <Section title="Appearance">
+        <View accessibilityRole="radiogroup" style={styles.radios}>
+          {APPEARANCE.map((option) => (
+            <RadioRow
+              key={option.value}
+              label={option.label}
+              selected={preference === option.value}
+              onPress={() => {
+                if (preference !== option.value) haptics.selection();
+                setPreference(option.value);
+              }}
+            />
+          ))}
+        </View>
+      </Section>
 
       <Section title="Account">
         <Row
@@ -239,6 +264,7 @@ export default function SettingsScreen() {
 const styles = StyleSheet.create({
   section: { gap: space.s2 },
   paragraph: { padding: space.s4 },
+  radios: { padding: space.s2 },
   row: {
     minHeight: MIN_TOUCH_TARGET + 8,
     flexDirection: 'row',

@@ -37,13 +37,14 @@ function LaunchError({ onRetry }: { onRetry: () => void }) {
 
 function RootNavigator() {
   const { status, retry } = useSession();
-  const { colors, scheme } = useTheme();
+  const { colors, scheme, ready, reduceMotion } = useTheme();
+  const launching = status === 'loading' || !ready;
 
   useEffect(() => {
-    if (status !== 'loading') void SplashScreen.hideAsync();
-  }, [status]);
+    if (!launching) void SplashScreen.hideAsync();
+  }, [launching]);
 
-  if (status === 'loading') return null;
+  if (launching) return null;
 
   return (
     <>
@@ -55,7 +56,7 @@ function RootNavigator() {
           screenOptions={{
             headerShown: false,
             contentStyle: { backgroundColor: colors.canvas },
-            animation: 'slide_from_right',
+            animation: reduceMotion ? 'none' : 'slide_from_right',
           }}
         >
           <Stack.Protected guard={status === 'signedIn'}>

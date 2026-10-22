@@ -29,6 +29,7 @@ import { TextField } from '@/components/TextField';
 import { ApiError } from '@/lib/api-client';
 import { errorCopy, isConnectionProblem, OFFLINE_SAVE_COPY } from '@/lib/error-copy';
 import { repaymentMaxPaise } from '@/lib/format';
+import { haptics } from '@/lib/haptics';
 import { newId } from '@/lib/ids';
 import { invalidateLedger } from '@/lib/query-client';
 import { space } from '@/theme/tokens';
@@ -92,6 +93,7 @@ export function RepaymentForm({ loan, repayment }: Props) {
   const close = async (message = 'Repayment saved') => {
     setSaved(true);
     disablePrevention();
+    haptics.success();
     await invalidateLedger(loan.id, loan.person.id);
     router.back();
     snackbar(message);

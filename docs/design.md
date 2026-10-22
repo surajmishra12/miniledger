@@ -515,7 +515,7 @@ Each screen has a defined purpose, top-level hierarchy, actions, states and acce
 - **Repayment progress bar** (linear, `repaidPaise / principalPaise`) with the labelled amounts beside it; no circular chart.
 - **Primary CTA:** `Record repayment`. **Secondary:** `Mark as repaid`. Both only when outstanding > 0. Fully repaid loans show the `All settled.` state instead of enabled buttons.
 - **Repayment history:** newest first, each row with date, amount, note (if any) and an overflow menu `Edit` / `Remove`. All repayments are shown. No invented payment-method or verification badges.
-- **Receipt area (if present):** small thumbnail with `Saved on this device only` label; tap to open private full-screen viewer. If missing, show `Receipt unavailable on this device` while keeping loan detail usable. On a different device, do not show a phantom cloud receipt or a broken remote URL.
+- **Receipt area:** small thumbnail with `Saved on this device only` label and `Replace` / `Remove`; tap to open the private full-screen viewer. Without a file on this device (never attached, reinstall, other phone) it shows `Add receipt photo`; the file is the only index, so there is never a phantom cloud receipt or a broken remote URL. The viewer shows `Receipt unavailable on this device.` if the file disappears.
 - Optional note appears after the financial section, not ahead of it. Destructive delete requires confirmation that includes financial-history implications.
 
 ### S08 — Record / edit repayment
@@ -557,7 +557,7 @@ Each screen has a defined purpose, top-level hierarchy, actions, states and acce
 
 **Purpose:** Attach supporting evidence without cloud hosting.
 
-- From Add/Edit loan or Loan details, show an action sheet: `Take photo`, `Choose photo`, `Cancel` (and `Remove receipt` if attached).
+- From Add loan (More details) or Loan details, show an action sheet: `Take photo`, `Choose photo`, `Cancel` (and `Remove receipt` if attached). Changes on Loan details apply immediately; the Edit loan form does not hold the receipt.
 - Ask for camera/gallery permissions **only when the user chooses** the corresponding action; show a helpful OS Settings path if denied.
 - Show one-time, concise disclosure before first attachment: **`Receipt photos are saved only on this device. They won't appear if you reinstall the app or switch phones.`** One clear `Continue` action.
 - Confirm the selected image with a fit preview, `Replace` / `Remove`, and a small `Saved on this device only` label. Compression keeps receipt text legible (parameters in `architecture.md` §8).

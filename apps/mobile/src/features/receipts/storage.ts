@@ -85,3 +85,20 @@ export function deleteUserReceipts(userId: string): void {
     // Ignored (§8): receipts are only ever shown for their own userId.
   }
 }
+
+/** Stores a freshly processed image as the pending receipt of an unsaved loan. */
+export function setPendingReceipt(loanId: string, source: File): void {
+  const pending = pendingReceipt(loanId);
+  if (pending.exists) pending.delete();
+  source.copySync(pending);
+  try {
+    source.delete();
+  } catch {
+    // The processed image is a cache file; the OS removes it eventually.
+  }
+}
+
+export function pendingReceiptUri(loanId: string): string | null {
+  const pending = pendingReceipt(loanId);
+  return pending.exists ? pending.uri : null;
+}

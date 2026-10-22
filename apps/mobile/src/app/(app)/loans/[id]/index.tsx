@@ -5,7 +5,7 @@ import { formatPaise, type RepaymentDto } from '@miniledger/shared';
 import { useMutation } from '@tanstack/react-query';
 import { router, useLocalSearchParams } from 'expo-router';
 import { ChevronRight, EllipsisVertical, Pencil, Trash2 } from 'lucide-react-native';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
 
 import { ActionSheet } from '@/components/ActionSheet';
@@ -20,11 +20,17 @@ import { Screen } from '@/components/Screen';
 import { SkeletonBlock } from '@/components/Skeleton';
 import { useSnackbar } from '@/components/Snackbar';
 import { Divider, Surface } from '@/components/Surface';
+import { useSession } from '@/features/auth/session';
 import { deleteLoan, deleteRepayment, settleLoan, useLoan } from '@/features/ledger/api';
 import { LoanFinancials } from '@/features/ledger/LoanFinancials';
+import { RECEIPT_COPY } from '@/features/receipts/capture';
+import { useSavedReceipt } from '@/features/receipts/hooks';
+import { ReceiptAttach } from '@/features/receipts/ReceiptAttach';
+import { deleteLoanReceipts } from '@/features/receipts/storage';
 import { ApiError } from '@/lib/api-client';
 import { errorCopy } from '@/lib/error-copy';
 import { formatDateLong } from '@/lib/format';
+import { haptics } from '@/lib/haptics';
 import { invalidateLedger, queryClient, queryKeys } from '@/lib/query-client';
 import { useTheme } from '@/theme/theme-provider';
 import { space } from '@/theme/tokens';
@@ -64,12 +70,20 @@ function RepaymentRow({ repayment, onMenu }: { repayment: RepaymentDto; onMenu: 
 }
 
 export default function LoanDetailScreen() {
-  const { id } = useLocalSearchParams<{ id: string }>();
+  const { id, receiptFailed } = useLocalSearchParams<{ id: string; receiptFailed?: string }>();
   const { colors } = useTheme();
+  const { user } = useSession();
   const loan = useLoan(id);
+  const receipt = useSavedReceipt(user?.id, id);
   const snackbar = useSnackbar();
   const [dialog, setDialog] = useState<Dialog>(null);
   const [error, setError] = useState<string | null>(null);
+
+  // A loan that no longer exists takes its device-only receipt with it (§8).
+  const missing = loan.error instanceof ApiError && loan.error.code === 'NOT_FOUND';
+  useEffect(() => {
+    if (missing && user) deleteLoanReceipts(user.id, id);
+  }, [missing, user, id]);
 
   const settle = useMutation({ mutationFn: () => settleLoan(id) });
   const remove = useMutation({ mutationFn: () => deleteLoan(id) });
@@ -86,7 +100,6 @@ export default function LoanDetailScreen() {
     );
   }
   if (loan.isError) {
-    const missing = loan.error instanceof ApiError && loan.error.code === 'NOT_FOUND';
     return (
       <Screen>
         <Header back />
@@ -118,6 +131,7 @@ export default function LoanDetailScreen() {
     try {
       await action();
       setDialog(null);
+      haptics.success();
       await invalidateLedger(data.id, data.person.id);
       snackbar(success);
     } catch (e) {
@@ -132,6 +146,7 @@ export default function LoanDetailScreen() {
     try {
       await remove.mutateAsync();
       setDialog(null);
+      if (user) deleteLoanReceipts(user.id, data.id);
       queryClient.removeQueries({ queryKey: queryKeys.loan(data.id) });
       await invalidateLedger(undefined, data.person.id);
       router.back();
@@ -185,6 +200,9 @@ export default function LoanDetailScreen() {
 
       <LoanFinancials loan={data} />
 
+      {receiptFailed === '1' && !receipt.uri ? (
+        <InlineNotice tone="danger" message={RECEIPT_COPY.saveFailed} />
+      ) : null}
       {error ? <InlineNotice tone="danger" message={error} /> : null}
 
       {data.note ? (
@@ -219,6 +237,20 @@ export default function LoanDetailScreen() {
           <AppText color="successText">All settled. No balance remains on this loan.</AppText>
         ) : null}
       </View>
+
+      <ReceiptAttach
+        uri={receipt.uri}
+        version={receipt.version}
+        onPicked={(file) => {
+          receipt.attach(file);
+          snackbar('Receipt saved on this device');
+        }}
+        onRemove={() => {
+          receipt.remove();
+          snackbar('Receipt removed');
+        }}
+        onOpen={() => router.push(`/loans/${data.id}/receipt`)}
+      />
 
       <AppText variant="secondary" color="textSecondary">
         Loan date {formatDateLong(data.loanDate)}

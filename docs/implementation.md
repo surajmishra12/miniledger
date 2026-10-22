@@ -21,7 +21,7 @@ This file sequences the work and tracks progress. It **adds no rules**: behavior
 | 2 | P0 Android → **assignment can be submitted** | Code done; on-device run pending | 22 Oct 2026 | |
 | 3 | Complete ledger (V1 finance) | Code done; on-device run pending | 22 Oct 2026 | |
 | 4 | Production auth and account lifecycle | Code done; live Resend check needs the production key | 22 Oct 2026 | |
-| 5 | Receipts, themes and polish | Not started | | |
+| 5 | Receipts, themes and polish | Code done; on-device QA and dark logo assets pending | 22 Oct 2026 | |
 | 6 | Deployment and Play release → **production ready** | Not started | | |
 
 ---
@@ -126,12 +126,14 @@ This file sequences the work and tracks progress. It **adds no rules**: behavior
 
 **Goal:** the app meets the full design quality bar.
 
-- [ ] S11 receipts: capture, compression, cache-then-move on save, attach/replace/remove, viewer, disclosure, cleanup (arch §8)
-- [ ] Dark and Use device setting themes on every screen and system bar (design §2.2–2.5, §7.2); Appearance selector live; dark splash and dark logo (`mark-dark.png`, `logo-dark.png`, design §1.2)
-- [ ] Motion, haptics and reduced motion (design §8)
-- [ ] Empty states and optional illustrations (design §9.2, §10)
-- [ ] Accessibility: TalkBack labels, 200% font, 48dp targets, contrast audit in both themes (design §11)
-- [ ] Performance check on the phone (design §12)
+- [x] S11 receipts: capture, compression, cache-then-move on save, attach/replace/remove, pinch-zoom viewer, one-time disclosure, cleanup on loan delete / 404 / account deletion (arch §8)
+- [x] Dark and Use device setting themes on every screen, status bar and root window (design §2.2–2.5, §7.2); Appearance selector live; dark splash (onyx + full-colour mark)
+- [ ] Dark logo variants (`mark-dark.png`, `logo-dark.png`, design §1.2) — waiting for the assets; the full-colour mark is used meanwhile
+- [x] Motion, haptics and reduced motion (design §8): no press scale, slide or push animation when the OS removes animations
+- [x] Empty states and optional illustrations (design §9.2, §10)
+- [x] Accessibility: TalkBack labels, 48dp targets, contrast audit in both themes as unit tests (design §11)
+- [ ] On-phone checks: 200% font, TalkBack pass, performance (design §11–12) — needs the device
+- [x] Android permissions: camera only; storage, media and audio permissions blocked (arch §10.1)
 
 **Exit criteria**
 - Design QA gates A, B and C (design §13) are fully checked, with screenshots of every screen in both themes.
@@ -192,3 +194,5 @@ Record every case where implementation needed a spec change. Update the spec in 
 | 22 Oct 2026 | 2 | Typed routes disabled | Generated route types are git-ignored, so CI typecheck could not rely on them | — |
 | 22 Oct 2026 | 3 | S08 is always a full-screen route (`loans/[id]/repayments/new`, `/[repaymentId]`) | Design allows full screen; one presentation avoids keyboard/large-text sheet issues | design S08 |
 | 22 Oct 2026 | 4 | Resend is called through its REST API with `fetch` instead of the SDK | A real 10 s abort (`AbortSignal.timeout`), an idempotency key per challenge, and one less dependency | arch §2 |
+| 22 Oct 2026 | 5 | Receipts are attached from Add loan and Loan details only; S07 never shows "Receipt unavailable" | The file is the only index (arch §8), so a missing file is indistinguishable from "never attached" | design S07, S11 |
+| 22 Oct 2026 | 5 | Camera permission declared explicitly; storage/media/audio permissions blocked | The photo picker needs no permission; keeps the Data Safety form minimal | arch §10.1 |

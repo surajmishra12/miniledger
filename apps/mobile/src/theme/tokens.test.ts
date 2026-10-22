@@ -43,6 +43,21 @@ describe('theme tokens', () => {
       [c.warningText, c.warningSurface, 4.5],
       [c.dangerText, c.dangerSurface, 4.5],
       [c.outlineStrong, c.surface, 3],
+      // Phase 5 audit: every text colour on every surface it appears on.
+      [c.textPrimary, c.surfaceRaised, 4.5],
+      [c.textSecondary, c.canvas, 4.5],
+      [c.textSecondary, c.surfaceMuted, 4.5],
+      [c.textSecondary, c.surfaceRaised, 4.5],
+      [c.brandPrimary, c.canvas, 4.5],
+      [c.brandPrimary, c.surface, 4.5],
+      [c.brandPrimary, c.brandSubtle, 4.5],
+      [c.lentText, c.surface, 4.5],
+      [c.borrowedText, c.surface, 4.5],
+      [c.successText, c.canvas, 4.5],
+      [c.dangerText, c.canvas, 4.5],
+      [c.dangerText, c.surface, 4.5],
+      [c.dangerText, c.surfaceRaised, 4.5],
+      [c.focusRing, c.surface, 3],
     ];
     for (const [fg, bg, min] of pairs) {
       expect(contrast(fg, bg)).toBeGreaterThanOrEqual(min);
