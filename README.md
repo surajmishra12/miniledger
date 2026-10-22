@@ -58,23 +58,18 @@ render.yaml      Render Blueprint for the production API
 
    Check it: `http://localhost:4000/health` returns `{"status":"ok",...}`.
 
-5. Run the app. The simplest way is **Expo Go** over Wi-Fi (no cable or native build):
-   1. Install Expo Go from the Play Store; connect the phone to the same Wi-Fi as the computer.
-   2. Create `apps/mobile/.env` with your computer's LAN IP:
-
-      ```dotenv
-      EXPO_PUBLIC_API_URL=http://192.168.1.14:4000/v1
-      ```
-
-   3. `pnpm --filter @miniledger/mobile start` and scan the QR code with Expo Go.
-      If the phone cannot connect, allow Node.js through Windows Firewall on private networks (ports 4000 and 8081).
-
-   Alternatively, with a USB-connected phone (USB debugging on):
+5. Run the app on a USB-connected Android phone (Developer options → USB debugging on). Expo Go can't be used: the Play Store build supports an older SDK than this project's SDK 58.
 
    ```bash
-   adb reverse tcp:4000 tcp:4000
-   pnpm --filter @miniledger/mobile android
+   adb devices                      # the phone must be listed as "device"
+   adb reverse tcp:4000 tcp:4000    # the phone reaches the API as localhost; repeat after reconnecting
+   cd apps/mobile
+   EXPO_PUBLIC_API_URL=http://localhost:4000/v1 npx expo run:android
    ```
+
+   On Windows PowerShell set the variable with `$env:EXPO_PUBLIC_API_URL = "http://localhost:4000/v1"`, and make sure `ANDROID_HOME` (`%LOCALAPPDATA%\Android\Sdk`) and `JAVA_HOME` (Android Studio's `jbr`) are set. The first build takes 10–20 minutes; later ones are incremental.
+
+   **Windows long paths:** if the build fails in `react-native-reanimated` with `ninja: error: mkdir(...)`, the paths exceed 260 characters for CMake 3.22's ninja. Install CMake 3.31.6 (`sdkmanager "cmake;3.31.6"` or Android Studio → SDK Tools) and add `cmake.dir=C\:\\Users\\<you>\\AppData\\Local\\Android\\Sdk\\cmake\\3.31.6` to `apps/mobile/android/local.properties` (re-add it after `expo prebuild --clean`).
 
 ## Tests and checks
 
