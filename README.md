@@ -129,6 +129,7 @@ With the API running (`pnpm --filter @miniledger/api dev`), every step below can
 | `POST /v1/auth/otp/request`, `/otp/verify`              | Mock phone OTP sign-in                |
 | `POST /v1/auth/refresh`, `/logout`                      | Rotate or end the session             |
 | `GET`, `PATCH /v1/me`                                   | Account, timezone, display name       |
+| `POST /v1/auth/reauth/request`, `DELETE /v1/me`         | Delete the account with a fresh code  |
 | `GET`, `POST /v1/people`                                | People and their separate balances    |
 | `GET`, `PATCH`, `DELETE /v1/people/:id`                 | One person: rename, archive, delete   |
 | `GET`, `POST /v1/loans`                                 | List (filters, sorts) and add loans   |

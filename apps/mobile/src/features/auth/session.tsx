@@ -31,8 +31,12 @@ type SessionValue = {
   user: UserDto | null;
   signIn: (response: VerifyResponse) => Promise<void>;
   signOut: () => Promise<void>;
-  /** Clears everything after server-side account deletion. */
-  forgetAccount: () => Promise<void>;
+  /** Clears local credentials and caches; the notice is shown on Sign-in (e.g. after deletion). */
+  forgetAccount: (notice?: string) => Promise<void>;
+  /** Replaces the signed-in user after a profile change. */
+  updateUser: (user: UserDto) => void;
+  /** One-time message for the Sign-in screen. */
+  notice: string | null;
   retry: () => void;
 };
 
@@ -76,6 +80,7 @@ export function SessionProvider({ children }: { children: ReactNode }) {
     status: 'loading',
     user: null,
   });
+  const [notice, setNotice] = useState<string | null>(null);
 
   useEffect(() => {
     let active = true;
@@ -104,14 +109,21 @@ export function SessionProvider({ children }: { children: ReactNode }) {
     queryClient.clear();
     queryClient.setQueryData(queryKeys.me, response.user);
     syncTimezone(response.user);
+    setNotice(null);
     setState({ status: 'signedIn', user: response.user });
   }, []);
 
-  const forgetAccount = useCallback(async () => {
+  const forgetAccount = useCallback(async (message?: string) => {
     setApiSession(null);
     await clearSession();
     queryClient.clear();
+    setNotice(message ?? null);
     setState({ status: 'signedOut', user: null });
+  }, []);
+
+  const updateUser = useCallback((user: UserDto) => {
+    queryClient.setQueryData(queryKeys.me, user);
+    setState((current) => (current.status === 'signedIn' ? { ...current, user } : current));
   }, []);
 
   const signOut = useCallback(async () => {
@@ -120,8 +132,8 @@ export function SessionProvider({ children }: { children: ReactNode }) {
   }, [forgetAccount]);
 
   const value = useMemo(
-    () => ({ ...state, signIn, signOut, forgetAccount, retry }),
-    [state, signIn, signOut, forgetAccount, retry],
+    () => ({ ...state, notice, signIn, signOut, forgetAccount, updateUser, retry }),
+    [state, notice, signIn, signOut, forgetAccount, updateUser, retry],
   );
   return <SessionContext.Provider value={value}>{children}</SessionContext.Provider>;
 }

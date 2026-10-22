@@ -1,6 +1,7 @@
 import {
   otpRequestSchema,
   otpVerifySchema,
+  reauthRequestSchema,
   refreshSchema,
   type AuthConfigDto,
 } from '@miniledger/shared';
@@ -43,6 +44,12 @@ export function createAuthRoutes(
   router.post('/refresh', async (req, res) => {
     const { refreshToken } = refreshSchema.parse(req.body);
     res.json(await sessions.refresh(refreshToken));
+  });
+
+  router.post('/reauth/request', auth, async (req, res) => {
+    reauthRequestSchema.parse(req.body ?? {});
+    const { user, sessionId } = authOf(req);
+    res.json(await otp.requestReauthCode(user, sessionId, req.ip ?? 'unknown'));
   });
 
   router.post('/logout', auth, async (req, res) => {

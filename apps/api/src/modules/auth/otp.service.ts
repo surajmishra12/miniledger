@@ -16,7 +16,7 @@ import {
 
 import type { AppContext } from '../../context';
 import { TX_OPTIONS } from '../../context';
-import type { IdentifierType, OtpPurpose } from '../../generated/prisma/client';
+import type { IdentifierType, OtpPurpose, User } from '../../generated/prisma/client';
 import { digestsEqual, generateOtpCode, hmacHex } from '../../lib/crypto';
 import { canonicalTimeZone, DEFAULT_TIMEZONE } from '../../lib/dates';
 import { AppError, validationError } from '../../lib/errors';
@@ -309,7 +309,12 @@ export function createOtpService(ctx: AppContext, sessions: SessionService) {
     }, TX_OPTIONS);
   }
 
-  return { requestLoginCode, verifyLogin, issueChallenge, consumeChallenge };
+  /** Account-deletion code, sent to the signed-in user's own identifier and bound to the session. */
+  async function requestReauthCode(user: User, sessionId: string, ip: string) {
+    return issueChallenge({ purpose: 'REAUTH', identifier: user.identifier, ip, sessionId });
+  }
+
+  return { requestLoginCode, verifyLogin, requestReauthCode, issueChallenge, consumeChallenge };
 }
 
 export type OtpService = ReturnType<typeof createOtpService>;

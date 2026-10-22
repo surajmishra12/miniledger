@@ -20,6 +20,7 @@ export default function AppLayout() {
       <Stack.Screen name="loans/[id]/repayments/new" />
       <Stack.Screen name="loans/[id]/repayments/[repaymentId]" />
       <Stack.Screen name="people/[id]" />
+      <Stack.Screen name="settings/delete-account" />
     </Stack>
   );
 }

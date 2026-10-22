@@ -1,13 +1,15 @@
-import { patchMeSchema } from '@miniledger/shared';
+import { deleteMeSchema, patchMeSchema } from '@miniledger/shared';
 import { Router } from 'express';
 
 import type { AppContext } from '../../context';
 import { canonicalTimeZone } from '../../lib/dates';
 import { validationError } from '../../lib/errors';
 import { authOf } from '../../middleware/require-auth';
+import type { OtpService } from '../auth/otp.service';
+import { deleteAccount } from './account.service';
 import { toUserDto } from './user.dto';
 
-export function createUserRoutes(ctx: AppContext): Router {
+export function createUserRoutes(ctx: AppContext, otp: OtpService): Router {
   const router = Router();
 
   router.get('/', (req, res) => {
@@ -25,6 +27,15 @@ export function createUserRoutes(ctx: AppContext): Router {
     }
     const user = await ctx.prisma.user.update({ where: { id: authOf(req).user.id }, data });
     res.json(toUserDto(user));
+  });
+
+  /** Always needs a fresh code from POST /v1/auth/reauth/request for this session (§7.3). */
+  router.delete('/', async (req, res) => {
+    const { challengeId, code } = deleteMeSchema.parse(req.body);
+    const { user, sessionId } = authOf(req);
+    await otp.consumeChallenge({ challengeId, code, purpose: 'REAUTH', sessionId });
+    await deleteAccount(ctx, user);
+    res.status(204).end();
   });
 
   return router;

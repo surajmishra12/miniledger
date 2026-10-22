@@ -7,7 +7,7 @@ import { createApp } from './app';
 import { ConfigError, loadEnv, type Env } from './config/env';
 import { systemClock } from './lib/clock';
 import { createLogger } from './lib/logger';
-import { createLogDelivery, unavailableDelivery } from './lib/otp-delivery';
+import { createLogDelivery, createResendDelivery } from './lib/otp-delivery';
 import { createPrisma } from './lib/prisma';
 
 function readVersion(): string {
@@ -35,8 +35,11 @@ function main(): void {
   const logger = createLogger(env.LOG_LEVEL, { pretty: env.NODE_ENV === 'development' });
   const prisma = createPrisma(env.DATABASE_URL);
   const version = readVersion();
-  // Assignment mode prints OTPs to this log; production email delivery arrives in Phase 4.
-  const delivery = env.AUTH_MODE === 'assignment' ? createLogDelivery(logger) : unavailableDelivery;
+  // Assignment mode prints OTPs to this log; production emails them (loadEnv requires the keys).
+  const delivery =
+    env.AUTH_MODE === 'assignment'
+      ? createLogDelivery(logger)
+      : createResendDelivery({ apiKey: env.RESEND_API_KEY!, from: env.RESEND_FROM_EMAIL! });
   const app = createApp({ env, prisma, clock: systemClock, logger, delivery, version });
 
   const server = app.listen(env.PORT, '0.0.0.0', () => {

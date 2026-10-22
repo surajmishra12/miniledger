@@ -13,13 +13,14 @@ import { Screen } from '@/components/Screen';
 import { TextField } from '@/components/TextField';
 import { Wordmark } from '@/components/Wordmark';
 import { requestOtp, useAuthConfig } from '@/features/auth/api';
+import { useSession } from '@/features/auth/session';
+import { PRIVACY_URL } from '@/lib/config';
 import { errorCopy } from '@/lib/error-copy';
 import { space } from '@/theme/tokens';
 
-const PRIVACY_URL = 'https://miniledger.surajmishra.me/privacy.html';
-
 export default function SignInScreen() {
   const config = useAuthConfig();
+  const { notice } = useSession();
   const [value, setValue] = useState('');
   const [fieldError, setFieldError] = useState<string>();
   const [error, setError] = useState<string | null>(null);
@@ -68,6 +69,8 @@ export default function SignInScreen() {
           Keep track of money you lend and borrow, without spreadsheets.
         </AppText>
       </View>
+
+      {notice ? <InlineNotice message={notice} /> : null}
 
       {config.isError ? (
         <InlineNotice

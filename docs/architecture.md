@@ -75,7 +75,7 @@ MiniLedger is a **personal recordkeeping app**, not a payment or lending platfor
 | Validation | Zod at the API boundary | Reject bad input before domain logic |
 | Auth tokens | `jose` (HS256 JWT) + opaque refresh tokens | Revocable server sessions |
 | Logging | `pino` | Structured, redacted JSON logs |
-| Email | Resend Node SDK | Production OTP only |
+| Email | Resend REST API via `fetch` (no SDK) | Production OTP only; `AbortSignal` timeout and challenge-ID idempotency key |
 | Tests | **Vitest** for `api` and `shared`; **jest-expo** for mobile unit tests; Supertest for HTTP | Expo's supported runner on mobile; one runner per package |
 | Hosting | Render Free web service + Neon Free PostgreSQL | Upgrade when reliability requires |
 | Distribution | Expo EAS Build → Google Play | Separate assignment/production profiles |

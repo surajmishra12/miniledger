@@ -20,7 +20,7 @@ This file sequences the work and tracks progress. It **adds no rules**: behavior
 | 1 | P0 backend | Done | 22 Oct 2026 | 22 Oct 2026 |
 | 2 | P0 Android → **assignment can be submitted** | Code done; on-device run pending | 22 Oct 2026 | |
 | 3 | Complete ledger (V1 finance) | Code done; on-device run pending | 22 Oct 2026 | |
-| 4 | Production auth and account lifecycle | Not started | | |
+| 4 | Production auth and account lifecycle | Code done; live Resend check needs the production key | 22 Oct 2026 | |
 | 5 | Receipts, themes and polish | Not started | | |
 | 6 | Deployment and Play release → **production ready** | Not started | | |
 
@@ -112,11 +112,11 @@ This file sequences the work and tracks progress. It **adds no rules**: behavior
 
 **Goal:** the backend is safe to expose publicly.
 
-- [ ] Production mode: Resend adapter with timeout and failure handling, daily cap (arch §7.2, §11.1)
-- [ ] S02 email variant driven by `/v1/auth/config`; S03 email copy
-- [ ] `POST /v1/auth/reauth/request` and `DELETE /v1/me {challengeId, code}` with cascade (arch §4.2, §7.2–7.3)
-- [ ] Full S12: account, display name, your data, privacy links, deletion flow (design §6 S12)
-- [ ] Tests: Auth (production) group in arch §12.1 with a mocked Resend client
+- [x] Production mode: Resend adapter with timeout and failure handling, daily cap (arch §7.2, §11.1)
+- [x] S02 email variant driven by `/v1/auth/config`; S03 email copy
+- [x] `POST /v1/auth/reauth/request` and `DELETE /v1/me {challengeId, code}` with cascade (arch §4.2, §7.2–7.3)
+- [x] Full S12: account, display name, your data, privacy links, app version, deletion flow (design §6 S12); Appearance arrives with themes in Phase 5
+- [x] Tests: Auth (production) group in arch §12.1 with a mocked Resend client (fake `fetch`), account deletion (96 API tests)
 
 **Exit criteria**
 - Against a local server in production mode: phone OTP → `422`; Resend failure → `503` and no active challenge; deleting an account makes old tokens `401` and leaves no rows for that user.
@@ -191,3 +191,4 @@ Record every case where implementation needed a spec change. Update the spec in 
 | 22 Oct 2026 | 2 | Forms use component state + the shared Zod schemas; React Hook Form not used | Forms are small; one less dependency to explain | arch §2 |
 | 22 Oct 2026 | 2 | Typed routes disabled | Generated route types are git-ignored, so CI typecheck could not rely on them | — |
 | 22 Oct 2026 | 3 | S08 is always a full-screen route (`loans/[id]/repayments/new`, `/[repaymentId]`) | Design allows full screen; one presentation avoids keyboard/large-text sheet issues | design S08 |
+| 22 Oct 2026 | 4 | Resend is called through its REST API with `fetch` instead of the SDK | A real 10 s abort (`AbortSignal.timeout`), an idempotency key per challenge, and one less dependency | arch §2 |

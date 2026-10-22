@@ -1,4 +1,10 @@
-import { authConfigDtoSchema, challengeDtoSchema, verifyResponseSchema } from '@miniledger/shared';
+import {
+  authConfigDtoSchema,
+  challengeDtoSchema,
+  userDtoSchema,
+  verifyResponseSchema,
+  type PatchMeInput,
+} from '@miniledger/shared';
 import { useQuery } from '@tanstack/react-query';
 
 import { api } from '@/lib/api-client';
@@ -28,3 +34,6 @@ export const requestDeletionCode = () =>
 
 export const deleteAccount = (body: { challengeId: string; code: string }) =>
   api('/me', null, { method: 'DELETE', body });
+
+export const updateMe = (body: PatchMeInput) =>
+  api('/me', userDtoSchema, { method: 'PATCH', body });
