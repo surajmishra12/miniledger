@@ -200,3 +200,5 @@ Record every case where implementation needed a spec change. Update the spec in 
 | 22 Oct 2026 | 4 | Resend is called through its REST API with `fetch` instead of the SDK | A real 10 s abort (`AbortSignal.timeout`), an idempotency key per challenge, and one less dependency | arch §2 |
 | 22 Oct 2026 | 5 | Receipts are attached from Add loan and Loan details only; S07 never shows "Receipt unavailable" | The file is the only index (arch §8), so a missing file is indistinguishable from "never attached" | design S07, S11 |
 | 22 Oct 2026 | 5 | Camera permission declared explicitly; storage/media/audio permissions blocked | The photo picker needs no permission; keeps the Data Safety form minimal | arch §10.1 |
+| 22 Oct 2026 | 5 | Repaid rows show the original amount muted; person-detail rows title with the due date | `₹0` carried no information; a direction chip must stay on every row (§2.3) | design S05 |
+| 22 Oct 2026 | 5 | Native builds pin SDK CMake 3.31.6 in `android/local.properties` | CMake 3.22's ninja 1.10 fails on Windows paths over 260 characters | README |

@@ -21,7 +21,7 @@ export default function AppLayout() {
         name="loans/[id]/receipt"
         options={{
           animation: reduceMotion ? 'none' : 'fade',
-          contentStyle: { backgroundColor: '#000000' },
+          contentStyle: { backgroundColor: colors.viewerCanvas },
         }}
       />
       <Stack.Screen name="loans/[id]/repayments/new" />

@@ -10,6 +10,7 @@ import { AppText } from '@/components/AppText';
 import { Button } from '@/components/Button';
 import { InlineNotice } from '@/components/InlineNotice';
 import { Screen } from '@/components/Screen';
+import { SkeletonBlock } from '@/components/Skeleton';
 import { TextField } from '@/components/TextField';
 import { Wordmark } from '@/components/Wordmark';
 import { requestOtp, useAuthConfig } from '@/features/auth/api';
@@ -26,7 +27,9 @@ export default function SignInScreen() {
   const [error, setError] = useState<string | null>(null);
   const [sending, setSending] = useState(false);
 
-  const isPhone = config.data?.identifierType !== 'EMAIL';
+  // Never show a variant until the server says which one (no mock-OTP UI in production).
+  const mode = config.data?.identifierType ?? null;
+  const isPhone = mode === 'PHONE';
 
   const submit = async () => {
     const normalized = isPhone ? normalizePhone(value) : normalizeEmail(value);
@@ -52,7 +55,7 @@ export default function SignInScreen() {
       contentStyle={styles.content}
       footer={
         <Button
-          label={isPhone ? 'Send code' : 'Continue with email'}
+          label={mode === 'EMAIL' ? 'Continue with email' : 'Send code'}
           loadingLabel="Sending…"
           loading={sending}
           disabled={!config.data || value.trim() === ''}
@@ -81,7 +84,14 @@ export default function SignInScreen() {
         />
       ) : null}
 
-      {isPhone ? (
+      {mode === null ? (
+        config.isError ? null : (
+          <View style={styles.pending} accessibilityLabel="Loading">
+            <SkeletonBlock height={20} width="40%" />
+            <SkeletonBlock height={56} />
+          </View>
+        )
+      ) : isPhone ? (
         <TextField
           label="Mobile number"
           value={value}
@@ -119,11 +129,13 @@ export default function SignInScreen() {
         />
       )}
 
-      <AppText variant="secondary" color="textSecondary">
-        {isPhone
-          ? 'Assignment mode: find your code in the local server logs.'
-          : "We'll send you a one-time code. No password needed."}
-      </AppText>
+      {mode ? (
+        <AppText variant="secondary" color="textSecondary">
+          {isPhone
+            ? 'Assignment mode: find your code in the local server logs.'
+            : "We'll send you a one-time code. No password needed."}
+        </AppText>
+      ) : null}
 
       {error ? <InlineNotice tone="danger" message={error} /> : null}
 
@@ -139,5 +151,6 @@ export default function SignInScreen() {
 
 const styles = StyleSheet.create({
   content: { paddingTop: space.s10, gap: space.s5 },
+  pending: { gap: space.s2 },
   brand: { alignItems: 'center', gap: space.s3, marginBottom: space.s4 },
 });

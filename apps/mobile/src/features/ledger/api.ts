@@ -18,7 +18,7 @@ import {
   type PatchPersonInput,
   type PatchRepaymentInput,
 } from '@miniledger/shared';
-import { useInfiniteQuery, useQuery } from '@tanstack/react-query';
+import { keepPreviousData, useInfiniteQuery, useQuery } from '@tanstack/react-query';
 
 import { api } from '@/lib/api-client';
 import { queryKeys } from '@/lib/query-client';
@@ -42,6 +42,8 @@ export function useSummary() {
 export function useLoanList(filters: LoanFilters, pageSize = 20) {
   return useInfiniteQuery({
     queryKey: queryKeys.loans(filters),
+    // Keep the current rows while a new filter loads, so the list never collapses (design.md §8.1).
+    placeholderData: keepPreviousData,
     initialPageParam: null as string | null,
     queryFn: ({ pageParam }) =>
       api(

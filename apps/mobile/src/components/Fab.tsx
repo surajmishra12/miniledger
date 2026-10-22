@@ -1,36 +1,37 @@
 import { Plus } from 'lucide-react-native';
-import { Pressable, StyleSheet } from 'react-native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { Animated, Pressable, StyleSheet } from 'react-native';
 
+import { usePressFeedback } from '@/lib/press';
 import { useTheme } from '@/theme/theme-provider';
 import { radius, space } from '@/theme/tokens';
 
 import { AppText } from './AppText';
 
-/** Extended "+ Add loan" FAB above the tab bar (design.md §5.1). */
+const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
+
+/** Extended "+ Add loan" FAB above the tab bar (design.md §5.1); no shadow in dark (§2.6). */
 export function Fab({ label, onPress }: { label: string; onPress: () => void }) {
-  const { colors, reduceMotion } = useTheme();
-  const insets = useSafeAreaInsets();
+  const { colors, scheme, reduceMotion } = useTheme();
+  const press = usePressFeedback(reduceMotion, 0.96);
   return (
-    <Pressable
+    <AnimatedPressable
       accessibilityRole="button"
       accessibilityLabel={label}
       onPress={onPress}
-      style={({ pressed }) => [
+      onPressIn={press.onPressIn}
+      onPressOut={press.onPressOut}
+      style={[
         styles.fab,
-        {
-          bottom: space.s4 + Math.max(insets.bottom - 40, 0),
-          backgroundColor: pressed ? colors.brandPressed : colors.brandPrimary,
-          shadowColor: colors.textPrimary,
-          transform: [{ scale: pressed && !reduceMotion ? 0.98 : 1 }],
-        },
+        { backgroundColor: press.pressed ? colors.brandPressed : colors.brandPrimary },
+        scheme === 'light' ? [styles.shadow, { shadowColor: colors.textPrimary }] : null,
+        press.scaleStyle,
       ]}
     >
       <Plus size={22} color={colors.onBrand} strokeWidth={2} />
       <AppText variant="button" color="onBrand">
         {label}
       </AppText>
-    </Pressable>
+    </AnimatedPressable>
   );
 }
 
@@ -38,15 +39,18 @@ const styles = StyleSheet.create({
   fab: {
     position: 'absolute',
     right: space.s5,
+    bottom: space.s4,
     minHeight: 56,
     paddingHorizontal: space.s5,
     borderRadius: radius.lg,
     flexDirection: 'row',
     alignItems: 'center',
     gap: space.s2,
-    elevation: 2,
-    shadowOpacity: 0.08,
-    shadowRadius: 8,
-    shadowOffset: { width: 0, height: 2 },
+  },
+  shadow: {
+    elevation: 3,
+    shadowOpacity: 0.12,
+    shadowRadius: 12,
+    shadowOffset: { width: 0, height: 4 },
   },
 });

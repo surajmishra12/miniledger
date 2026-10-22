@@ -15,8 +15,8 @@ import {
 import { useMutation } from '@tanstack/react-query';
 import { router, usePreventRemove } from 'expo-router';
 import { ArrowDownLeft, ArrowUpRight, ChevronDown, ChevronUp } from 'lucide-react-native';
-import { useState, type ReactNode } from 'react';
-import { Pressable, StyleSheet, View } from 'react-native';
+import { useRef, useState, type ReactNode } from 'react';
+import { AccessibilityInfo, Pressable, StyleSheet, View } from 'react-native';
 
 import { AppText } from '@/components/AppText';
 import { Button } from '@/components/Button';
@@ -27,7 +27,7 @@ import { InlineNotice } from '@/components/InlineNotice';
 import { MoneyField } from '@/components/MoneyField';
 import { Screen } from '@/components/Screen';
 import { useSnackbar } from '@/components/Snackbar';
-import { TextField } from '@/components/TextField';
+import { TextField, type TextInputRef } from '@/components/TextField';
 import { api, ApiError } from '@/lib/api-client';
 import { errorCopy, isConnectionProblem, OFFLINE_SAVE_COPY } from '@/lib/error-copy';
 import { deviceToday } from '@/lib/format';
@@ -77,19 +77,18 @@ function DirectionSwitch({
     <View
       accessibilityRole="radiogroup"
       accessibilityLabel="Direction"
-      style={[
-        styles.direction,
-        { backgroundColor: colors.surfaceMuted, opacity: disabled ? 0.6 : 1 },
-      ]}
+      style={[styles.direction, { backgroundColor: colors.surfaceMuted }]}
     >
       {options.map((option) => {
         const selected = option.value === value;
         const Icon = option.icon;
-        const tint = option.value === 'LENT' ? colors.lentText : colors.borrowedText;
+        const tone = option.value === 'LENT' ? 'lentText' : 'borrowedText';
+        const color = disabled ? 'textTertiary' : selected ? tone : 'textSecondary';
         return (
           <Pressable
             key={option.value}
             accessibilityRole="radio"
+            accessibilityLabel={option.label}
             accessibilityState={{ selected, disabled }}
             disabled={disabled}
             onPress={() => {
@@ -98,15 +97,11 @@ function DirectionSwitch({
             }}
             style={[
               styles.directionOption,
-              selected && {
-                backgroundColor: colors.surfaceRaised,
-                borderColor: tint,
-                borderWidth: 2,
-              },
+              selected && { backgroundColor: colors.surfaceRaised, borderColor: colors.outline },
             ]}
           >
-            <Icon size={22} color={selected ? tint : colors.textSecondary} strokeWidth={2} />
-            <AppText variant="button" color={selected ? 'textPrimary' : 'textSecondary'}>
+            <Icon size={22} color={colors[color]} strokeWidth={2} />
+            <AppText variant="button" color={color}>
               {option.label}
             </AppText>
           </Pressable>
@@ -151,6 +146,7 @@ export function LoanForm(props: Props) {
   const [saved, setSaved] = useState(false);
   // One client ID per form: every retry of this create reuses it (architecture.md §5.1).
   const [loanId] = useState(() => editing?.id ?? newId());
+  const amountRef = useRef<TextInputRef>(null);
 
   const dirty =
     direction !== initial.direction ||
@@ -231,7 +227,16 @@ export function LoanForm(props: Props) {
     const found = validate();
     setErrors(found);
     setNotice(null);
-    if (Object.keys(found).length) return;
+    const first = (['person', 'amount', 'dueDate', 'loanDate', 'note'] as const).find(
+      (key) => found[key],
+    );
+    if (first) {
+      // Return to the first error: focus it if it is a text field, and announce it (§7.1).
+      if (first === 'amount') amountRef.current?.focus();
+      if (first === 'loanDate' || first === 'note') setMoreOpen(true);
+      AccessibilityInfo.announceForAccessibility(found[first] ?? '');
+      return;
+    }
     try {
       await finish(await mutation.mutateAsync());
     } catch (error) {
@@ -312,11 +317,20 @@ export function LoanForm(props: Props) {
       />
 
       <MoneyField
+        ref={amountRef}
         label="Original amount"
         value={amount}
         onChangeText={(value) => {
           setAmount(value);
           setErrors((e) => ({ ...e, amount: undefined }));
+        }}
+        // Validate on blur once something was typed (design.md §7.1).
+        onBlur={() => {
+          if (!amount) return;
+          const parsed = amountSchema.safeParse(amount);
+          if (!parsed.success) {
+            setErrors((e) => ({ ...e, amount: parsed.error.issues[0]?.message }));
+          }
         }}
         error={errors.amount}
       />
@@ -405,16 +419,17 @@ export function LoanForm(props: Props) {
         confirmLabel="Review latest"
         onCancel={() => setDialog(null)}
         onConfirm={() => {
+          if (!editing) return;
           allowLeave();
           setDialog(null);
-          if (editing) void invalidateLedger(editing.id);
-          router.back();
+          // Reopen the form with the server's current data (design.md §9.4).
+          void invalidateLedger(editing.id).then(() => router.replace(`/loans/${editing.id}/edit`));
         }}
       />
       <ConfirmDialog
         visible={dialog?.kind === 'conflict'}
         title="This was already saved."
-        confirmLabel="View loan"
+        confirmLabel="View"
         onCancel={() => setDialog(null)}
         onConfirm={() => {
           allowLeave();
@@ -438,7 +453,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     gap: space.s2,
-    borderWidth: 2,
+    borderWidth: 1,
     borderColor: 'transparent',
   },
   more: { flexDirection: 'row', alignItems: 'center', gap: space.s1, minHeight: 48 },

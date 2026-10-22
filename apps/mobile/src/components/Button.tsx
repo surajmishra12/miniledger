@@ -1,10 +1,20 @@
 import type { LucideIcon } from 'lucide-react-native';
-import { ActivityIndicator, Pressable, StyleSheet, View, type ViewStyle } from 'react-native';
+import {
+  ActivityIndicator,
+  Animated,
+  Pressable,
+  StyleSheet,
+  View,
+  type ViewStyle,
+} from 'react-native';
 
+import { usePressFeedback } from '@/lib/press';
 import { useTheme } from '@/theme/theme-provider';
 import { MIN_TOUCH_TARGET, radius, space, type ColorTokens } from '@/theme/tokens';
 
 import { AppText } from './AppText';
+
+const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
 
 export type ButtonVariant = 'primary' | 'secondary' | 'destructive' | 'ghost';
 
@@ -61,28 +71,40 @@ export function Button({
   accessibilityHint,
 }: Props) {
   const { colors, reduceMotion } = useTheme();
+  const press = usePressFeedback(reduceMotion);
   const p = palette(variant, colors);
   const inactive = disabled || loading;
-  const textColor = inactive && variant !== 'primary' ? 'textTertiary' : p.text;
+  // Disabled = textTertiary on surfaceMuted, never faded opacity (design.md §2.3).
+  // Loading keeps the button's own colours so it reads as busy, not unavailable.
+  const disabledLook = disabled && !loading;
+  const textColor: keyof ColorTokens = disabledLook ? 'textTertiary' : p.text;
+  const background = disabledLook
+    ? variant === 'ghost'
+      ? 'transparent'
+      : colors.surfaceMuted
+    : press.pressed
+      ? p.pressed
+      : p.bg;
 
   return (
-    <Pressable
+    <AnimatedPressable
       accessibilityRole="button"
       accessibilityLabel={loading && loadingLabel ? loadingLabel : label}
       accessibilityHint={accessibilityHint}
       accessibilityState={{ disabled: inactive, busy: loading }}
       disabled={inactive}
       onPress={onPress}
-      style={({ pressed }) => [
+      onPressIn={press.onPressIn}
+      onPressOut={press.onPressOut}
+      style={[
         styles.base,
         compact ? styles.compact : styles.regular,
         {
-          backgroundColor: pressed ? p.pressed : p.bg,
-          borderColor: p.border ?? 'transparent',
-          borderWidth: p.border ? 1 : 0,
-          opacity: inactive && variant === 'primary' ? 0.55 : 1,
-          transform: [{ scale: pressed && !reduceMotion ? 0.98 : 1 }],
+          backgroundColor: background,
+          borderColor: disabledLook ? 'transparent' : (p.border ?? 'transparent'),
+          borderWidth: p.border && !disabledLook ? 1 : 0,
         },
+        press.scaleStyle,
         style,
       ]}
     >
@@ -96,7 +118,7 @@ export function Button({
           {loading && loadingLabel ? loadingLabel : label}
         </AppText>
       </View>
-    </Pressable>
+    </AnimatedPressable>
   );
 }
 

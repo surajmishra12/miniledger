@@ -60,7 +60,8 @@ export function LoanFinancials({ loan }: { loan: LoanDto }) {
 
       <View
         accessibilityRole="progressbar"
-        accessibilityLabel={`${Math.round(progress * 100)} percent repaid`}
+        accessibilityLabel="Repaid"
+        accessibilityValue={{ min: 0, max: 100, now: Math.round(progress * 100) }}
         style={[styles.track, { backgroundColor: colors.surfaceMuted }]}
       >
         <View

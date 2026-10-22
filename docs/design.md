@@ -464,7 +464,8 @@ Each screen has a defined purpose, top-level hierarchy, actions, states and acce
 - Row anatomy (`LoanRow`):
   - left: person initials in a subtle circle (§11 initials rule) and **person name**;
   - second line: direction chip `Lent` / `Borrowed` + due-status label (§1.3);
-  - right: **remaining balance** bold; when partially repaid, a smaller `of ₹5,000` beneath it;
+  - right: **remaining balance** bold; when partially repaid, a smaller `of ₹5,000` beneath it; fully repaid loans show the original amount in `textSecondary` (with the `Repaid` chip) instead of `₹0`;
+  - in Person detail the person column is dropped: the title becomes `Due 30 October 2026` and the direction chip stays;
   - status chip (`StatusChip`, §2.3 colors with icon): `N days overdue` (danger), `Due today` / `Due tomorrow` (warning) or `Repaid` (success); other outstanding loans show the plain due label without a chip. Never an unlabeled dot.
 - Row tap opens Loan details. No swipe actions.
 - Do not show a total count (the API does not provide one). Filters, search and scroll position are preserved on back.

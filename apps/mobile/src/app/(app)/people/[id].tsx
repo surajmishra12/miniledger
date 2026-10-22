@@ -4,9 +4,17 @@
 import { formatPaise, type LoanDto } from '@miniledger/shared';
 import { useMutation } from '@tanstack/react-query';
 import { router, useLocalSearchParams } from 'expo-router';
-import { Archive, ArchiveRestore, EllipsisVertical, Pencil, Trash2 } from 'lucide-react-native';
+import {
+  Archive,
+  ArchiveRestore,
+  ArrowDownLeft,
+  ArrowUpRight,
+  EllipsisVertical,
+  Pencil,
+  Trash2,
+} from 'lucide-react-native';
 import { useMemo, useState } from 'react';
-import { ActivityIndicator, FlatList, StyleSheet, View } from 'react-native';
+import { ActivityIndicator, FlatList, RefreshControl, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { ActionSheet, type SheetAction } from '@/components/ActionSheet';
@@ -41,11 +49,17 @@ function Figure({
   amount: number;
   tone: 'lent' | 'borrowed';
 }) {
+  const { colors } = useTheme();
+  const Icon = tone === 'lent' ? ArrowUpRight : ArrowDownLeft;
+  const color = tone === 'lent' ? 'lentText' : 'borrowedText';
   return (
-    <View style={styles.figure}>
-      <AppText variant="secondary" color={tone === 'lent' ? 'lentText' : 'borrowedText'}>
-        {label}
-      </AppText>
+    <View style={styles.figure} accessible accessibilityLabel={`${label}, ${formatPaise(amount)}`}>
+      <View style={styles.figureLabel}>
+        <Icon size={18} color={colors[color]} strokeWidth={1.75} />
+        <AppText variant="secondary" color={color}>
+          {label}
+        </AppText>
+      </View>
       <AppText variant="cardAmount" tabular adjustsFontSizeToFit numberOfLines={1}>
         {formatPaise(amount)}
       </AppText>
@@ -242,6 +256,17 @@ export default function PersonDetailScreen() {
             </View>
           );
         }}
+        refreshControl={
+          <RefreshControl
+            refreshing={person.isRefetching || (loans.isRefetching && !loans.isFetchingNextPage)}
+            onRefresh={() => {
+              void person.refetch();
+              void loans.refetch();
+            }}
+            colors={[colors.brandPrimary]}
+            progressBackgroundColor={colors.surface}
+          />
+        }
         onEndReachedThreshold={0.4}
         onEndReached={() => {
           if (loans.hasNextPage && !loans.isFetchingNextPage) void loans.fetchNextPage();
@@ -312,6 +337,7 @@ const styles = StyleSheet.create({
   header: { gap: space.s4, paddingBottom: space.s3 },
   figures: { flexDirection: 'row', padding: space.s5, gap: space.s4 },
   figure: { flex: 1, gap: space.s1 },
+  figureLabel: { flexDirection: 'row', alignItems: 'center', gap: space.s1 },
   rule: { width: StyleSheet.hairlineWidth * 2 },
   rowWrap: { borderLeftWidth: 1, borderRightWidth: 1, overflow: 'hidden' },
   footer: { paddingHorizontal: space.s5, paddingTop: space.s3, paddingBottom: space.s4 },

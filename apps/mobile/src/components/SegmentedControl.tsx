@@ -2,7 +2,7 @@ import { Pressable, StyleSheet, View } from 'react-native';
 
 import { haptics } from '@/lib/haptics';
 import { useTheme } from '@/theme/theme-provider';
-import { radius, space } from '@/theme/tokens';
+import { MIN_TOUCH_TARGET, radius, space } from '@/theme/tokens';
 
 import { AppText } from './AppText';
 
@@ -29,7 +29,7 @@ export function SegmentedControl<T extends string>({
     <View
       accessibilityRole="radiogroup"
       accessibilityLabel={label}
-      style={[styles.track, { backgroundColor: colors.surfaceMuted, opacity: disabled ? 0.6 : 1 }]}
+      style={[styles.track, { backgroundColor: colors.surfaceMuted }]}
     >
       {options.map((option) => {
         const selected = option.value === value;
@@ -37,6 +37,7 @@ export function SegmentedControl<T extends string>({
           <Pressable
             key={option.value}
             accessibilityRole="radio"
+            accessibilityLabel={option.label}
             accessibilityState={{ selected, disabled }}
             disabled={disabled}
             onPress={() => {
@@ -52,7 +53,10 @@ export function SegmentedControl<T extends string>({
               },
             ]}
           >
-            <AppText variant="button" color={selected ? 'brandPrimary' : 'textSecondary'}>
+            <AppText
+              variant="button"
+              color={disabled ? 'textTertiary' : selected ? 'brandPrimary' : 'textSecondary'}
+            >
               {option.label}
             </AppText>
           </Pressable>
@@ -63,10 +67,10 @@ export function SegmentedControl<T extends string>({
 }
 
 const styles = StyleSheet.create({
-  track: { flexDirection: 'row', borderRadius: radius.md, padding: 4, gap: 4 },
+  track: { flexDirection: 'row', borderRadius: radius.md, padding: 3, gap: 3 },
   segment: {
     flex: 1,
-    minHeight: 44,
+    minHeight: MIN_TOUCH_TARGET - 6,
     borderRadius: radius.sm,
     alignItems: 'center',
     justifyContent: 'center',

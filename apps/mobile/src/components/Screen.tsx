@@ -1,5 +1,12 @@
 import type { ReactNode } from 'react';
-import { KeyboardAvoidingView, ScrollView, StyleSheet, View, type ViewStyle } from 'react-native';
+import {
+  KeyboardAvoidingView,
+  RefreshControl,
+  ScrollView,
+  StyleSheet,
+  View,
+  type ViewStyle,
+} from 'react-native';
 import { SafeAreaView, type Edge } from 'react-native-safe-area-context';
 
 import { useTheme } from '@/theme/theme-provider';
@@ -15,6 +22,9 @@ type Props = {
   footer?: ReactNode;
   edges?: Edge[];
   contentStyle?: ViewStyle;
+  /** Pull-to-refresh for scrolling detail screens. */
+  onRefresh?: () => void;
+  refreshing?: boolean;
 };
 
 /** Page shell: canvas background, safe areas, 20dp gutters, cold-start notice. */
@@ -24,12 +34,24 @@ export function Screen({
   footer,
   edges = ['top', 'bottom'],
   contentStyle,
+  onRefresh,
+  refreshing = false,
 }: Props) {
   const { colors } = useTheme();
   const body = scroll ? (
     <ScrollView
       keyboardShouldPersistTaps="handled"
       contentContainerStyle={[styles.content, contentStyle]}
+      refreshControl={
+        onRefresh ? (
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={onRefresh}
+            colors={[colors.brandPrimary]}
+            progressBackgroundColor={colors.surface}
+          />
+        ) : undefined
+      }
     >
       {children}
     </ScrollView>

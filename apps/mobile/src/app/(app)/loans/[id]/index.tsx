@@ -4,7 +4,7 @@
 import { formatPaise, type RepaymentDto } from '@miniledger/shared';
 import { useMutation } from '@tanstack/react-query';
 import { router, useLocalSearchParams } from 'expo-router';
-import { ChevronRight, EllipsisVertical, Pencil, Trash2 } from 'lucide-react-native';
+import { CheckCheck, ChevronRight, EllipsisVertical, Pencil, Trash2 } from 'lucide-react-native';
 import { useEffect, useState } from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
 
@@ -33,7 +33,7 @@ import { formatDateLong } from '@/lib/format';
 import { haptics } from '@/lib/haptics';
 import { invalidateLedger, queryClient, queryKeys } from '@/lib/query-client';
 import { useTheme } from '@/theme/theme-provider';
-import { space } from '@/theme/tokens';
+import { radius, space } from '@/theme/tokens';
 
 type Dialog =
   | { kind: 'menu' }
@@ -47,7 +47,7 @@ function RepaymentRow({ repayment, onMenu }: { repayment: RepaymentDto; onMenu: 
   return (
     <View style={styles.repayment}>
       <View style={styles.flex}>
-        <AppText variant="rowTitle" tabular>
+        <AppText variant="rowTitle" weight="700" tabular>
           {formatPaise(repayment.amountPaise)}
         </AppText>
         <AppText variant="secondary" color="textSecondary">
@@ -65,6 +65,28 @@ function RepaymentRow({ repayment, onMenu }: { repayment: RepaymentDto; onMenu: 
         onPress={onMenu}
         color="textSecondary"
       />
+    </View>
+  );
+}
+
+/** Fully repaid: a calm success state instead of enabled actions (design.md S07, §9.2). */
+function SettledBlock() {
+  const { colors } = useTheme();
+  return (
+    <View
+      accessible
+      accessibilityRole="summary"
+      style={[styles.settled, { backgroundColor: colors.successSurface }]}
+    >
+      <CheckCheck size={22} color={colors.successText} strokeWidth={1.75} />
+      <View style={styles.flex}>
+        <AppText variant="rowTitle" color="successText">
+          All settled.
+        </AppText>
+        <AppText variant="secondary" color="successText">
+          No balance remains on this loan.
+        </AppText>
+      </View>
     </View>
   );
 }
@@ -95,7 +117,10 @@ export default function LoanDetailScreen() {
     return (
       <Screen>
         <Header back />
-        <SkeletonBlock height={260} />
+        <SkeletonBlock height={40} width="60%" />
+        <SkeletonBlock height={236} />
+        <SkeletonBlock height={26} width="40%" />
+        <SkeletonBlock height={72} />
       </Screen>
     );
   }
@@ -160,6 +185,8 @@ export default function LoanDetailScreen() {
   return (
     <Screen
       scroll
+      onRefresh={() => void loan.refetch()}
+      refreshing={loan.isRefetching}
       footer={
         outstanding ? (
           <View style={styles.actions}>
@@ -173,7 +200,9 @@ export default function LoanDetailScreen() {
               onPress={() => setDialog({ kind: 'settle' })}
             />
           </View>
-        ) : undefined
+        ) : (
+          <SettledBlock />
+        )
       }
     >
       <Header
@@ -216,7 +245,7 @@ export default function LoanDetailScreen() {
 
       <View style={styles.section}>
         <AppText variant="section" accessibilityRole="header">
-          Repayments
+          Repayment history
         </AppText>
         {data.repayments.length === 0 ? (
           <AppText color="textSecondary">No repayments recorded yet.</AppText>
@@ -233,9 +262,6 @@ export default function LoanDetailScreen() {
             ))}
           </Surface>
         )}
-        {!outstanding ? (
-          <AppText color="successText">All settled. No balance remains on this loan.</AppText>
-        ) : null}
       </View>
 
       <ReceiptAttach
@@ -344,6 +370,13 @@ const styles = StyleSheet.create({
   person: { flexDirection: 'row', alignItems: 'center', gap: space.s2, minHeight: 48 },
   section: { gap: space.s3 },
   actions: { gap: space.s3 },
+  settled: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: space.s3,
+    padding: space.s4,
+    borderRadius: radius.lg,
+  },
   repayment: {
     flexDirection: 'row',
     alignItems: 'center',

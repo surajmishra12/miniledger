@@ -15,7 +15,7 @@ import { AppText } from './AppText';
 
 export type ChipKind = 'lent' | 'borrowed' | 'success' | 'warning' | 'danger';
 
-const KINDS: Record<
+export const CHIP_KINDS: Record<
   ChipKind,
   { text: keyof ColorTokens; surface: keyof ColorTokens; icon: LucideIcon }
 > = {
@@ -26,14 +26,18 @@ const KINDS: Record<
   danger: { text: 'dangerText', surface: 'dangerSurface', icon: CircleAlert },
 };
 
-/** Text + icon + semantic tint; never color alone (design.md §2.3). */
+/** Text + icon + semantic tint; never colour alone (design.md §2.3). */
 export function StatusChip({ kind, label }: { kind: ChipKind; label: string }) {
   const { colors } = useTheme();
-  const k = KINDS[kind];
+  const k = CHIP_KINDS[kind];
   const Icon = k.icon;
   return (
-    <View style={[styles.chip, { backgroundColor: colors[k.surface] }]}>
-      <Icon size={14} color={colors[k.text]} strokeWidth={2} />
+    <View
+      accessible
+      accessibilityLabel={label}
+      style={[styles.chip, { backgroundColor: colors[k.surface] }]}
+    >
+      <Icon size={14} color={colors[k.text]} strokeWidth={1.75} />
       <AppText variant="overline" color={k.text}>
         {label}
       </AppText>

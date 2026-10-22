@@ -143,6 +143,7 @@ export function ReceiptAttach({ uri, version, onPicked, onRemove, onOpen }: Prop
         title="Saved on this device only"
         body={RECEIPT_COPY.notice}
         confirmLabel="Continue"
+        cancelLabel={null}
         onCancel={() => setDisclosure(false)}
         onConfirm={() => {
           setDisclosure(false);

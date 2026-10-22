@@ -1,11 +1,13 @@
 /**
- * S04 Home summary: hero (outstanding lent), borrowed strip and the assignment summary group.
+ * S04 Home summary: hero (outstanding lent), borrowed strip and the assignment summary group
+ * (total lent, total repaid, overdue amount).
  */
 import { formatPaise, type SummaryDto } from '@miniledger/shared';
-import { ArrowDownLeft, CircleAlert } from 'lucide-react-native';
+import { ArrowDownLeft, ChevronRight, CircleAlert } from 'lucide-react-native';
 import { Pressable, StyleSheet, View } from 'react-native';
 
 import { AppText } from '@/components/AppText';
+import { Metric } from '@/components/Metric';
 import { SummaryHero } from '@/components/SummaryHero';
 import { Divider, Surface } from '@/components/Surface';
 import { useTheme } from '@/theme/theme-provider';
@@ -18,37 +20,8 @@ type Props = {
   onFilter: (filters: Pick<LoanFilters, 'direction' | 'status'>) => void;
 };
 
-function Metric({
-  label,
-  value,
-  onPress,
-  danger,
-}: {
-  label: string;
-  value: number;
-  onPress?: () => void;
-  danger?: boolean;
-}) {
-  return (
-    <Pressable
-      accessibilityRole={onPress ? 'button' : 'summary'}
-      accessibilityLabel={`${label}, ${formatPaise(value)}`}
-      onPress={onPress}
-      disabled={!onPress}
-      style={styles.metric}
-    >
-      <AppText variant="secondary" color={danger && value > 0 ? 'dangerText' : 'textSecondary'}>
-        {label}
-      </AppText>
-      <AppText variant="cardAmount" tabular adjustsFontSizeToFit numberOfLines={1}>
-        {formatPaise(value)}
-      </AppText>
-    </Pressable>
-  );
-}
-
 export function HomeSummary({ summary, onFilter }: Props) {
-  const { colors } = useTheme();
+  const { colors, ripple } = useTheme();
   return (
     <View style={styles.wrap}>
       <SummaryHero
@@ -59,29 +32,36 @@ export function HomeSummary({ summary, onFilter }: Props) {
       <Surface>
         <Pressable
           accessibilityRole="button"
-          accessibilityLabel={`You owe ${formatPaise(summary.outstandingBorrowed)}`}
+          accessibilityLabel={`You owe ${formatPaise(summary.outstandingBorrowed)}${
+            summary.overdueBorrowed > 0 ? `, ${formatPaise(summary.overdueBorrowed)} overdue` : ''
+          }`}
+          accessibilityHint="Shows loans you borrowed"
+          android_ripple={{ color: ripple }}
           onPress={() => onFilter({ direction: 'BORROWED', status: 'outstanding' })}
           style={styles.strip}
         >
-          <View style={styles.stripLabel}>
-            <ArrowDownLeft size={20} color={colors.borrowedText} strokeWidth={1.75} />
-            <AppText variant="rowTitle" color="borrowedText">
-              You owe
-            </AppText>
+          <View style={styles.stripRow}>
+            <View style={styles.stripLabel}>
+              <ArrowDownLeft size={20} color={colors.borrowedText} strokeWidth={1.75} />
+              <AppText variant="rowTitle" color="borrowedText">
+                You owe
+              </AppText>
+            </View>
+            <View style={styles.stripLabel}>
+              <AppText variant="cardAmount" tabular>
+                {formatPaise(summary.outstandingBorrowed)}
+              </AppText>
+              <ChevronRight size={18} color={colors.textTertiary} strokeWidth={1.75} />
+            </View>
           </View>
-          <View style={styles.stripValue}>
-            <AppText variant="cardAmount" tabular>
-              {formatPaise(summary.outstandingBorrowed)}
-            </AppText>
-            {summary.overdueBorrowed > 0 ? (
-              <View style={styles.overdueLine}>
-                <CircleAlert size={14} color={colors.dangerText} strokeWidth={2} />
-                <AppText variant="secondary" color="dangerText" tabular>
-                  {formatPaise(summary.overdueBorrowed)} overdue
-                </AppText>
-              </View>
-            ) : null}
-          </View>
+          {summary.overdueBorrowed > 0 ? (
+            <View style={styles.stripLabel}>
+              <CircleAlert size={16} color={colors.dangerText} strokeWidth={1.75} />
+              <AppText variant="secondary" color="dangerText" tabular>
+                {formatPaise(summary.overdueBorrowed)} of this is overdue
+              </AppText>
+            </View>
+          ) : null}
         </Pressable>
       </Surface>
 
@@ -108,16 +88,13 @@ export function HomeSummary({ summary, onFilter }: Props) {
 
 const styles = StyleSheet.create({
   wrap: { gap: space.s3 },
-  strip: {
+  strip: { padding: space.s4, gap: space.s2 },
+  stripRow: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    padding: space.s4,
     gap: space.s3,
   },
   stripLabel: { flexDirection: 'row', alignItems: 'center', gap: space.s2 },
-  stripValue: { alignItems: 'flex-end', flexShrink: 1 },
-  overdueLine: { flexDirection: 'row', alignItems: 'center', gap: space.s1 },
   metrics: { flexDirection: 'row', flexWrap: 'wrap' },
-  metric: { flexGrow: 1, flexBasis: 140, padding: space.s4, gap: space.s1 },
 });

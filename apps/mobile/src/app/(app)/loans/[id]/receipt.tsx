@@ -30,7 +30,7 @@ const MAX_SCALE = 5;
 export default function ReceiptViewerScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const { user } = useSession();
-  const { reduceMotion } = useTheme();
+  const { colors, reduceMotion } = useTheme();
   const [uri] = useState(() => (user ? receiptUri(user.id, id) : null));
 
   const scale = useSharedValue(1);
@@ -93,18 +93,18 @@ export default function ReceiptViewerScreen() {
   }));
 
   return (
-    <SafeAreaView style={styles.fill}>
+    <SafeAreaView style={[styles.fill, { backgroundColor: colors.viewerCanvas }]}>
       <View style={styles.top}>
         <IconButton icon={X} label="Close receipt" color="onHero" onPress={() => router.back()} />
       </View>
       {uri ? (
         <GestureDetector gesture={gestures}>
-          <Animated.View style={[styles.fill, animated]}>
+          <Animated.View style={[styles.fill, { backgroundColor: colors.viewerCanvas }, animated]}>
             <Image
               source={{ uri }}
               cachePolicy="none"
               contentFit="contain"
-              style={styles.fill}
+              style={[styles.fill, { backgroundColor: colors.viewerCanvas }]}
               accessibilityLabel="Receipt photo. Pinch to zoom."
               accessibilityIgnoresInvertColors
             />
@@ -122,8 +122,8 @@ export default function ReceiptViewerScreen() {
 }
 
 const styles = StyleSheet.create({
-  // Neutral black in both themes; the photo is never tinted (design.md §6.1 S11).
-  fill: { flex: 1, backgroundColor: '#000000' },
+  // Neutral black in both themes (viewerCanvas); the photo is never tinted (design.md §6.1 S11).
+  fill: { flex: 1 },
   top: { flexDirection: 'row', justifyContent: 'flex-end', paddingHorizontal: space.s2 },
   missing: { flex: 1, alignItems: 'center', justifyContent: 'center', padding: space.s6 },
 });

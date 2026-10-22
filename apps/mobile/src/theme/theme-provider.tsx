@@ -45,6 +45,8 @@ export type ThemeValue = Theme & {
   font: (weight: FontWeight) => string | undefined;
   preference: ThemePreference;
   setPreference: (preference: ThemePreference) => void;
+  /** Android ripple: 8% ink in light, 12% in dark (design.md §7.3). */
+  ripple: string;
   /** OS "Remove animations" / reduce motion is on (design.md §8.1). */
   reduceMotion: boolean;
   /** The stored preference has been read; the splash stays up until then (no light flash). */
@@ -56,6 +58,7 @@ const ThemeContext = createContext<ThemeValue>({
   font: () => undefined,
   preference: 'light',
   setPreference: () => undefined,
+  ripple: 'rgba(42, 27, 23, 0.08)',
   reduceMotion: false,
   ready: true,
 });
@@ -121,6 +124,7 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
       font: (weight) => (loaded ? FAMILIES[weight] : undefined),
       preference,
       setPreference,
+      ripple: `${base.colors.textPrimary}${base.scheme === 'dark' ? '1F' : '14'}`,
       reduceMotion,
       ready,
     }),

@@ -121,12 +121,28 @@ export function isoFromDate(value: Date): string {
   return `${value.getFullYear()}-${pad(value.getMonth() + 1)}-${pad(value.getDate())}`;
 }
 
-/** Person balances as separate figures per direction, never netted (design.md S09). */
+export type BalanceLine = { kind: 'lent' | 'borrowed' | 'settled'; label: string; amount: string };
+
+/**
+ * Person balances as separate figures per direction, never netted (design.md S09).
+ * Colour goes on the label; the amount stays neutral (§2.3).
+ */
+export function balanceItems(
+  person: Pick<PersonDto, 'owesYouPaise' | 'youOwePaise'>,
+): BalanceLine[] {
+  const lines: BalanceLine[] = [];
+  if (person.owesYouPaise > 0) {
+    lines.push({ kind: 'lent', label: 'Owes you', amount: formatPaise(person.owesYouPaise) });
+  }
+  if (person.youOwePaise > 0) {
+    lines.push({ kind: 'borrowed', label: 'You owe', amount: formatPaise(person.youOwePaise) });
+  }
+  return lines.length ? lines : [{ kind: 'settled', label: 'Settled', amount: '' }];
+}
+
+/** Spoken/plain form of {@link balanceItems}. */
 export function balanceLines(person: Pick<PersonDto, 'owesYouPaise' | 'youOwePaise'>): string[] {
-  const lines: string[] = [];
-  if (person.owesYouPaise > 0) lines.push(`Owes you ${formatPaise(person.owesYouPaise)}`);
-  if (person.youOwePaise > 0) lines.push(`You owe ${formatPaise(person.youOwePaise)}`);
-  return lines.length ? lines : ['Settled'];
+  return balanceItems(person).map((l) => (l.amount ? `${l.label} ${l.amount}` : l.label));
 }
 
 /** Largest repayment allowed: remaining balance, plus the edited repayment's own amount (S08). */

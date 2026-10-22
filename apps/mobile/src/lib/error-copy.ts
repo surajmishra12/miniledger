@@ -10,6 +10,7 @@ export const OFFLINE_SAVE_COPY = "You're offline. Connect to save this change.";
 const GENERIC_COPY = "Something didn't work. Please try again.";
 
 const minutes = (seconds: number | null) => Math.max(1, Math.ceil((seconds ?? 60) / 60));
+const count = (n: number, one: string) => `${n} ${n === 1 ? one : `${one}s`}`;
 
 export function errorCopy(error: unknown): string {
   if (error instanceof NetworkError) return CONNECTION_COPY;
@@ -26,9 +27,9 @@ export function errorCopy(error: unknown): string {
     case 'OTP_ATTEMPTS_EXCEEDED':
       return 'Too many incorrect attempts. Request a new code.';
     case 'OTP_RESEND_COOLDOWN':
-      return `Please wait ${error.retryAfterSeconds ?? 60} seconds before requesting another code.`;
+      return `Please wait ${count(error.retryAfterSeconds ?? 60, 'second')} before requesting another code.`;
     case 'RATE_LIMITED':
-      return `Too many attempts. Try again in ${minutes(error.retryAfterSeconds)} minutes.`;
+      return `Too many attempts. Try again in ${count(minutes(error.retryAfterSeconds), 'minute')}.`;
     case 'OTP_DELIVERY_FAILED':
       return "We couldn't send the code. Please try again.";
     case 'OTP_DAILY_LIMIT_REACHED':

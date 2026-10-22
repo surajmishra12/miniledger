@@ -58,6 +58,7 @@ export function RepaymentForm({ loan, repayment }: Props) {
   const [notice, setNotice] = useState<string | null>(null);
   const [leave, setLeave] = useState<null | (() => void)>(null);
   const [saved, setSaved] = useState(false);
+  const [conflict, setConflict] = useState(false);
   // One client ID per form: retries of this create reuse it (architecture.md §5.1).
   const [repaymentId] = useState(() => repayment?.id ?? newId());
 
@@ -122,8 +123,8 @@ export function RepaymentForm({ loan, repayment }: Props) {
         setErrors({ amount: errorCopy(error) });
         void invalidateLedger(loan.id, loan.person.id);
       } else if (error instanceof ApiError && error.code === 'ID_CONFLICT') {
-        // An earlier attempt of this form already saved the repayment (with other values).
-        await close(errorCopy(error));
+        // An earlier attempt of this form already saved the repayment (design.md §9.4).
+        setConflict(true);
       } else setNotice(errorCopy(error));
     }
   };
@@ -140,11 +141,16 @@ export function RepaymentForm({ loan, repayment }: Props) {
         />
       }
     >
-      <Header back title={editing ? 'Edit repayment' : 'Record repayment'} large />
+      <Header
+        back
+        title={
+          editing ? 'Edit repayment' : lent ? 'Record money received' : 'Record money paid back'
+        }
+        large
+      />
       <View style={styles.context}>
         <AppText variant="rowTitle">
-          {lent ? 'Record money received' : 'Record money paid back'}
-          {` · ${loan.person.name}`}
+          {lent ? `From ${loan.person.name}` : `To ${loan.person.name}`}
         </AppText>
         <AppText color="textSecondary" tabular>
           {editing
@@ -160,6 +166,15 @@ export function RepaymentForm({ loan, repayment }: Props) {
           onChangeText={(value) => {
             setAmount(value);
             setErrors((e) => ({ ...e, amount: undefined }));
+          }}
+          onBlur={() => {
+            if (!amount) return;
+            const parsed = amountSchema.safeParse(amount);
+            if (!parsed.success) {
+              setErrors((e) => ({ ...e, amount: parsed.error.issues[0]?.message }));
+            } else if (parsed.data > maxPaise) {
+              setErrors((e) => ({ ...e, amount: `Maximum is ${formatPaise(maxPaise)}.` }));
+            }
           }}
           error={errors.amount}
         />
@@ -206,6 +221,14 @@ export function RepaymentForm({ loan, repayment }: Props) {
         />
       ) : null}
 
+      <ConfirmDialog
+        visible={conflict}
+        title="This was already saved."
+        confirmLabel="View"
+        cancelLabel={null}
+        onCancel={() => void close('Repayment saved')}
+        onConfirm={() => void close('Repayment saved')}
+      />
       <ConfirmDialog
         visible={leave !== null}
         title="Discard changes?"

@@ -33,6 +33,8 @@ export type ColorTokens = {
   dangerText: string;
   dangerSurface: string;
   scrim: string;
+  /** Neutral black behind full-screen receipt photos in both themes (design.md §6.1 S11). */
+  viewerCanvas: string;
 };
 
 /** Terracotta & Cream (design.md §2.1). */
@@ -66,6 +68,7 @@ export const lightColors: ColorTokens = {
   dangerText: '#B3203F',
   dangerSurface: '#FDECEF',
   scrim: 'rgba(0, 0, 0, 0.48)',
+  viewerCanvas: '#000000',
 };
 
 /** Onyx & Ember (design.md §2.2) — neutral black surfaces, ember accents only. */
@@ -99,6 +102,7 @@ export const darkColors: ColorTokens = {
   dangerText: '#FF8A9E',
   dangerSurface: '#28141A',
   scrim: 'rgba(0, 0, 0, 0.68)',
+  viewerCanvas: '#000000',
 };
 
 /** Spacing and radii in dp (design.md §4). */
