@@ -1,6 +1,6 @@
 # MiniLedger — Technical Architecture Specification
 
-**Version:** 1.2  
+**Version:** 1.3  
 **Status:** Implementation-ready  
 **Last reviewed:** 22 October 2026  
 **Targets:** Android (React Native + Expo), Node.js REST API, PostgreSQL  
@@ -96,12 +96,14 @@ miniledger/
 │   │   │   ├── verify-otp.tsx                     # S03 (signed out only)
 │   │   │   └── (app)/                             # signed in only
 │   │   │       ├── (tabs)/
-│   │   │       │   ├── _layout.tsx                # Home, People, Settings
-│   │   │       │   ├── index.tsx                  # S04 summary + S05 loan list
+│   │   │       │   ├── _layout.tsx                # Home, People, Add (action → S14 sheet), Loans, Settings
+│   │   │       │   ├── index.tsx                  # S04 Home (summary + needs attention)
+│   │   │       │   ├── loans.tsx                  # S05 full loan list (accepts ?direction=&status=)
+│   │   │       │   ├── add.tsx                    # placeholder route; the tab press opens S14 and never navigates
 │   │   │       │   ├── people.tsx                 # S09
 │   │   │       │   └── settings.tsx               # S12
 │   │   │       ├── loans/
-│   │   │       │   ├── new.tsx                    # S06 (accepts ?personId=&personName=)
+│   │   │       │   ├── new.tsx                    # S06 (accepts ?direction=&personId=&personName=)
 │   │   │       │   ├── [id]/index.tsx             # S07
 │   │   │       │   ├── [id]/edit.tsx              # S06 edit
 │   │   │       │   ├── [id]/receipt.tsx           # S11 viewer
@@ -313,6 +315,10 @@ totalRepaid   = Σ repaid (LENT)             totalReturned       = Σ repaid (BO
 outstandingLent = totalLent − totalRepaid   outstandingBorrowed = totalBorrowed − totalReturned
 overdueAmount = Σ outstanding of overdue LENT loans
 overdueBorrowed = Σ outstanding of overdue BORROWED loans
+
+peopleOwingYou = COUNT(DISTINCT person_id) of LENT loans with outstanding > 0
+peopleYouOwe   = COUNT(DISTINCT person_id) of BORROWED loans with outstanding > 0
+lentLoans      = COUNT of LENT loans            overdueLoans = COUNT of overdue LENT loans
 ```
 
 No stored status, overdue flag or balance column. The Home hero shows `outstandingLent` ("You are owed").
@@ -456,6 +462,7 @@ type LoanDetailDto = LoanDto & {
 type SummaryDto = {
   totalLent: number; totalRepaid: number; overdueAmount: number; outstandingLent: number;
   totalBorrowed: number; totalReturned: number; outstandingBorrowed: number; overdueBorrowed: number;
+  peopleOwingYou: number; peopleYouOwe: number; lentLoans: number; overdueLoans: number; // counts
   currency: 'INR'; unit: 'paise'; asOfDate: string; timezone: string;
 };
 
@@ -569,6 +576,7 @@ Example `SummaryDto` (the PRD FR-05 example):
 {
   "totalLent": 800000, "totalRepaid": 500000, "overdueAmount": 300000, "outstandingLent": 300000,
   "totalBorrowed": 400000, "totalReturned": 100000, "outstandingBorrowed": 300000, "overdueBorrowed": 0,
+  "peopleOwingYou": 1, "peopleYouOwe": 1, "lentLoans": 2, "overdueLoans": 1,
   "currency": "INR", "unit": "paise", "asOfDate": "2026-10-22", "timezone": "Asia/Kolkata"
 }
 ```
@@ -748,7 +756,7 @@ Provide reviewers a real dedicated test mailbox (credentials in Play Console app
 
 ### 9.1 Navigation
 
-Routes are listed in §3 and map to `design.md` S01–S13. Three tabs (Home with summary and loan list, People, Settings); **Add loan** is a FAB/header action, never a tab. Android back closes sheets, then pops the stack; a dirty form asks before discarding.
+Routes are listed in §3 and map to `design.md` S01–S14. Five bottom slots (`design.md` §5.1): Home, People, **Add**, Loans, Settings. Add is an action: its `tabPress` listener calls `preventDefault()` and opens the S14 sheet, so `add.tsx` is never shown. Tabs use `backBehavior="firstRoute"` (back returns to Home). Home tiles switch to Loans with `?direction=&status=` params, which the Loans screen applies to its filters. Pushed screens live in the `(app)` stack above the tabs, so the bar is hidden on them. Motion (`design.md` §8) uses `react-native-reanimated` on the UI thread and honours the OS reduce-motion setting; shadows use the `boxShadow` style with the `design.md` §2.6 recipes in light mode only. Android back closes sheets, then pops the stack; a dirty form asks before discarding.
 
 ### 9.2 Data flow
 
@@ -937,6 +945,8 @@ These support the decisions above; they do not authorize scope changes. Re-check
 ---
 
 ## 17. Changelog
+
+**v1.3 (22 October 2026)** — five-slot navigation (`design.md` v1.5): `(tabs)` gains `loans.tsx` (S05) and an `add` action slot that opens the S14 sheet; Home shows the summary and an attention list; `loans/new` accepts `?direction=`. `SummaryDto` adds four counts (`peopleOwingYou`, `peopleYouOwe`, `lentLoans`, `overdueLoans`); existing fields are unchanged.
 
 **v1.2 (22 October 2026)** — simplifications with no feature change:
 - Client-generated IDs replace the idempotency-key header and `idempotency_records` table; settle is naturally idempotent.

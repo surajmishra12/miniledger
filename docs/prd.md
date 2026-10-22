@@ -1,6 +1,6 @@
 # MiniLedger — Product Requirements Document
 
-**Version:** 1.1  
+**Version:** 1.5  
 **Status:** Implementation-ready  
 **Last reviewed:** 22 October 2026  
 **Platform:** Android (React Native + Expo)  
@@ -124,7 +124,7 @@ Open a loan → **Record repayment** → enter amount, date, and optional note �
 
 ### 4.5 Review and correct records
 
-Home → summary card at the top, then the complete searchable/filterable loan list; People → each person's lent and borrowed balances; Loan details → full repayment history and edit/delete actions. Users can correct or remove an incorrectly entered repayment or loan, with confirmation for destructive actions.
+Home → summary card at the top, then the loans that need attention (overdue first); Loans → the complete searchable/filterable list; People → each person's lent and borrowed balances; Loan details → full repayment history and edit/delete actions. Users can correct or remove an incorrectly entered repayment or loan, with confirmation for destructive actions.
 
 ### 4.6 Delete account
 
@@ -204,6 +204,8 @@ Provide an authenticated summary endpoint and a home-screen summary card. All fi
 | `totalReturned` | Sum of repayments on `BORROWED` loans (money paid back) |
 | `outstandingBorrowed` | `totalBorrowed − totalReturned` |
 | `overdueBorrowed` | Sum of outstanding amounts of overdue `BORROWED` loans |
+| `peopleOwingYou` / `peopleYouOwe` | Number of distinct people with an outstanding `LENT` / `BORROWED` balance |
+| `lentLoans` / `overdueLoans` | Number of `LENT` loans / of overdue `LENT` loans |
 
 **Assignment compatibility:** The required fields `totalLent`, `totalRepaid`, and `overdueAmount` **always refer to lent loans**, so borrowed activity never alters their meaning.
 
@@ -239,7 +241,7 @@ Provide an authenticated summary endpoint and a home-screen summary card. All fi
 
 ### FR-08 — UI, navigation, and interaction
 
-1. Core screens: Sign-in; OTP verification; Home (summary card at the top, then the full loan list); Add/Edit loan; Loan detail with repayment history; Record/Edit repayment; People list; Person detail; Settings/account; account deletion.
+1. Core screens: Sign-in; OTP verification; Home (summary card at the top, then loans needing attention); Loans (the full list); Add sheet (lent or borrowed); Add/Edit loan; Loan detail with repayment history; Record/Edit repayment; People list; Person detail; Settings/account; account deletion.
 2. Visual direction: **Terracotta & Cream** light theme and **Onyx & Ember** dark theme, derived from the MiniLedger logo and specified in `design.md`.
 3. Keep primary actions discoverable (**Add loan**, **Record repayment**). Make **Lent** vs **Borrowed** visible throughout.
 4. Accessible tap targets, readable text, labels for icons, correct keyboards, inline form errors, confirmation dialogs for destructive actions, and loading/success/error/empty states.
@@ -428,3 +430,7 @@ Contract requirements: one error format with stable codes, correct HTTP status c
 - Added a fresh OTP for account deletion and session lifetime (30 days idle / 90 days max).
 - Home shows the summary card at the top followed by the full loan list (matches the brief); no separate Loans tab.
 - Made dark mode a P1 public-release requirement; P0 may ship light only.
+
+**v1.5 (22 October 2026)**
+- Navigation becomes five bottom slots: Home, People, Add, Loans, Settings. Home shows the summary card and the loans needing attention (overdue first); the complete list moves to the Loans tab. The centre Add button asks *lent or borrowed* first, then opens the loan form.
+- The summary adds four counts for context (`peopleOwingYou`, `peopleYouOwe`, `lentLoans`, `overdueLoans`); the existing figures and their meanings are unchanged.
