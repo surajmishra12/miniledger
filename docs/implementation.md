@@ -18,7 +18,7 @@ This file sequences the work and tracks progress. It **adds no rules**: behavior
 |---|---|---|---|---|
 | 0 | Repository foundations | Done except the on-phone check | 22 Oct 2026 | |
 | 1 | P0 backend | Done | 22 Oct 2026 | 22 Oct 2026 |
-| 2 | P0 Android → **assignment can be submitted** | Not started | | |
+| 2 | P0 Android → **assignment can be submitted** | Code done; on-device run pending | 22 Oct 2026 | |
 | 3 | Complete ledger (V1 finance) | Not started | | |
 | 4 | Production auth and account lifecycle | Not started | | |
 | 5 | Receipts, themes and polish | Not started | | |
@@ -69,12 +69,12 @@ This file sequences the work and tracks progress. It **adds no rules**: behavior
 
 **Goal:** every assignment requirement works end to end. Light theme only.
 
-- [ ] `api-client` with timeouts, single-flight refresh and retry; secure session storage; per-form client IDs (arch §5.1, §7.3, §9.2)
-- [ ] S01 launch routing, S02 phone sign-in, S03 OTP (design §6)
-- [ ] Home: S04 summary card at the top (hero + assignment summary group; borrowed strip hidden) and the S05 loan list below it with overdue highlighting and infinite scroll (search, filters and sort control come in Phase 3)
-- [ ] S06 Add loan without direction control (`LENT`): `PersonPicker`, amount, due date
-- [ ] Minimal S07: amounts, due status, `Mark as repaid` dialog
-- [ ] Minimal S12: Sign out
+- [x] `api-client` with timeouts, single-flight refresh and retry; secure session storage; per-form client IDs (arch §5.1, §7.3, §9.2)
+- [x] S01 launch routing, S02 phone sign-in, S03 OTP (design §6)
+- [x] Home: S04 summary card at the top (hero, borrowed strip, assignment summary group) and the S05 loan list below it with overdue highlighting, infinite scroll, search, filters and sort (pulled forward from Phase 3)
+- [x] S06 Add loan with `PersonPicker`, amount, due date, direction and More details (loan date, note — pulled forward from Phase 3)
+- [x] S07: amounts, due status, progress, repayment history, `Mark as repaid` dialog
+- [x] Minimal S12: Sign out
 - [x] Brand assets (design §1.2): icon, adaptive foreground, splash mark and logo in `apps/mobile/assets/brand/` and wired in `app.config.ts`
 - [ ] Monochrome themed icon (`adaptive-monochrome.png`) — waiting for the asset
 - [ ] Core components: buttons, `TextField`, `MoneyField`, `DateField`, `OtpInput`, `PersonPicker`, `LoanRow`, `StatusChip`, `SummaryHero`, `Metric`, `EmptyState`, `InlineNotice`, `ConfirmDialog`, `Snackbar` (design §7)
@@ -187,3 +187,6 @@ Record every case where implementation needed a spec change. Update the spec in 
 | 22 Oct 2026 | 0 | Prisma pinned to 7.10.1, TypeScript to 6.0.3 | npm `latest` for Prisma is an 8.0 release candidate; typescript-eslint supports TS < 6.1 | — |
 | 22 Oct 2026 | 1 | OTP cooldown ignores `FAILED` challenges | Otherwise a failed email delivery would block the retry for 60 s | arch §7.2 |
 | 22 Oct 2026 | 1 | Timezones keep the supplied canonical name | ICU's `resolvedOptions()` returns the legacy `Asia/Calcutta` for `Asia/Kolkata` | arch §4.5 |
+| 22 Oct 2026 | 2 | Sign-in routes are top-level (`sign-in`, `verify-otp`); signed-in screens live in an `(app)` group behind `Stack.Protected` | Expo Router's documented auth-guard pattern | arch §3 |
+| 22 Oct 2026 | 2 | Forms use component state + the shared Zod schemas; React Hook Form not used | Forms are small; one less dependency to explain | arch §2 |
+| 22 Oct 2026 | 2 | Typed routes disabled | Generated route types are git-ignored, so CI typecheck could not rely on them | — |

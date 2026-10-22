@@ -65,7 +65,7 @@ MiniLedger is a **personal recordkeeping app**, not a payment or lending platfor
 | UI | React Native components, `react-native-svg`, `lucide-react-native` | Semantic components consuming `design.md` tokens; no web UI framework |
 | Server state | TanStack Query | In-memory cache and invalidation; **no persisted cache, no offline mutation queue** |
 | Local UI state | React state / context | Theme, forms; no global state library |
-| Forms | React Hook Form + Zod (schemas from `packages/shared`) | Same validation rules and messages as the API |
+| Forms | Component state + Zod (schemas from `packages/shared`) | Same validation rules and messages as the API |
 | IDs on device | `expo-crypto` `randomUUID()` | Client-generated IDs for new records (§5.1) |
 | Credentials | `expo-secure-store` | Access token, refresh token, current user ID |
 | Preferences | AsyncStorage | Only `miniledger:theme` and `miniledger:receiptNoticeSeen` |
@@ -91,24 +91,24 @@ miniledger/
 ├── apps/
 │   ├── mobile/
 │   │   ├── src/app/                               # Expo Router routes (SDK 58 default location)
-│   │   │   ├── _layout.tsx                        # Providers: theme, query, session; S01 routing
-│   │   │   ├── (auth)/
-│   │   │   │   ├── sign-in.tsx                    # S02
-│   │   │   │   └── verify-otp.tsx                 # S03
-│   │   │   ├── (tabs)/
-│   │   │   │   ├── _layout.tsx                    # Home, People, Settings
-│   │   │   │   ├── index.tsx                      # S04 summary + S05 loan list
-│   │   │   │   ├── people.tsx                     # S09
-│   │   │   │   └── settings.tsx                   # S12
-│   │   │   ├── loans/
-│   │   │   │   ├── new.tsx                        # S06 (accepts ?personId=)
-│   │   │   │   ├── [id]/index.tsx                 # S07
-│   │   │   │   ├── [id]/edit.tsx                  # S06 edit
-│   │   │   │   ├── [id]/receipt.tsx               # S11 viewer
-│   │   │   │   ├── [id]/repayments/new.tsx        # S08 (sheet presentation)
-│   │   │   │   └── [id]/repayments/[repaymentId].tsx  # S08 edit
-│   │   │   ├── people/[id].tsx                    # S10
-│   │   │   └── settings/delete-account.tsx        # S12 deletion flow
+│   │   │   ├── _layout.tsx                        # Providers; S01 routing via Stack.Protected
+│   │   │   ├── sign-in.tsx                        # S02 (signed out only)
+│   │   │   ├── verify-otp.tsx                     # S03 (signed out only)
+│   │   │   └── (app)/                             # signed in only
+│   │   │       ├── (tabs)/
+│   │   │       │   ├── _layout.tsx                # Home, People, Settings
+│   │   │       │   ├── index.tsx                  # S04 summary + S05 loan list
+│   │   │       │   ├── people.tsx                 # S09
+│   │   │       │   └── settings.tsx               # S12
+│   │   │       ├── loans/
+│   │   │       │   ├── new.tsx                    # S06 (accepts ?personId=&personName=)
+│   │   │       │   ├── [id]/index.tsx             # S07
+│   │   │       │   ├── [id]/edit.tsx              # S06 edit
+│   │   │       │   ├── [id]/receipt.tsx           # S11 viewer
+│   │   │       │   ├── [id]/repayments/new.tsx    # S08
+│   │   │       │   └── [id]/repayments/[repaymentId].tsx  # S08 edit
+│   │   │       ├── people/[id].tsx                # S10
+│   │   │       └── settings/delete-account.tsx    # S12 deletion flow
 │   │   ├── src/                                   # non-route code (imported as @/…)
 │   │   │   ├── components/                        # Design-system components (design.md §7)
 │   │   │   ├── features/{auth,dashboard,loans,repayments,people,receipts,settings}/

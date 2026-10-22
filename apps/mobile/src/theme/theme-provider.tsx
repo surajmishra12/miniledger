@@ -1,14 +1,48 @@
-import { createContext, useContext, type ReactNode } from 'react';
+/**
+ * Theme + fonts. Fonts never block rendering: the system font is used until Plus Jakarta Sans
+ * finishes loading (design.md §3.1). P0 is light-only; Phase 5 adds Dark / Use device setting.
+ */
+import {
+  PlusJakartaSans_400Regular,
+  PlusJakartaSans_500Medium,
+  PlusJakartaSans_600SemiBold,
+  PlusJakartaSans_700Bold,
+  useFonts,
+} from '@expo-google-fonts/plus-jakarta-sans';
+import { createContext, useContext, useMemo, type ReactNode } from 'react';
 
 import { lightTheme, type Theme } from './tokens';
 
-const ThemeContext = createContext<Theme>(lightTheme);
+export type FontWeight = '400' | '500' | '600' | '700';
 
-/** P0: always light. Phase 5 adds the Light / Dark / Use device setting preference. */
+const FAMILIES: Record<FontWeight, string> = {
+  '400': 'PlusJakartaSans_400Regular',
+  '500': 'PlusJakartaSans_500Medium',
+  '600': 'PlusJakartaSans_600SemiBold',
+  '700': 'PlusJakartaSans_700Bold',
+};
+
+export type ThemeValue = Theme & {
+  /** Font family for a weight, or undefined while the custom font is not available. */
+  font: (weight: FontWeight) => string | undefined;
+};
+
+const ThemeContext = createContext<ThemeValue>({ ...lightTheme, font: () => undefined });
+
 export function ThemeProvider({ children }: { children: ReactNode }) {
-  return <ThemeContext.Provider value={lightTheme}>{children}</ThemeContext.Provider>;
+  const [loaded] = useFonts({
+    PlusJakartaSans_400Regular,
+    PlusJakartaSans_500Medium,
+    PlusJakartaSans_600SemiBold,
+    PlusJakartaSans_700Bold,
+  });
+  const value = useMemo<ThemeValue>(
+    () => ({ ...lightTheme, font: (weight) => (loaded ? FAMILIES[weight] : undefined) }),
+    [loaded],
+  );
+  return <ThemeContext.Provider value={value}>{children}</ThemeContext.Provider>;
 }
 
-export function useTheme(): Theme {
+export function useTheme(): ThemeValue {
   return useContext(ThemeContext);
 }

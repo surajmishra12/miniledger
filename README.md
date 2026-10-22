@@ -10,7 +10,7 @@ A small Android app for keeping track of money you lend to (and borrow from) peo
 - **App:** React Native + Expo (Expo Router), TypeScript
 - **Specs:** [`docs/prd.md`](docs/prd.md), [`docs/architecture.md`](docs/architecture.md), [`docs/design.md`](docs/design.md), progress in [`docs/implementation.md`](docs/implementation.md)
 
-> Status: backend complete for the assignment (Phase 1); the Android screens follow in Phase 2.
+> Status: the assignment scope is complete in code: backend (Phase 1) and the Android app's sign-in, Home summary with the loan list, add loan and mark as repaid (Phase 2).
 
 ## Repository layout
 
@@ -56,7 +56,18 @@ docs/            Product, architecture, design and implementation documents
 
    Check it: `http://localhost:4000/health` returns `{"status":"ok",...}`.
 
-5. Run the app on a USB-connected phone:
+5. Run the app. The simplest way is **Expo Go** over Wi-Fi (no cable or native build):
+   1. Install Expo Go from the Play Store; connect the phone to the same Wi-Fi as the computer.
+   2. Create `apps/mobile/.env` with your computer's LAN IP:
+
+      ```dotenv
+      EXPO_PUBLIC_API_URL=http://192.168.1.14:4000/v1
+      ```
+
+   3. `pnpm --filter @miniledger/mobile start` and scan the QR code with Expo Go.
+      If the phone cannot connect, allow Node.js through Windows Firewall on private networks (ports 4000 and 8081).
+
+   Alternatively, with a USB-connected phone (USB debugging on):
 
    ```bash
    adb reverse tcp:4000 tcp:4000

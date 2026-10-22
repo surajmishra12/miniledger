@@ -42,9 +42,21 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
         imageWidth: 120,
       },
     ],
+    'expo-secure-store',
+    '@react-native-community/datetimepicker',
+    'expo-image',
+    'expo-font',
+    [
+      'expo-image-picker',
+      {
+        // Requested only when the user attaches a receipt (design.md S11).
+        photosPermission: 'MiniLedger uses your photos only to attach a receipt you choose.',
+        cameraPermission: 'MiniLedger uses the camera only to photograph a receipt.',
+        microphonePermission: false,
+      },
+    ],
   ],
   experiments: {
-    typedRoutes: true,
     reactCompiler: true,
   },
 });
