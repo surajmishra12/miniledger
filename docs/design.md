@@ -485,40 +485,31 @@ Each screen has a defined purpose, top-level hierarchy, actions, states and acce
 - The same screen is reused in deletion mode (S12), which disables auto-submit.
 - Never claim an email was delivered if the backend reported failure. Cells announce as one field (`Verification code, 4 of 6 digits entered`); digits are not read aloud on focus changes.
 
-### S04 — Home
+### S04 — Home (v2, under review)
 
-**Purpose:** In two seconds answer *How much am I owed? How much do I owe? What needs my attention?*, and offer one tap into each answer.
+**Purpose:** In two seconds answer *Where do I stand?* and *What needs me?*, with one tap into each answer. Colour marks exceptions only; every amount is neutral ink (§2.3 v2 rule).
 
 **Order from top to bottom (one vertical scroll):**
 
-1. **Header:** the live wordmark `MiniLedger` (§1.2), left-aligned, 56dp tall. Nothing else: no greeting, bell, avatar or search (search lives on Loans).
-2. **Hero card** (`SummaryHero`, `heroSurface` with its §2.6 tonal gradient: dark chocolate in light mode, logo cream in dark mode; shadow S2 in light mode, 22dp radius, 24dp padding). Content, top-down:
-   - overline `YOU ARE OWED` in `onHeroMuted`;
-   - **outstanding lent** (`outstandingLent`) in the 40sp hero style in `onHero`;
-   - a slim 6dp **received bar** (`totalRepaid / totalLent`, fill `heroAccent`, track `onHero` at 14%) with the line `₹4,500 of ₹14,500 received · 31%` in `onHeroMuted` (hidden when `totalLent = 0`);
-   - a footer line in `onHeroMuted`: `from 3 people` (`peopleOwingYou`), followed by `· ₹1,200 overdue` with a `circle-alert` in `heroAccent` when `overdueAmount > 0`; `Nothing owed to you right now` when zero.
+1. **Header:** the live wordmark `MiniLedger` (§1.2), left-aligned, 56dp tall. Nothing else.
+2. **Summary card** (`SummaryHero`, flat `heroSurface`: dark chocolate `#3B2218` in light mode with shadow S2, espresso `#2A1C17` with an `outline` hairline in dark mode; 22dp radius, 20dp padding). No gradient, line art or illustration. Content, top-down:
+   - overline `YOU'LL RECEIVE` in `onHeroMuted`, trailing `chevron-right`;
+   - **outstanding lent** in the 40sp hero style in `onHero`, then `from 3 people` (`peopleOwingYou`); `Everything you lent has been repaid` or `Nothing owed to you right now` at zero;
+   - one 8dp **stacked bar** of `totalLent`: repaid (`heroPositive`), still owed and not overdue (`onHero` at 32%), overdue (`heroAlert`), 3dp gaps, on a 12% `onHero` track; it reveals left to right on first load (450 ms);
+   - a three-column legend, each a dot + `onHeroMuted` label over an `onHero` 15sp bold amount: **Lent** (hollow dot, `totalLent`), **Repaid** (`totalRepaid`), **Overdue** (`overdueAmount`). These are the brief's three summary figures (lent loans only, PRD FR-05). Bar and legend are hidden when `totalLent = 0`.
+   - Tap → Loans with `Lent` + `Outstanding`; press scale 0.985.
+3. **You'll pay** row (only when `outstandingBorrowed > 0`): one 64dp `surface` card, 32dp rose badge, label `You'll pay`, amount in ink, then `to 1 person` or `₹X overdue` in `dangerText`. Tap → Loans with `Borrowed` + `Outstanding`. Deliberately quieter than the summary card.
+4. **Needs attention:** title + `See all` (→ Loans). Up to **5** outstanding loans (`sort=attention`) as `AttentionRow`s in one group:
+   - 40dp initials avatar with an 18dp direction badge at its bottom-right (green `↗` they owe you, rose `↙` you owe);
+   - name, then one status line: `4 days overdue` (`dangerText`), `Due tomorrow` (`warningText`), `Due in 8 days` (`textSecondary`); borrowed rows read `You owe · due in 5 days`;
+   - right: remaining amount in ink; beneath it `Remind` (overdue money you lent; opens the Android share sheet with a polite prefilled message) or `of ₹5,000` when partly repaid;
+   - the §2.7 3dp status rail on overdue and due-soon rows.
+   - Nothing outstanding: one calm row, `You're all caught up.` / `No open loans right now.`
 
-   **Decoration (§10.3):** faint ledger-ring line art at 6–8% `onHero` across the right half, and the MiniLedger wallet-notebook mark drawn as flat SVG, ~88dp, tucked into the top-right corner, rotated −8° and cropped by the card edge. The text column reserves 72dp right padding so no figure ever runs under the mark. No glow, glass or pattern beyond this.
-
-   **Interaction:** tap → Loans with `Lent` + `Outstanding`; a trailing 20dp `chevron-right` in `onHeroMuted` signals it. Press scales to 0.985 and the wallet's cover flap lifts 6° (spring), settling on release. On first load the amount counts up and the received bar fills (450 ms ease-out). Reduce motion: static.
-3. **Four tiles** in a 2×2 grid (`SummaryTile`, 16dp radius, 16dp padding, 12dp gaps, shadow S1 in light mode). Each tile has a **subtle tinted background** (its tone's `*Surface`) and an **oversized faded glyph** of its icon (64dp, 8% of the tone's text color) cropped in the bottom-right corner. Each tile reads top-down as *badge → label → amount → context*: 36dp icon badge (§2.3) top-left with a `chevron-right` top-right when tappable, label in `textSecondary`, tile amount, one context line in `textSecondary`. The amount takes the tone's text color (§2.3 amount rule).
-
-   | Tile | Tone / badge | Amount | Context line | Tap → Loans with |
-   |---|---|---|---|---|
-   | **You owe** | borrowed (rose) `arrow-down-left` | `outstandingBorrowed` | `to 2 people` (`peopleYouOwe`); if `overdueBorrowed > 0`: `₹X overdue` in `dangerText` | `Borrowed` + `Outstanding` |
-   | **Overdue** | danger `circle-alert`; neutral `check-check` on `surfaceMuted` when zero | `overdueAmount` | `2 loans` (`overdueLoans`) or `Nothing overdue` | `Lent` + `Overdue` |
-   | **Due this week** | warning (amber) `calendar-clock` | `dueSoonLent + dueSoonBorrowed` | `3 loans` (`dueSoonLoans`) or `Nothing due this week` | `All` + `Outstanding` |
-   | **Repaid to you** | success `check-check` | `totalRepaid` | `31% of what you lent` (rounded down; hidden when `totalLent = 0`) | not tappable |
-
-   `Total lent` (in the hero bar), `Repaid to you` and `Overdue` are the brief's three summary figures (lent loans only, PRD FR-05). *Due this week* counts outstanding, non-overdue loans of both directions due today through today + 6. Tiles show their value even when zero; the grid order is fixed.
-4. **Needs attention** section: title + `See all` text button (→ Loans, default filters). Up to **5** outstanding loans from `GET /v1/loans?status=outstanding&sort=attention&limit=5` as `LoanRow`s in one grouped container: overdue first (danger chip), then the soonest due. When nothing is outstanding but loans exist: one calm row with a success badge, `You're all caught up.` / `No open loans right now.`
-5. Bottom padding so the last row clears the bar.
-
-- **Motion (§8):** on the first load of a session the hero, tiles and section rise in sequence (fade + 8dp, 40 ms stagger) and the hero and tile amounts count up from zero (450 ms, ease-out). When a figure changes after a save it rolls from the old value to the new one, so the user *sees* the effect of what they recorded. Later visits render instantly.
-- **Loading:** skeletons with the exact shapes above (hero, four tiles, three rows) with a slow opacity pulse; never zeros.
-- **Empty account** (no loans at all): items 2–4 are replaced by one composed empty state (§9.2) with `Add your first loan`, which opens S14.
-- **Pull-to-refresh** refetches the summary and the attention list.
-- The summary never changes with Loans filters. No charts, net balance, streaks, tips or promotional content.
+- **Motion:** first load of a session: the card, the pay row and the list rise in sequence (40 ms stagger), the amount counts up and the bar reveals. Later visits render instantly; reduce motion shows final states.
+- **Loading:** skeletons in the exact shapes (card, pay row, title, three rows); never zeros.
+- **Empty account:** one composed empty state with `Add your first loan` (opens S14).
+- **Pull-to-refresh** refetches the summary and the list. No charts, net balance, tiles, streaks or tips.
 
 ### S05 — Loans
 

@@ -1,10 +1,10 @@
 /**
- * S04 Home: what you're owed (hero), four tiles, and the loans that need attention
- * (design.md S04). The full list lives on the Loans tab.
+ * S04 Home (design.md S04 v2): where do I stand (summary card), what do I owe (one quiet row),
+ * and what needs me (attention list). Colour marks exceptions only; amounts stay neutral.
  */
 import { formatPaise, type LoanDto, type SummaryDto } from '@miniledger/shared';
 import { router, useScrollToTop } from 'expo-router';
-import { ArrowDownLeft, CalendarClock, CheckCheck, CircleAlert } from 'lucide-react-native';
+import { ArrowDownLeft, CheckCheck, ChevronRight } from 'lucide-react-native';
 import { useEffect, useRef, useState, type ComponentRef } from 'react';
 import { RefreshControl, ScrollView, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -15,91 +15,74 @@ import { EmptyState } from '@/components/EmptyState';
 import { Group } from '@/components/Group';
 import { IconBadge } from '@/components/IconBadge';
 import { InlineNotice } from '@/components/InlineNotice';
-import { LoanRow } from '@/components/LoanRow';
 import { Rise } from '@/components/Rise';
 import { SectionHeader } from '@/components/SectionHeader';
 import { SkeletonBlock, SkeletonList } from '@/components/Skeleton';
 import { SummaryHero } from '@/components/SummaryHero';
-import { SummaryTile } from '@/components/SummaryTile';
+import { Tappable } from '@/components/Tappable';
 import { Wordmark } from '@/components/Wordmark';
 import { useAddSheet } from '@/features/ledger/AddSheet';
 import { useLoanList, useSummary } from '@/features/ledger/api';
+import { AttentionRow } from '@/features/ledger/AttentionRow';
 import { EmptyLedgerIllustration } from '@/features/ledger/illustrations';
 import { openLoans } from '@/features/ledger/navigation';
 import { errorCopy } from '@/lib/error-copy';
-import { plural, repaidShare } from '@/lib/format';
-import { durations } from '@/theme/motion';
+import { plural } from '@/lib/format';
+import { durations, pressScale } from '@/theme/motion';
 import { useTheme } from '@/theme/theme-provider';
-import { space } from '@/theme/tokens';
+import { radius, space } from '@/theme/tokens';
 
 /** The first-load stagger and count-up play once per app session (design.md §8.1). */
 let introPlayed = false;
 
-function Tiles({ summary, countUp }: { summary: SummaryDto; countUp: boolean }) {
-  const overdue = summary.overdueAmount > 0;
-  const owe = summary.outstandingBorrowed > 0;
-  const dueSoon = summary.dueSoonLent + summary.dueSoonBorrowed;
-  const share = repaidShare(summary.totalRepaid, summary.totalLent);
+const openLoan = (loan: LoanDto) => router.push(`/loans/${loan.id}`);
+
+/** What you owe, deliberately quieter than what you'll receive. Hidden when you owe nothing. */
+function YouWillPay({ summary }: { summary: SummaryDto }) {
+  const { colors, shadow } = useTheme();
+  const overdue = summary.overdueBorrowed > 0;
+  const context = overdue
+    ? `${formatPaise(summary.overdueBorrowed)} overdue`
+    : `to ${plural(summary.peopleYouOwe, 'person', 'people')}`;
   return (
-    <View style={styles.tiles}>
-      <View style={styles.tileRow}>
-        <SummaryTile
-          icon={ArrowDownLeft}
-          tone={owe ? 'borrowed' : 'neutral'}
-          label="You owe"
-          paise={summary.outstandingBorrowed}
-          countUp={countUp}
-          context={
-            summary.overdueBorrowed > 0
-              ? `${formatPaise(summary.overdueBorrowed)} overdue`
-              : owe
-                ? `to ${plural(summary.peopleYouOwe, 'person', 'people')}`
-                : 'Nothing to pay back'
-          }
-          contextColor={summary.overdueBorrowed > 0 ? 'dangerText' : 'textSecondary'}
-          hint="Shows loans you borrowed"
-          onPress={() => openLoans({ direction: 'BORROWED', status: 'outstanding' })}
-        />
-        <SummaryTile
-          icon={overdue ? CircleAlert : CheckCheck}
-          tone={overdue ? 'danger' : 'neutral'}
-          label="Overdue"
-          paise={summary.overdueAmount}
-          countUp={countUp}
-          context={overdue ? plural(summary.overdueLoans, 'loan') : 'Nothing overdue'}
-          hint="Shows overdue loans you lent"
-          onPress={() => openLoans({ direction: 'LENT', status: 'overdue' })}
-        />
+    <Tappable
+      accessibilityRole="button"
+      accessibilityLabel={`You'll pay ${formatPaise(summary.outstandingBorrowed)}, ${context}`}
+      accessibilityHint="Shows loans you borrowed"
+      onPress={() => openLoans({ direction: 'BORROWED', status: 'outstanding' })}
+      ripple
+      scaleTo={pressScale.row}
+      style={[
+        styles.pay,
+        { backgroundColor: colors.surface, borderColor: colors.outline },
+        shadow('s1'),
+      ]}
+    >
+      <IconBadge icon={ArrowDownLeft} tone="borrowed" size={32} />
+      <View style={styles.flex}>
+        <AppText variant="secondary" color="textSecondary">
+          You&apos;ll pay
+        </AppText>
+        <View style={styles.payLine}>
+          <AppText variant="rowTitle" weight="700" tabular>
+            {formatPaise(summary.outstandingBorrowed)}
+          </AppText>
+          <AppText
+            variant="secondary"
+            color={overdue ? 'dangerText' : 'textSecondary'}
+            numberOfLines={1}
+            style={styles.flex}
+          >
+            {context}
+          </AppText>
+        </View>
       </View>
-      <View style={styles.tileRow}>
-        <SummaryTile
-          icon={CalendarClock}
-          tone={dueSoon > 0 ? 'warning' : 'neutral'}
-          label="Due this week"
-          paise={dueSoon}
-          countUp={countUp}
-          context={
-            summary.dueSoonLoans > 0
-              ? plural(summary.dueSoonLoans, 'loan')
-              : 'Nothing due this week'
-          }
-          hint="Shows open loans, soonest due first"
-          onPress={() => openLoans({ status: 'outstanding' })}
-        />
-        <SummaryTile
-          icon={CheckCheck}
-          tone={summary.totalRepaid > 0 ? 'success' : 'neutral'}
-          label="Repaid to you"
-          paise={summary.totalRepaid}
-          countUp={countUp}
-          context={share === null ? null : `${share}% of what you lent`}
-        />
-      </View>
-    </View>
+      <ChevronRight size={20} color={colors.textTertiary} strokeWidth={1.75} />
+    </Tappable>
   );
 }
+
 function Attention({ items, hasOpen }: { items: LoanDto[]; hasOpen: boolean }) {
-  const { colors } = useTheme();
   if (!hasOpen) {
     return (
       <Group>
@@ -116,9 +99,9 @@ function Attention({ items, hasOpen }: { items: LoanDto[]; hasOpen: boolean }) {
     );
   }
   return (
-    <Group inset={72} style={{ borderColor: colors.outline }}>
+    <Group inset={68}>
       {items.map((loan) => (
-        <LoanRow key={loan.id} loan={loan} onPress={() => router.push(`/loans/${loan.id}`)} />
+        <AttentionRow key={loan.id} loan={loan} onPress={openLoan} />
       ))}
     </Group>
   );
@@ -160,15 +143,9 @@ export default function HomeScreen() {
   } else if (!data) {
     body = (
       <View style={styles.blocks} accessibilityLabel="Loading" accessibilityRole="progressbar">
-        <SkeletonBlock height={200} rounded={22} />
-        <View style={styles.tileRow}>
-          <SkeletonBlock height={132} width="48%" rounded={16} />
-          <SkeletonBlock height={132} width="48%" rounded={16} />
-        </View>
-        <View style={styles.tileRow}>
-          <SkeletonBlock height={132} width="48%" rounded={16} />
-          <SkeletonBlock height={132} width="48%" rounded={16} />
-        </View>
+        <SkeletonBlock height={232} rounded={radius.xl} />
+        <SkeletonBlock height={64} rounded={radius.lg} />
+        <SkeletonBlock height={24} width="45%" />
         <SkeletonList rows={3} />
       </View>
     );
@@ -198,9 +175,11 @@ export default function HomeScreen() {
             onPress={() => openLoans({ direction: 'LENT', status: 'outstanding' })}
           />
         </Rise>
-        <Rise animate={animateIntro} delay={step}>
-          <Tiles summary={data} countUp={animateIntro} />
-        </Rise>
+        {data.outstandingBorrowed > 0 ? (
+          <Rise animate={animateIntro} delay={step}>
+            <YouWillPay summary={data} />
+          </Rise>
+        ) : null}
         <Rise animate={animateIntro} delay={step * 2}>
           <SectionHeader
             title="Needs attention"
@@ -254,8 +233,17 @@ const styles = StyleSheet.create({
   content: { paddingHorizontal: space.s5, paddingBottom: space.s10 },
   header: { minHeight: 56, justifyContent: 'center', marginBottom: space.s2 },
   blocks: { gap: space.s3 },
-  tiles: { gap: space.s3 },
-  tileRow: { flexDirection: 'row', gap: space.s3, flexWrap: 'wrap' },
+  pay: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: space.s3,
+    paddingHorizontal: space.s4,
+    paddingVertical: space.s3,
+    minHeight: 64,
+    borderRadius: radius.lg,
+    borderWidth: StyleSheet.hairlineWidth * 2,
+  },
+  payLine: { flexDirection: 'row', alignItems: 'baseline', gap: space.s2 },
   caughtUp: {
     flexDirection: 'row',
     alignItems: 'center',

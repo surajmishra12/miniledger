@@ -16,7 +16,10 @@ export type ColorTokens = {
   heroSurface: string;
   onHero: string;
   onHeroMuted: string;
-  heroAccent: string;
+  /** Repaid segment and dot on the summary card. */
+  heroPositive: string;
+  /** Overdue segment and dot on the summary card. */
+  heroAlert: string;
   brandPrimary: string;
   brandPressed: string;
   onBrand: string;
@@ -51,7 +54,8 @@ export const lightColors: ColorTokens = {
   heroSurface: '#3B2218',
   onHero: '#FFF8EF',
   onHeroMuted: '#E3CBBE',
-  heroAccent: '#F0936E',
+  heroPositive: '#7FCB98',
+  heroAlert: '#FF8A7A',
   brandPrimary: '#B4472B',
   brandPressed: '#963821',
   onBrand: '#FFFFFF',
@@ -71,7 +75,7 @@ export const lightColors: ColorTokens = {
   viewerCanvas: '#000000',
 };
 
-/** Onyx & Ember (design.md §2.2) — neutral black surfaces, ember accents only, cream hero. */
+/** Onyx & Ember (design.md §2.2) — neutral black surfaces, ember accents, espresso summary card. */
 export const darkColors: ColorTokens = {
   canvas: '#0B0B0C',
   surface: '#161618',
@@ -82,10 +86,11 @@ export const darkColors: ColorTokens = {
   textTertiary: '#948D88',
   outline: '#2F2F33',
   outlineStrong: '#6B6663',
-  heroSurface: '#F3E6D2',
-  onHero: '#2A1B17',
-  onHeroMuted: '#6B5243',
-  heroAccent: '#B4472B',
+  heroSurface: '#2A1C17',
+  onHero: '#F5E9D8',
+  onHeroMuted: '#CDB9A8',
+  heroPositive: '#7FCB98',
+  heroAlert: '#FF8A7A',
   brandPrimary: '#F08A65',
   brandPressed: '#E07450',
   onBrand: '#2A0F07',
@@ -173,13 +178,6 @@ export const shadowRecipes = {
   s3: `0px 4px 12px ${ink(0.08)}, 0px 16px 40px ${ink(0.14)}`,
 } as const;
 export type ShadowLevel = keyof typeof shadowRecipes;
-
-/** Hero tonal depth: the one permitted gradient (design.md §2.6). Top stops are tested for contrast. */
-export const heroGradientTop = { light: '#45291E', dark: '#FFF9F0' } as const;
-export const heroGradient = {
-  light: 'linear-gradient(180deg, #45291E 0%, #3B2218 100%)',
-  dark: 'linear-gradient(180deg, #FFF9F0 0%, #F3E6D2 100%)',
-} as const;
 
 export type Theme = {
   scheme: 'light' | 'dark';

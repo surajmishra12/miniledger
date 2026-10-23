@@ -1,23 +1,16 @@
 import { formatPaise } from '@miniledger/shared';
-import { ChevronRight, CircleAlert } from 'lucide-react-native';
-import { useEffect } from 'react';
-import { StyleSheet, View } from 'react-native';
-import Animated, {
-  useAnimatedStyle,
-  useSharedValue,
-  withSpring,
-  withTiming,
-} from 'react-native-reanimated';
-import Svg, { Circle, Path } from 'react-native-svg';
+import { ChevronRight } from 'lucide-react-native';
+import { useEffect, useState } from 'react';
+import { StyleSheet, View, type LayoutChangeEvent } from 'react-native';
+import Animated, { useAnimatedStyle, useSharedValue, withTiming } from 'react-native-reanimated';
 
-import { repaidShare } from '@/lib/format';
-import { curves, durations, spring } from '@/theme/motion';
+import { plural } from '@/lib/format';
+import { curves, durations } from '@/theme/motion';
 import { useTheme } from '@/theme/theme-provider';
-import { heroGradient, radius, space } from '@/theme/tokens';
+import { radius, space, type ColorTokens } from '@/theme/tokens';
 
 import { AnimatedAmount } from './AnimatedAmount';
 import { AppText } from './AppText';
-import { HeroWallet } from './HeroWallet';
 import { Tappable } from './Tappable';
 
 type Props = {
@@ -30,49 +23,116 @@ type Props = {
   onPress?: () => void;
 };
 
-const WALLET = 92;
+const GAP = 3;
 
-/** Faint ledger rings and ruled lines across the right half (design.md §10.3). */
-function LineArt() {
+/**
+ * One stacked bar for everything you lent: repaid (green), still owed (neutral), overdue (coral).
+ * Reveals left to right on the first load; reduce motion shows it at once.
+ */
+function LentBar({
+  lent,
+  repaid,
+  overdue,
+  reveal,
+}: {
+  lent: number;
+  repaid: number;
+  overdue: number;
+  reveal: boolean;
+}) {
+  const { colors, reduceMotion } = useTheme();
+  const [width, setWidth] = useState(0);
+  const shown = useSharedValue(reveal && !reduceMotion ? 0 : 1);
+  useEffect(() => {
+    if (width === 0) return;
+    shown.set(
+      reduceMotion ? 1 : withTiming(1, { duration: durations.amount, easing: curves.standard }),
+    );
+  }, [width, reduceMotion, shown]);
+  const clip = useAnimatedStyle(() => ({ width: width * shown.get() }));
+
+  const pending = Math.max(0, lent - repaid - overdue);
+  const parts = [
+    { key: 'repaid', value: repaid, color: colors.heroPositive, opacity: 1 },
+    { key: 'pending', value: pending, color: colors.onHero, opacity: 0.32 },
+    { key: 'overdue', value: overdue, color: colors.heroAlert, opacity: 1 },
+  ].filter((p) => p.value > 0);
+  const usable = Math.max(0, width - GAP * (parts.length - 1));
+
+  return (
+    <View
+      style={styles.track}
+      onLayout={(e: LayoutChangeEvent) => setWidth(e.nativeEvent.layout.width)}
+    >
+      <View
+        style={[StyleSheet.absoluteFill, styles.trackTint, { backgroundColor: colors.onHero }]}
+      />
+      <Animated.View style={[styles.clip, clip]}>
+        <View style={[styles.segments, { width }]}>
+          {parts.map((p) => (
+            <View
+              key={p.key}
+              style={[
+                styles.segment,
+                {
+                  width: lent > 0 ? Math.max(4, (p.value / lent) * usable) : 0,
+                  backgroundColor: p.color,
+                  opacity: p.opacity,
+                },
+              ]}
+            />
+          ))}
+        </View>
+      </Animated.View>
+    </View>
+  );
+}
+
+function Figure({
+  label,
+  paise,
+  dot,
+  hollow,
+}: {
+  label: string;
+  paise: number;
+  dot: keyof ColorTokens;
+  hollow?: boolean;
+}) {
   const { colors } = useTheme();
   return (
-    <Svg
-      width={300}
-      height={220}
-      viewBox="0 0 300 220"
-      style={styles.lineArt}
-      accessibilityElementsHidden
-      importantForAccessibility="no-hide-descendants"
-    >
-      {[84, 128, 172].map((r) => (
-        <Circle
-          key={r}
-          cx={268}
-          cy={236}
-          r={r}
-          fill="none"
-          stroke={colors.onHero}
-          strokeOpacity={0.07}
-          strokeWidth={1.5}
+    <View style={styles.figure}>
+      <View style={styles.figureLabel}>
+        <View
+          style={[
+            styles.dot,
+            hollow
+              ? { borderWidth: 1.5, borderColor: colors[dot] }
+              : { backgroundColor: colors[dot] },
+          ]}
         />
-      ))}
-      {[118, 146, 174].map((y) => (
-        <Path
-          key={y}
-          d={`M60 ${y} H300`}
-          stroke={colors.onHero}
-          strokeOpacity={0.06}
-          strokeWidth={1.5}
-          strokeLinecap="round"
-        />
-      ))}
-    </Svg>
+        <AppText variant="secondary" color="onHeroMuted" numberOfLines={1}>
+          {label}
+        </AppText>
+      </View>
+      <AppText
+        variant="rowTitle"
+        weight="700"
+        color="onHero"
+        tabular
+        numberOfLines={1}
+        adjustsFontSizeToFit
+      >
+        {formatPaise(paise)}
+      </AppText>
+    </View>
   );
 }
 
 /**
- * The one decorated card (design.md S04 item 2): outstanding lent, a received bar and an overdue
- * footer, over line art with the wallet mark tucked into the corner. Pressing opens the flap.
+ * The one coloured surface on Home (design.md S04 v2): what you'll receive, a stacked bar of
+ * everything you lent, and the brief's three figures (lent, repaid, overdue) as a legend.
+ * Amounts stay in neutral ink; colour only marks repaid and overdue.
  */
 export function SummaryHero({
   outstandingLentPaise,
@@ -83,36 +143,23 @@ export function SummaryHero({
   countUp,
   onPress,
 }: Props) {
-  const { colors, scheme, reduceMotion } = useTheme();
-  const share = repaidShare(totalRepaidPaise, totalLentPaise);
-  const fraction = totalLentPaise > 0 ? Math.min(1, totalRepaidPaise / totalLentPaise) : 0;
-
-  const open = useSharedValue(0);
-  const fill = useSharedValue(countUp && !reduceMotion ? 0 : fraction);
-  useEffect(() => {
-    fill.set(
-      reduceMotion
-        ? fraction
-        : withTiming(fraction, { duration: durations.amount, easing: curves.standard }),
-    );
-  }, [fill, fraction, reduceMotion]);
-  const fillStyle = useAnimatedStyle(() => ({ width: `${fill.get() * 100}%` }));
-
+  const { colors, scheme } = useTheme();
   const owed = outstandingLentPaise > 0;
-  const people = `from ${peopleOwingYou} ${peopleOwingYou === 1 ? 'person' : 'people'}`;
-  const received =
-    share === null
-      ? null
-      : `${formatPaise(totalRepaidPaise)} of ${formatPaise(totalLentPaise)} received · ${share}%`;
-  const overdue = overduePaise > 0 ? `${formatPaise(overduePaise)} overdue` : null;
+  const lentAny = totalLentPaise > 0;
+  const context = owed
+    ? `from ${plural(peopleOwingYou, 'person', 'people')}`
+    : lentAny
+      ? 'Everything you lent has been repaid'
+      : 'Nothing owed to you right now';
   const spoken = [
-    `You are owed ${formatPaise(outstandingLentPaise)}`,
-    owed ? people : 'Nothing owed to you right now',
-    received,
-    overdue,
+    `You'll receive ${formatPaise(outstandingLentPaise)}`,
+    context,
+    lentAny
+      ? `Lent ${formatPaise(totalLentPaise)}, repaid ${formatPaise(totalRepaidPaise)}, overdue ${formatPaise(overduePaise)}`
+      : null,
   ]
     .filter(Boolean)
-    .join(', ');
+    .join('. ');
 
   return (
     <Tappable
@@ -121,32 +168,25 @@ export function SummaryHero({
       accessibilityHint={onPress ? 'Shows the loans people still owe you' : undefined}
       disabled={!onPress}
       onPress={onPress}
-      onPressIn={() => {
-        if (!reduceMotion) open.set(withSpring(1, spring));
-      }}
-      onPressOut={() => {
-        open.set(reduceMotion ? 0 : withSpring(0, spring));
-      }}
       shadow="s2"
       scaleTo={0.985}
-      style={[styles.card, { backgroundColor: colors.heroSurface }]}
+      style={[
+        styles.card,
+        {
+          backgroundColor: colors.heroSurface,
+          // In dark mode a hairline separates the espresso card from the onyx canvas.
+          borderColor: scheme === 'dark' ? colors.outline : 'transparent',
+        },
+      ]}
     >
-      {/* Decoration is clipped by its own layer so the card's shadow is never cut off. */}
-      <View
-        style={[styles.clip, { backgroundImage: heroGradient[scheme] }]}
-        pointerEvents="none"
-        importantForAccessibility="no-hide-descendants"
-      >
-        <LineArt />
-        <View style={styles.wallet}>
-          <HeroWallet size={WALLET} open={open} rimmed={scheme === 'light'} />
-        </View>
+      <View style={styles.top}>
+        <AppText variant="overline" color="onHeroMuted">
+          YOU&apos;LL RECEIVE
+        </AppText>
+        {onPress ? <ChevronRight size={20} color={colors.onHeroMuted} strokeWidth={1.75} /> : null}
       </View>
 
       <View style={styles.headline}>
-        <AppText variant="overline" color="onHeroMuted">
-          YOU ARE OWED
-        </AppText>
         <AnimatedAmount
           paise={outstandingLentPaise}
           countUp={countUp}
@@ -155,80 +195,48 @@ export function SummaryHero({
           numberOfLines={1}
           adjustsFontSizeToFit
         />
+        <AppText variant="secondary" color="onHeroMuted">
+          {context}
+        </AppText>
       </View>
 
-      {received ? (
-        <View style={styles.progress}>
-          <View style={styles.track}>
-            <View
-              style={[
-                StyleSheet.absoluteFill,
-                styles.trackTint,
-                { backgroundColor: colors.onHero },
-              ]}
-            />
-            <Animated.View
-              style={[styles.fill, { backgroundColor: colors.heroAccent }, fillStyle]}
-            />
+      {lentAny ? (
+        <>
+          <LentBar
+            lent={totalLentPaise}
+            repaid={totalRepaidPaise}
+            overdue={overduePaise}
+            reveal={!!countUp}
+          />
+          <View style={styles.figures}>
+            <Figure label="Lent" paise={totalLentPaise} dot="onHeroMuted" hollow />
+            <Figure label="Repaid" paise={totalRepaidPaise} dot="heroPositive" />
+            <Figure label="Overdue" paise={overduePaise} dot="heroAlert" />
           </View>
-          <AppText variant="secondary" color="onHeroMuted" tabular numberOfLines={1}>
-            {received}
-          </AppText>
-        </View>
+        </>
       ) : null}
-
-      <View style={styles.footer}>
-        <View style={styles.footerText}>
-          <AppText variant="secondary" color="onHeroMuted" numberOfLines={1}>
-            {owed ? people : 'Nothing owed to you right now'}
-          </AppText>
-          {overdue ? (
-            <>
-              <AppText variant="secondary" color="onHeroMuted">
-                ·
-              </AppText>
-              <CircleAlert size={15} color={colors.heroAccent} strokeWidth={2} />
-              <AppText variant="secondary" color="onHero" weight="600" tabular numberOfLines={1}>
-                {overdue}
-              </AppText>
-            </>
-          ) : null}
-        </View>
-        {onPress ? <ChevronRight size={20} color={colors.onHeroMuted} strokeWidth={1.75} /> : null}
-      </View>
     </Tappable>
   );
 }
 
 const styles = StyleSheet.create({
-  card: { borderRadius: radius.xl, padding: space.s6, gap: space.s4 },
-  clip: {
-    position: 'absolute',
-    top: 0,
-    right: 0,
-    bottom: 0,
-    left: 0,
+  card: {
     borderRadius: radius.xl,
-    overflow: 'hidden',
+    borderWidth: StyleSheet.hairlineWidth * 2,
+    paddingHorizontal: space.s5,
+    paddingTop: space.s5,
+    paddingBottom: space.s5,
+    gap: space.s4,
   },
-  lineArt: { position: 'absolute', right: 0, bottom: 0 },
-  wallet: {
-    position: 'absolute',
-    top: -6,
-    right: -14,
-    transform: [{ rotate: '-8deg' }],
-  },
-  headline: { gap: space.s1, paddingRight: WALLET - space.s5 },
-  progress: { gap: space.s2 },
-  track: { height: 6, borderRadius: 3, overflow: 'hidden' },
-  trackTint: { opacity: 0.14 },
-  fill: { height: 6, borderRadius: 3 },
-  footer: { flexDirection: 'row', alignItems: 'center', gap: space.s2 },
-  footerText: {
-    flex: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-    flexWrap: 'wrap',
-  },
+  top: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
+  headline: { gap: 2, marginTop: -space.s2 },
+  track: { height: 8, borderRadius: 4, overflow: 'hidden' },
+  trackTint: { opacity: 0.12 },
+  clip: { height: 8, overflow: 'hidden' },
+  segments: { flexDirection: 'row', height: 8, gap: GAP },
+  segment: { height: 8, borderRadius: 4 },
+  figures: { flexDirection: 'row', gap: space.s3 },
+  figure: { flex: 1, gap: 2 },
+  figureLabel: { flexDirection: 'row', alignItems: 'center', gap: 6 },
+  dot: { width: 8, height: 8, borderRadius: 4 },
 });
