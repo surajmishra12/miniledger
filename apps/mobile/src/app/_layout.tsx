@@ -17,6 +17,7 @@ import { InlineNotice } from '@/components/InlineNotice';
 import { SnackbarProvider } from '@/components/Snackbar';
 import { Wordmark } from '@/components/Wordmark';
 import { SessionProvider, useSession } from '@/features/auth/session';
+import { useWelcome, WelcomeProvider } from '@/features/onboarding/welcome-state';
 import { CONNECTION_COPY } from '@/lib/error-copy';
 import { queryClient } from '@/lib/query-client';
 import { ThemeProvider, useTheme } from '@/theme/theme-provider';
@@ -38,7 +39,8 @@ function LaunchError({ onRetry }: { onRetry: () => void }) {
 function RootNavigator() {
   const { status, retry } = useSession();
   const { colors, scheme, ready, reduceMotion } = useTheme();
-  const launching = status === 'loading' || !ready;
+  const welcome = useWelcome();
+  const launching = status === 'loading' || !ready || !welcome.ready;
 
   useEffect(() => {
     if (!launching) void SplashScreen.hideAsync();
@@ -62,6 +64,10 @@ function RootNavigator() {
           <Stack.Protected guard={status === 'signedIn'}>
             <Stack.Screen name="(app)" />
           </Stack.Protected>
+          {/* First launch only: the welcome pages come before sign-in (design.md S00). */}
+          <Stack.Protected guard={status !== 'signedIn' && !welcome.welcomed}>
+            <Stack.Screen name="welcome" options={{ animation: 'fade' }} />
+          </Stack.Protected>
           <Stack.Protected guard={status !== 'signedIn'}>
             <Stack.Screen name="sign-in" />
             <Stack.Screen name="verify-otp" />
@@ -79,9 +85,11 @@ export default function RootLayout() {
         <ThemeProvider>
           <QueryClientProvider client={queryClient}>
             <SessionProvider>
-              <SnackbarProvider>
-                <RootNavigator />
-              </SnackbarProvider>
+              <WelcomeProvider>
+                <SnackbarProvider>
+                  <RootNavigator />
+                </SnackbarProvider>
+              </WelcomeProvider>
             </SessionProvider>
           </QueryClientProvider>
         </ThemeProvider>

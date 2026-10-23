@@ -14,6 +14,9 @@ export type ColorTokens = {
   outline: string;
   outlineStrong: string;
   heroSurface: string;
+  /** Lighter top-left and deeper bottom-right stops of the card's tonal shading. */
+  heroTop: string;
+  heroBottom: string;
   onHero: string;
   onHeroMuted: string;
   /** Repaid segment and dot on the summary card. */
@@ -54,6 +57,8 @@ export const lightColors: ColorTokens = {
   outline: '#E6DCD2',
   outlineStrong: '#A08F86',
   heroSurface: '#3B2218',
+  heroTop: '#4D2E22',
+  heroBottom: '#311B13',
   onHero: '#FFF8EF',
   onHeroMuted: '#E3CBBE',
   heroPositive: '#7FCB98',
@@ -90,6 +95,8 @@ export const darkColors: ColorTokens = {
   outline: '#2F2F33',
   outlineStrong: '#6B6663',
   heroSurface: '#F3E6D2',
+  heroTop: '#FBF2E4',
+  heroBottom: '#EAD9C0',
   onHero: '#2A1B17',
   onHeroMuted: '#6B5243',
   heroPositive: '#2E7048',

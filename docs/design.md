@@ -449,6 +449,20 @@ A five-slot bottom bar, left to right:
 
 Each screen has a defined purpose, top-level hierarchy, actions, states and accessibility. Do not treat wireframe examples as proof of exact business values.
 
+### S00 — Welcome (first launch, v2)
+
+**Purpose:** A warm first impression that explains the app in three swipes, then gets out of the way.
+
+- Shown once per device to signed-out users, before Sign-in (`miniledger:welcomed` in local storage). Signed-in users never see it.
+- Top: `Skip` (pages 1–2). Brand block: the wallet mark (92dp) says hello once (cover opens, ₹ coin peeks), the large wordmark, tagline `Lend, borrow, stay on good terms.`
+- Three swipeable pages, each a flat faceless illustration on a soft `surfaceMuted` disc plus a title and one line:
+  1. **Track what you lend** — two hands passing a ₹ coin.
+  2. **Remember what you owe** — a ledger page with green / rose entries and a `FRI 24` due tab.
+  3. **Stay on good terms** — a gentle reminder bubble and a green `Sent it, thanks!` reply.
+- Footer: page dots (the active dot stretches to 24dp in `brandPrimary`) and a 56dp terracotta next button that grows into a `Get started` pill on the last page. Art drifts with a slight parallax as you swipe; a selection haptic marks each page; `Get started` plays the success haptic and fades to Sign-in.
+- Reduce motion: no parallax, no wallet peek; pages still swipe.
+- The native splash stays a static mark on `canvas` (Android only shows a static image there); the welcome pages carry the brand moment.
+
 ### S01 — Launch / authentication routing
 
 **Purpose:** Get the returning user to their data quickly.
@@ -492,7 +506,7 @@ Each screen has a defined purpose, top-level hierarchy, actions, states and acce
 **Order from top to bottom (one vertical scroll):**
 
 1. **Header:** the live wordmark `MiniLedger` (§1.2), left-aligned, 56dp tall. Nothing else.
-2. **Summary card** (`SummaryHero`, flat `heroSurface`: dark chocolate `#3B2218` in light mode with shadow S2, logo cream `#F3E6D2` in dark mode; 22dp radius, 20dp padding). No gradient or line art. The **wallet mark** (`HeroWallet`, 76dp, brand colours) sits top-right beside the amount and comes alive on events only, never in an idle loop: after the first count-up and whenever a payment changes the figures, its cover swings open on the spine, the wallet lifts 3dp and a ₹ coin rises out of the pages, then it closes (lively spring); pressing the card holds it open. Reduce motion keeps it still. Content, top-down:
+2. **Summary card** (`SummaryHero`, flat `heroSurface`: dark chocolate `#3B2218` in light mode with shadow S2, logo cream `#F3E6D2` in dark mode; 22dp radius, 20dp padding). **Tonal layers, no glow:** a 155° shade from `heroTop` through `heroSurface` to `heroBottom`, two large soft discs in `onHero` at 4–6%, a 1dp lit top edge, and two sheets in `heroSurface` (38% and 16%) peeking 6dp and 12dp below the card so it reads as the top page of a ledger stack. The **wallet mark** (`HeroWallet`, 76dp, brand colours) sits top-right beside the amount and comes alive on events only, never in an idle loop: after the first count-up and whenever a payment changes the figures, its cover swings open on the spine, the wallet lifts 3dp and a ₹ coin rises out of the pages, then it closes (lively spring); pressing the card holds it open. Reduce motion keeps it still. Content, top-down:
    - overline `YOU'LL RECEIVE` in `onHeroMuted`, trailing `chevron-right`;
    - **outstanding lent** in the 40sp hero style in `onHero`, then `from 3 people` (`peopleOwingYou`); `Everything you lent has been repaid` or `Nothing owed to you right now` at zero;
    - one 8dp **stacked bar** of `totalLent`: repaid (`heroPositive`), still owed and not overdue (`onHero` at 32%), overdue (`heroAlert`), 3dp gaps, on a 12% `onHero` track; it reveals left to right on first load (450 ms);

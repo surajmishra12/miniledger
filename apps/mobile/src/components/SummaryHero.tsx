@@ -139,9 +139,47 @@ function Figure({
 }
 
 /**
+ * Tonal layers inside the card (no glow): a lighter-to-deeper diagonal shade, two large soft
+ * discs in the card's own ink at a few percent, and a 1dp top highlight like a lit edge.
+ */
+function Shading() {
+  const { colors, scheme } = useTheme();
+  const dark = scheme === 'dark';
+  return (
+    <View
+      style={[
+        styles.shading,
+        {
+          backgroundImage: `linear-gradient(155deg, ${colors.heroTop} 0%, ${colors.heroSurface} 55%, ${colors.heroBottom} 100%)`,
+        },
+      ]}
+      pointerEvents="none"
+      importantForAccessibility="no-hide-descendants"
+    >
+      <View
+        style={[styles.discLarge, { backgroundColor: colors.onHero, opacity: dark ? 0.045 : 0.06 }]}
+      />
+      <View
+        style={[
+          styles.discSmall,
+          { backgroundColor: colors.onHero, opacity: dark ? 0.035 : 0.045 },
+        ]}
+      />
+      <View
+        style={[
+          styles.highlight,
+          { backgroundColor: dark ? '#FFFFFF' : colors.onHero, opacity: dark ? 0.7 : 0.1 },
+        ]}
+      />
+    </View>
+  );
+}
+
+/**
  * The one coloured surface on Home (design.md S04 v2): what you'll receive with the living wallet
  * mark beside it, a stacked bar of everything you lent, and the brief's three figures (lent,
- * repaid, overdue) as a legend. Amounts stay in ink; colour only marks repaid and overdue.
+ * repaid, overdue) as a legend. Tonal layers and two sheets peeking below give it depth.
+ * Amounts stay in ink; colour only marks repaid and overdue.
  */
 export function SummaryHero({
   outstandingLentPaise,
@@ -153,6 +191,7 @@ export function SummaryHero({
   onPress,
 }: Props) {
   const { colors, scheme, reduceMotion } = useTheme();
+  const dark = scheme === 'dark';
   const owed = outstandingLentPaise > 0;
 
   // The wallet comes alive on events only: a peek after the first count-up, a peek whenever a
@@ -190,82 +229,125 @@ export function SummaryHero({
     .join('. ');
 
   return (
-    <Tappable
-      accessibilityRole={onPress ? 'button' : 'summary'}
-      accessibilityLabel={spoken}
-      accessibilityHint={onPress ? 'Shows the loans people still owe you' : undefined}
-      disabled={!onPress}
-      onPress={onPress}
-      onPressIn={() => {
-        if (!reduceMotion) open.set(withSpring(1, springLively));
-      }}
-      onPressOut={() => {
-        open.set(reduceMotion ? 0 : withSpring(0, springLively));
-      }}
-      shadow="s2"
-      scaleTo={0.985}
-      style={[
-        styles.card,
-        {
-          backgroundColor: colors.heroSurface,
-          // In dark mode a hairline separates the espresso card from the onyx canvas.
-          borderColor: scheme === 'dark' ? colors.outline : 'transparent',
-        },
-      ]}
-    >
-      <View style={styles.top}>
-        <View style={styles.headline}>
-          <AppText variant="overline" color="onHeroMuted">
-            YOU&apos;LL RECEIVE
-          </AppText>
-          <AnimatedAmount
-            paise={outstandingLentPaise}
-            countUp={countUp}
-            variant="hero"
-            color="onHero"
-            numberOfLines={1}
-            adjustsFontSizeToFit
-          />
-          <View style={styles.context}>
-            <AppText variant="secondary" color="onHeroMuted" numberOfLines={1}>
-              {context}
+    <View style={styles.stack}>
+      {/* Two sheets peeking below the card: it reads as the top page of a ledger stack. */}
+      <View
+        style={[
+          styles.sheet,
+          styles.sheetBack,
+          { backgroundColor: colors.heroSurface, opacity: dark ? 0.2 : 0.16 },
+        ]}
+      />
+      <View
+        style={[
+          styles.sheet,
+          styles.sheetMid,
+          { backgroundColor: colors.heroSurface, opacity: dark ? 0.42 : 0.38 },
+        ]}
+      />
+      <Tappable
+        accessibilityRole={onPress ? 'button' : 'summary'}
+        accessibilityLabel={spoken}
+        accessibilityHint={onPress ? 'Shows the loans people still owe you' : undefined}
+        disabled={!onPress}
+        onPress={onPress}
+        onPressIn={() => {
+          if (!reduceMotion) open.set(withSpring(1, springLively));
+        }}
+        onPressOut={() => {
+          open.set(reduceMotion ? 0 : withSpring(0, springLively));
+        }}
+        shadow="s2"
+        scaleTo={0.985}
+        style={[styles.card, { backgroundColor: colors.heroSurface }]}
+      >
+        <Shading />
+        <View style={styles.top}>
+          <View style={styles.headline}>
+            <AppText variant="overline" color="onHeroMuted">
+              YOU&apos;LL RECEIVE
             </AppText>
-            {onPress ? <ChevronRight size={16} color={colors.onHeroMuted} strokeWidth={2} /> : null}
+            <AnimatedAmount
+              paise={outstandingLentPaise}
+              countUp={countUp}
+              variant="hero"
+              color="onHero"
+              numberOfLines={1}
+              adjustsFontSizeToFit
+            />
+            <View style={styles.context}>
+              <AppText variant="secondary" color="onHeroMuted" numberOfLines={1}>
+                {context}
+              </AppText>
+              {onPress ? (
+                <ChevronRight size={16} color={colors.onHeroMuted} strokeWidth={2} />
+              ) : null}
+            </View>
+          </View>
+          <View style={styles.wallet}>
+            <HeroWallet size={WALLET} open={open} rimmed={!dark} coin />
           </View>
         </View>
-        <View style={styles.wallet}>
-          <HeroWallet size={WALLET} open={open} rimmed={scheme === 'light'} coin />
-        </View>
-      </View>
 
-      {lentAny ? (
-        <>
-          <LentBar
-            lent={totalLentPaise}
-            repaid={totalRepaidPaise}
-            overdue={overduePaise}
-            reveal={!!countUp}
-          />
-          <View style={styles.figures}>
-            <Figure label="Lent" paise={totalLentPaise} dot="onHeroMuted" hollow />
-            <Figure label="Repaid" paise={totalRepaidPaise} dot="heroPositive" />
-            <Figure label="Overdue" paise={overduePaise} dot="heroAlert" />
-          </View>
-        </>
-      ) : null}
-    </Tappable>
+        {lentAny ? (
+          <>
+            <LentBar
+              lent={totalLentPaise}
+              repaid={totalRepaidPaise}
+              overdue={overduePaise}
+              reveal={!!countUp}
+            />
+            <View style={styles.figures}>
+              <Figure label="Lent" paise={totalLentPaise} dot="onHeroMuted" hollow />
+              <Figure label="Repaid" paise={totalRepaidPaise} dot="heroPositive" />
+              <Figure label="Overdue" paise={overduePaise} dot="heroAlert" />
+            </View>
+          </>
+        ) : null}
+      </Tappable>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
+  // Room for the sheets that peek below the card.
+  stack: { paddingBottom: 12 },
+  sheet: { position: 'absolute', height: 40, borderRadius: radius.xl },
+  sheetMid: { left: 10, right: 10, bottom: 6 },
+  sheetBack: { left: 22, right: 22, bottom: 0 },
   card: {
     borderRadius: radius.xl,
-    borderWidth: StyleSheet.hairlineWidth * 2,
     paddingHorizontal: space.s5,
     paddingTop: space.s5,
     paddingBottom: space.s5,
     gap: space.s4,
   },
+  shading: {
+    position: 'absolute',
+    top: 0,
+    right: 0,
+    bottom: 0,
+    left: 0,
+    borderRadius: radius.xl,
+    overflow: 'hidden',
+  },
+  discLarge: {
+    position: 'absolute',
+    width: 260,
+    height: 260,
+    borderRadius: 130,
+    top: -120,
+    right: -90,
+  },
+  discSmall: {
+    position: 'absolute',
+    width: 200,
+    height: 200,
+    borderRadius: 100,
+    bottom: -130,
+    left: -60,
+  },
+  highlight: { position: 'absolute', top: 0, left: 22, right: 22, height: 1 },
   top: { flexDirection: 'row', alignItems: 'flex-start', gap: space.s3 },
   headline: { flex: 1, gap: 2 },
   context: { flexDirection: 'row', alignItems: 'center', gap: 2 },

@@ -69,7 +69,12 @@ describe('theme tokens', () => {
       [c.textSecondary, c.dangerSurface, 4.5],
       [c.textSecondary, c.successSurface, 4.5],
       [c.dangerText, c.borrowedSurface, 4.5],
+      [c.onHero, c.heroTop, 4.5],
+      [c.onHeroMuted, c.heroTop, 4.5],
+      [c.onHero, c.heroBottom, 4.5],
+      [c.onHeroMuted, c.heroBottom, 4.5],
       [c.heroPositive, c.heroSurface, 3],
+      [c.heroAlert, c.heroBottom, 3],
       [c.heroAlert, c.heroSurface, 3],
       // The receipt viewer draws onViewer on black in both themes.
       [c.onViewer, c.viewerCanvas, 4.5],
