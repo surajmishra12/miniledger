@@ -121,20 +121,20 @@ Use **semantic tokens**, never scatter raw hex values through components. The so
 | `textTertiary` | `#8C7B73` | Placeholders and decorative metadata only, never essential text |
 | `outline` | `#E6DCD2` | Hairline dividers and card borders (decorative) |
 | `outlineStrong` | `#A08F86` | Input and segmented-control boundaries (meaningful, 3:1) |
-| `heroSurface` | `#4A2620` | The one espresso statement card (Home summary) |
+| `heroSurface` | `#3B2218` | The one **dark-chocolate** statement card (Home hero); tonal top stop `#45291E` |
 | `onHero` | `#FFF8EF` | Amount and title on `heroSurface` |
 | `onHeroMuted` | `#E3CBBE` | Supporting text on `heroSurface` |
-| `heroAccent` | `#F0936E` | Reserved; not used in V1 (the hero carries no decoration) |
+| `heroAccent` | `#F0936E` | Hero progress fill and the hero's line-art decoration |
 | `brandPrimary` | `#B4472B` | Primary buttons, links, active tab, selected segment, progress fill |
 | `brandPressed` | `#963821` | Pressed primary controls |
 | `onBrand` | `#FFFFFF` | Text and icons on `brandPrimary` |
 | `brandSubtle` | `#FBEAE3` | Selected chip/segment background, subtle brand tint |
 | `focusRing` | `#B4472B` | Visible keyboard/assistive focus |
-| `lentText` | `#A8432A` | "Lent" / "Owes you" labels and icons |
-| `lentSurface` | `#FBEAE3` | Lent chip background |
-| `borrowedText` | `#34558A` | "Borrowed" / "You owe" labels and icons |
-| `borrowedSurface` | `#E9EFF8` | Borrowed chip background |
-| `successText` | `#2F6B45` | Repaid / settled / received confirmations |
+| `lentText` | `#2E7048` | **Money coming to you**: "Lent" / "Owes you" labels, icons, tinted amounts (green) |
+| `lentSurface` | `#E7F3EB` | Lent chip, badge and tile tint |
+| `borrowedText` | `#A6405C` | **Money you owe**: "Borrowed" / "You owe" labels, icons, tinted amounts (soft rose) |
+| `borrowedSurface` | `#FBEDF1` | Borrowed chip, badge and tile tint |
+| `successText` | `#2F6B45` | Confirmations ("Saved", money received) |
 | `successSurface` | `#E8F3EB` | Repaid chip background |
 | `warningText` | `#8A5710` | Due today / due tomorrow |
 | `warningSurface` | `#FCF1DC` | Due-soon chip background |
@@ -157,25 +157,25 @@ Use **semantic tokens**, never scatter raw hex values through components. The so
 | `textTertiary` | `#948D88` | Placeholders and decorative metadata only |
 | `outline` | `#2F2F33` | Hairline dividers and card borders (decorative) |
 | `outlineStrong` | `#6B6663` | Input and segmented-control boundaries (meaningful, 3:1) |
-| `heroSurface` | `#8E3B24` | **Only** the featured Home balance card; deep ember |
-| `onHero` | `#FFF8EF` | Amount and title on `heroSurface` |
-| `onHeroMuted` | `#F6D8C9` | Supporting text on `heroSurface` |
-| `heroAccent` | `#FFD3BF` | Reserved; not used in V1 |
+| `heroSurface` | `#F3E6D2` | **Only** the Home hero: the logo's **cream**, glowing softly on onyx; tonal top stop `#FFF9F0` |
+| `onHero` | `#2A1B17` | Amount and title on the cream hero (espresso ink) |
+| `onHeroMuted` | `#6B5243` | Supporting text on the cream hero |
+| `heroAccent` | `#B4472B` | Hero progress fill and line-art decoration (terracotta on cream) |
 | `brandPrimary` | `#F08A65` | Primary buttons, links, active tab, selected segment, progress fill |
 | `brandPressed` | `#E07450` | Pressed primary controls |
 | `onBrand` | `#2A0F07` | Text and icons on ember buttons (dark foreground is mandatory) |
 | `brandSubtle` | `#221916` | Small selected chip/segment background only |
 | `focusRing` | `#F08A65` | Keyboard/assistive focus boundary |
-| `lentText` | `#F39A78` | "Lent" / "Owes you" labels and icons |
-| `lentSurface` | `#221916` | Lent chip background |
-| `borrowedText` | `#9DB7E6` | "Borrowed" / "You owe" labels and icons |
-| `borrowedSurface` | `#161D29` | Borrowed chip background |
-| `successText` | `#7FCB98` | Repaid / settled / received confirmations |
+| `lentText` | `#7FCB98` | Money coming to you (green) |
+| `lentSurface` | `#13211A` | Lent chip, badge and tile tint |
+| `borrowedText` | `#EBA3B5` | Money you owe (soft rose) |
+| `borrowedSurface` | `#261619` | Borrowed chip, badge and tile tint |
+| `successText` | `#7FCB98` | Confirmations |
 | `successSurface` | `#13211A` | Repaid chip background |
 | `warningText` | `#F2C46B` | Due today / due tomorrow |
 | `warningSurface` | `#241E12` | Due-soon chip background |
-| `dangerText` | `#FF8A9E` | Overdue, destructive actions, field errors |
-| `dangerSurface` | `#28141A` | Overdue chip background |
+| `dangerText` | `#FF6F82` | Overdue, destructive actions, field errors (more saturated than rose) |
+| `dangerSurface` | `#2C1318` | Overdue chip background |
 | `scrim` | `#000000` @ 68% | Modal/sheet backdrop |
 
 Chip and badge surfaces (`*Surface`, `brandSubtle`) are near-black tints that must read as **black** at chip size; they never fill rows, cards or screens.
@@ -195,9 +195,10 @@ Each financial meaning has one color family, always paired with **text and an ic
 
 | Meaning | Tokens | Icon | Example |
 |---|---|---|---|
-| Lent / You are owed | `lentText`, `lentSurface` | `arrow-up-right` | `Lent` chip, `Owes you ₹3,000` |
-| Borrowed / You owe | `borrowedText`, `borrowedSurface` | `arrow-down-left` | `Borrowed` chip, `You owe ₹4,500` |
-| Repaid / settled | `successText`, `successSurface` | `check-check` | `Repaid` chip, `All settled.` |
+| They owe you (money coming in) | `lentText` green, `lentSurface` | `arrow-up-right` | `Lent` chip, `Owes you ₹3,000` |
+| You owe (money going out) | `borrowedText` soft rose, `borrowedSurface` | `arrow-down-left` | `Borrowed` chip, `You owe ₹4,500` |
+| Repaid / settled (finished) | `textSecondary` on `surfaceMuted` (neutral) | `check-check` | `Repaid` chip, `Settled`, `All settled.` |
+| Received / saved (confirmation) | `successText`, `successSurface` | `check-check` | Snackbar, `Repaid to you` tile |
 | Due today / tomorrow | `warningText`, `warningSurface` | `calendar-clock` | `Due today` |
 | Overdue | `dangerText`, `dangerSurface` | `circle-alert` | `8 days overdue` |
 | Destructive action | `dangerText` | `trash-2` | `Delete loan` |
@@ -223,13 +224,13 @@ Rules:
 | `onBrand` / `brandPrimary` | 5.4 | 7.3 |
 | `onBrand` / `brandPressed` | 7.3 | 5.8 |
 | `brandPrimary` / `canvas` (links) | 5.1 | 8.0 |
-| `onHero` / `heroSurface` | 12.5 | 7.1 |
-| `onHeroMuted` / `heroSurface` | 8.5 | 5.6 |
-| `lentText` / `lentSurface` | 5.1 | 7.6+ |
-| `borrowedText` / `borrowedSurface` | 6.5 | 8.1+ |
+| `onHero` / `heroSurface` (worst stop) | 12.5 | 13.5 |
+| `onHeroMuted` / `heroSurface` (worst stop) | 8.5 | 5.9 |
+| `lentText` / `lentSurface` | 5.2 | 8.7 |
+| `borrowedText` / `borrowedSurface` | 5.3 | 8.6 |
 | `successText` / `successSurface` | 5.6 | 8.4+ |
 | `warningText` / `warningSurface` | 5.4 | 9.6+ |
-| `dangerText` / `dangerSurface` | 5.8 | 7.5+ |
+| `dangerText` / `dangerSurface` | 5.8 | 6.5 |
 | `outlineStrong` / `surface` (field boundary) | 3.1 | 3.2 |
 
 `textTertiary` (4.0 light on white) is for placeholders and decoration only. Re-check contrast for every new component state.
@@ -292,7 +293,7 @@ One visual language, applied identically on every screen, so meaning is recogniz
 
 | Channel | Meaning | How it is used |
 |---|---|---|
-| **Hue** | *Kind of money* and *urgency* | Terracotta = money owed **to you** (lent). Indigo = money **you owe** (borrowed). Sage = done (repaid, received, all caught up). Amber = act soon (due today/tomorrow). Crimson = act now (overdue) or destructive. Brand terracotta also marks "tap to act" only on buttons, links and the active tab, never on status. |
+| **Hue** | *Kind of money* and *urgency* | **Green** = money coming **to you** (they owe you, received). **Soft rose** = money **you owe**. **Neutral grey** = finished (repaid, settled). **Amber** = act soon (due within the week). **Crimson** = act now (overdue) or destructive; always with `circle-alert` and the word, saturated and never just a tint, so it never reads as "you owe". **Terracotta** (brand) = *tap to act* only: Add, primary buttons, links, active tab, focus. Never a status or a kind of money. |
 | **Shape** | *What a mark is* | Circle badge = a category of money (Home tiles, Add sheet, person balances). Rounded chip = a loan's status. Left status rail = a row needing action. Pill = active tab. |
 | **Arrow direction** | *Which way money moved* | `arrow-up-right` = lent (money went out from you). `arrow-down-left` = borrowed (money came in to you). Settled money uses `check-check`, not an arrow. Always next to a word. |
 | **Position** | *Priority* | Top of Home = the biggest answer. Within lists, overdue first, then due soon, then upcoming, then repaid. Primary action at the bottom within thumb reach. |
@@ -491,17 +492,25 @@ Each screen has a defined purpose, top-level hierarchy, actions, states and acce
 **Order from top to bottom (one vertical scroll):**
 
 1. **Header:** the live wordmark `MiniLedger` (§1.2), left-aligned, 56dp tall. Nothing else: no greeting, bell, avatar or search (search lives on Loans).
-2. **Hero card** (`SummaryHero`, `heroSurface` with the §2.6 tonal depth, shadow S2 in light mode, 22dp radius, 24dp padding): overline `YOU ARE OWED` in `onHeroMuted`; **outstanding lent** (`outstandingLent`) in the 40sp hero style in `onHero`; one context line in `onHeroMuted`: `from 3 people` (`peopleOwingYou`), or `Nothing owed to you right now` when zero. Tap → Loans with `Lent` + `Outstanding`. A trailing 20dp `chevron-right` in `onHeroMuted` signals that it is tappable.
-3. **Four tiles** in a 2×2 grid (`SummaryTile`, `surface` + hairline + shadow S1, 16dp radius, 16dp padding, 12dp gaps). Each tile reads top-down as *badge → label → amount → context*: 36dp icon badge (§2.3) top-left with a `chevron-right` top-right when tappable, label in `textSecondary`, tile amount, one context line in `textSecondary`. Tile colors follow §2.7: the badge says what kind of money it is; only an overdue amount turns crimson.
+2. **Hero card** (`SummaryHero`, `heroSurface` with its §2.6 tonal gradient: dark chocolate in light mode, logo cream in dark mode; shadow S2 in light mode, 22dp radius, 24dp padding). Content, top-down:
+   - overline `YOU ARE OWED` in `onHeroMuted`;
+   - **outstanding lent** (`outstandingLent`) in the 40sp hero style in `onHero`;
+   - a slim 6dp **received bar** (`totalRepaid / totalLent`, fill `heroAccent`, track `onHero` at 14%) with the line `₹4,500 of ₹14,500 received · 31%` in `onHeroMuted` (hidden when `totalLent = 0`);
+   - a footer line in `onHeroMuted`: `from 3 people` (`peopleOwingYou`), followed by `· ₹1,200 overdue` with a `circle-alert` in `heroAccent` when `overdueAmount > 0`; `Nothing owed to you right now` when zero.
 
-   | Tile | Badge | Amount | Context line | Tap → Loans with |
+   **Decoration (§10.3):** faint ledger-ring line art at 6–8% `onHero` across the right half, and the MiniLedger wallet-notebook mark drawn as flat SVG, ~88dp, tucked into the top-right corner, rotated −8° and cropped by the card edge. The text column reserves 72dp right padding so no figure ever runs under the mark. No glow, glass or pattern beyond this.
+
+   **Interaction:** tap → Loans with `Lent` + `Outstanding`; a trailing 20dp `chevron-right` in `onHeroMuted` signals it. Press scales to 0.985 and the wallet's cover flap lifts 6° (spring), settling on release. On first load the amount counts up and the received bar fills (450 ms ease-out). Reduce motion: static.
+3. **Four tiles** in a 2×2 grid (`SummaryTile`, 16dp radius, 16dp padding, 12dp gaps, shadow S1 in light mode). Each tile has a **subtle tinted background** (its tone's `*Surface`) and an **oversized faded glyph** of its icon (64dp, 8% of the tone's text color) cropped in the bottom-right corner. Each tile reads top-down as *badge → label → amount → context*: 36dp icon badge (§2.3) top-left with a `chevron-right` top-right when tappable, label in `textSecondary`, tile amount, one context line in `textSecondary`. The amount takes the tone's text color (§2.3 amount rule).
+
+   | Tile | Tone / badge | Amount | Context line | Tap → Loans with |
    |---|---|---|---|---|
-   | **You owe** | borrowed `arrow-down-left` | `outstandingBorrowed` | `to 2 people` (`peopleYouOwe`); if `overdueBorrowed > 0`: `₹X overdue` in `dangerText` | `Borrowed` + `Outstanding` |
-   | **Overdue** | danger `circle-alert` (success `check-check` when zero) | `overdueAmount`, `dangerText` when > 0 | `2 loans` (`overdueLoans`) or `Nothing overdue` | `Lent` + `Overdue` |
-   | **Total lent** | lent `arrow-up-right` | `totalLent` | `4 loans` (`lentLoans`) | `Lent` + `All` |
+   | **You owe** | borrowed (rose) `arrow-down-left` | `outstandingBorrowed` | `to 2 people` (`peopleYouOwe`); if `overdueBorrowed > 0`: `₹X overdue` in `dangerText` | `Borrowed` + `Outstanding` |
+   | **Overdue** | danger `circle-alert`; neutral `check-check` on `surfaceMuted` when zero | `overdueAmount` | `2 loans` (`overdueLoans`) or `Nothing overdue` | `Lent` + `Overdue` |
+   | **Due this week** | warning (amber) `calendar-clock` | `dueSoonLent + dueSoonBorrowed` | `3 loans` (`dueSoonLoans`) or `Nothing due this week` | `All` + `Outstanding` |
    | **Repaid to you** | success `check-check` | `totalRepaid` | `31% of what you lent` (rounded down; hidden when `totalLent = 0`) | not tappable |
 
-   `Total lent`, `Repaid to you` and `Overdue` are the brief's three summary figures (lent loans only, PRD FR-05). Tiles show their value even when zero; the grid order is fixed.
+   `Total lent` (in the hero bar), `Repaid to you` and `Overdue` are the brief's three summary figures (lent loans only, PRD FR-05). *Due this week* counts outstanding, non-overdue loans of both directions due today through today + 6. Tiles show their value even when zero; the grid order is fixed.
 4. **Needs attention** section: title + `See all` text button (→ Loans, default filters). Up to **5** outstanding loans from `GET /v1/loans?status=outstanding&sort=attention&limit=5` as `LoanRow`s in one grouped container: overdue first (danger chip), then the soonest due. When nothing is outstanding but loans exist: one calm row with a success badge, `You're all caught up.` / `No open loans right now.`
 5. Bottom padding so the last row clears the bar.
 
@@ -521,13 +530,13 @@ Each screen has a defined purpose, top-level hierarchy, actions, states and acce
   2. Segmented control **All / Lent / Borrowed**.
   3. Horizontally scrollable status chips **All / Outstanding / Overdue / Repaid** (`Outstanding` includes overdue).
 - When any filter or search differs from the default, show a one-line `Showing lent · overdue` summary with `Clear` at the start of the list, so a narrowed list is never mistaken for missing data.
-- **Sections** (only with the default *Needs attention* sort): rows are grouped under small overline headers derived from each loan: `OVERDUE` (`dangerText` + `circle-alert`), `DUE SOON` (due today or tomorrow, `warningText` + `calendar-clock`), `UPCOMING` (`textSecondary`), `REPAID` (`successText` + `check-check`). Each section is one grouped container. Other sorts show one ungrouped list.
+- **Sections** (only with the default *Needs attention* sort): rows are grouped under small overline headers derived from each loan: `OVERDUE` (`dangerText` + `circle-alert`), `DUE SOON` (due today or tomorrow, `warningText` + `calendar-clock`), `UPCOMING` (`textSecondary`), `REPAID` (`textSecondary` + `check-check`). Each header carries its row count and, for outstanding sections, the section's remaining total right-aligned (`OVERDUE · 2` … `₹3,200`). Each section is one grouped container. Other sorts show one ungrouped list.
 - `Sort` sheet (radio rows): **Needs attention** (default), **Due date**, **Recent activity**. Semantics in PRD FR-06.
 - Row anatomy (`LoanRow`):
   - leading edge: the §2.7 **status rail** (crimson for overdue, amber for due today/tomorrow, none otherwise);
   - left: person initials in a subtle circle (§11 initials rule) and **person name**;
   - second line: direction chip `Lent` / `Borrowed` + due-status label (§1.3);
-  - right: **remaining balance** bold; when partially repaid, a smaller `of ₹5,000` beneath it; fully repaid loans show the original amount in `textSecondary` (with the `Repaid` chip) instead of `₹0`;
+  - right: **remaining balance** bold, tinted by direction (`lentText` green / `borrowedText` rose, `dangerText` when overdue); when partially repaid, a smaller neutral `of ₹5,000` beneath it; fully repaid loans show the original amount in `textSecondary` (with the neutral `Repaid` chip) instead of `₹0`;
   - in Person detail the person column is dropped: the title becomes `Due 30 October 2026` and the direction chip stays;
   - status chip (`StatusChip`, §2.3 colors with icon): `N days overdue` (danger), `Due today` / `Due tomorrow` (warning) or `Repaid` (success); other outstanding loans show the plain due label without a chip. Never an unlabeled dot.
 - Row tap opens Loan details (press: ripple + 0.985 scale). No swipe actions.
@@ -544,15 +553,16 @@ Each screen has a defined purpose, top-level hierarchy, actions, states and acce
 **Full-screen form, field order:**
 
 1. Header `Money you lent` / `Money you borrowed` (create, following the chosen direction) or `Edit loan`; back control.
-2. Large **direction segmented control** (`DirectionSwitch`): `I lent` / `I borrowed` with arrow icons. Preset from S14 (or `I lent` when opened from elsewhere) and still changeable, so a wrong choice in the sheet costs one tap.
+2. Large **direction segmented control** (`DirectionSwitch`): `I lent` / `I borrowed` with arrow icons; the selected thumb takes the direction's surface and text colors (green / rose). Preset from S14 (or `I lent` when opened from elsewhere) and still changeable, so a wrong choice in the sheet costs one tap.
 3. **Person** (`PersonPicker`), labelled `Lent to` or `Borrowed from` according to direction:
    - Tapping opens a searchable, alphabetical list of **active** people from `GET /v1/people`.
    - As the user types, matching people appear first; the last row is always `+ Add "<typed name>" as new person`.
    - Choosing an existing person sends `personId`; choosing the add row sends `personName` + `createNewPerson: true`. The person is created in the same save request; no separate setup trip.
    - Opened from Person detail (`?personId=`), the field is prefilled.
+   - In create mode, while no person is chosen, up to five **recent-people chips** (unique active people from the latest loans) sit under the field; one tap picks the person.
    - In **edit mode** the add row is hidden: a loan can only be moved to an existing active person (create the person first from People if needed).
 4. **Amount** (`MoneyField`): label `Original amount`, `₹` prefix, `decimal-pad` keyboard. Holds the raw typed string; shows grouped formatting only when not focused. Max two decimals enforced while typing.
-5. **Due date** (`DateField`): required, native date picker, displayed as `30 October 2026`. Past dates allowed.
+5. **Due date** (`DateField`): required, native date picker, displayed as `30 October 2026`. Past dates allowed. Beneath it a row of **quick chips** `1 week` · `2 weeks` · `1 month` · `End of month` (counted from the loan date); the chip matching the current value shows as selected.
 6. Collapsible **More details**: loan date (defaults today; picker maximum is today), note (multiline, 500-character limit with counter from 450), receipt photo (S11).
 7. Fixed safe-area-aware bottom primary action `Save loan` / `Save changes`.
 
@@ -577,11 +587,12 @@ Each screen has a defined purpose, top-level hierarchy, actions, states and acce
 **Purpose:** Show evidence of the record and one clear next action.
 
 - Header with person name (tappable → Person detail) + overflow menu (`Edit loan`, `Delete loan`); direction chip immediately visible.
+- The financial block sits on a **tinted header strip** in the loan's state surface (`lentSurface`, `borrowedSurface`, `dangerSurface` when overdue, `surfaceMuted` when repaid), with a **countdown chip** (`Due in 5 days`, `Due today`, `3 days overdue`).
 - Financial hierarchy: **Remaining ₹X** (largest), then two columns `Original ₹Y` / `Received ₹Z` (lent) or `Original ₹Y` / `Paid back ₹Z` (borrowed).
 - Due-status line: due-status label (§1.3) plus absolute date; never rely on hue alone.
 - **Repayment progress bar** (linear, 8dp, `repaidPaise / principalPaise`) with the labelled amounts beside it; no circular chart. The fill carries the loan's state (§2.7): `lentText` or `borrowedText` while outstanding, `dangerText` while overdue, `successText` when repaid; track `surfaceMuted`. It animates from its previous value after every confirmed repayment (400 ms ease-out). The `Remaining` figure rolls to its new value at the same time.
 - **Primary CTA:** `Record repayment`. **Secondary:** `Mark as repaid`. Both only when outstanding > 0. Fully repaid loans show the `All settled.` state instead of enabled buttons.
-- **Repayment history:** newest first, each row with date, amount, note (if any) and an overflow menu `Edit` / `Remove`. All repayments are shown. No invented payment-method or verification badges.
+- **Repayment history:** a vertical **timeline**, newest first: a 2dp `divider` rail with a success dot per repayment and a final neutral dot for `Loan created · ₹5,000`. Each entry shows date, amount, note (if any) and an overflow menu `Edit` / `Remove`. All repayments are shown. No invented payment-method or verification badges.
 - **Receipt area:** small thumbnail with `Saved on this device only` label and `Replace` / `Remove`; tap to open the private full-screen viewer. Without a file on this device (never attached, reinstall, other phone) it shows `Add receipt photo`; the file is the only index, so there is never a phantom cloud receipt or a broken remote URL. The viewer shows `Receipt unavailable on this device.` if the file disappears.
 - Optional note appears after the financial section, not ahead of it. Destructive delete requires confirmation that includes financial-history implications.
 
@@ -591,7 +602,7 @@ Each screen has a defined purpose, top-level hierarchy, actions, states and acce
 
 - Full-screen presentation (a pushed form screen), so the keyboard, large text and small viewports never make it cramped.
 - Context header `Record money received` for lent / `Record money paid back` for borrowed; small line `Remaining ₹3,000`.
-- Amount input (`MoneyField`, empty by default) with a `Use full amount` chip that fills the remaining balance.
+- Amount input (`MoneyField`, empty by default) with quick chips `25%` · `50%` · `Full` that fill that share of the remaining balance (rounded down to the rupee; `Full` is exact).
 - Date defaults to today; picker maximum is today. If it is before the loan date, show the non-blocking hint `This is before the loan date.` Optional note (500 characters).
 - Primary action `Save repayment`. Errors: `Enter an amount greater than ₹0`; `AMOUNT_EXCEEDS_OUTSTANDING` → `Maximum is ₹3,000.`
 - When editing, the maximum shown is the remaining balance plus this repayment's current amount; title `Edit repayment`.
@@ -605,7 +616,8 @@ Each screen has a defined purpose, top-level hierarchy, actions, states and acce
 
 - Title `People`; search field (case-insensitive, debounced 300 ms) and an `Add person` header action.
 - Segmented control **Active / Archived** (default Active).
-- Each row (`PersonRow`): initials circle, name, and up to two separate figures, each as *icon + colored label + neutral amount*: `↗ Owes you ₹X` (lent color, when `owesYouPaise > 0`) and `↙ You owe ₹Y` (borrowed color, when `youOwePaise > 0`); `✓ Settled` in success color and a quieter row when both are zero. Never a netted figure; never imply the person uses the app.
+- Each row (`PersonRow`): initials circle with a 3dp direction **side bar** at its left (green when they owe you, rose when you owe them, split when both, none when settled), name, and up to two separate figures, each as a **soft pill** with icon + label + amount on the tone's surface: `↗ Owes you ₹X` (green `lentSurface`/`lentText`, when `owesYouPaise > 0`) and `↙ You owe ₹Y` (rose `borrowedSurface`/`borrowedText`, when `youOwePaise > 0`); `✓ Settled` in neutral `textSecondary` and a quieter row when both are zero. Never a netted figure; never imply the person uses the app.
+- **Transition to Person detail** must be immediate: the detail header and tiles render from the People list cache on the first frame, and the loan list mounts after the push animation finishes (skeleton until then). Rows do no per-row entrance animation.
 - Order: people with an outstanding balance first (alphabetical), then settled people (alphabetical), so the list leads with who matters now.
 - `Add person` opens a small dialog with one required field `Name` (1–80 characters). If an active person with the same name exists, show `You already have someone named Rahul.` with `Add anyway` / `Cancel`. No contact permission, email or phone.
 - No search results: `No matching people` + `Clear search`. Empty Active list: §9.2 empty state.
@@ -615,7 +627,7 @@ Each screen has a defined purpose, top-level hierarchy, actions, states and acce
 **Purpose:** Understand all loans with one person.
 
 - Header with the name and an overflow menu: `Rename`, `Archive` / `Unarchive`, and `Delete person` (shown only when `loanCount = 0`).
-- Two side-by-side figure tiles `They owe you` (lent badge) and `You owe them` (borrowed badge), styled like Home tiles; never netted.
+- Two side-by-side figure tiles `They owe you` (green tint) and `You owe them` (rose tint), styled like Home tiles; never netted. A zero figure renders its tile neutral.
 - Their loans from `GET /v1/loans?personId=…&sort=attention` as `LoanRow`s, with infinite scroll.
 - Primary action `Add loan with <name>` opens S06 with the person prefilled (hidden while archived; an archived banner shows `Archived. Unarchive to add loans.` with `Unarchive`).
 - Archive confirmation: `Archive Rahul?` + `They'll be hidden from your people list and the loan form. Their loans stay in your history.`
@@ -637,13 +649,13 @@ Each screen has a defined purpose, top-level hierarchy, actions, states and acce
 
 **Purpose:** Offer trust, control and low-effort customization.
 
-Grouped sections in this order:
+Each row leads with a 32dp rounded **icon square** in a muted tone (appearance amber, account terracotta-neutral, data green, privacy neutral, sign out neutral). Grouped sections in this order:
 
 1. **Appearance:** `Light`, `Dark`, `Use device setting` with current selection indicated. A simple row/selector is enough; do not construct an elaborate theme-preview screen.
 2. **Account:** signed-in email (production) or mobile number (assignment, no "verified" label); editable `Display name` row (optional, up to 60 characters). The identifier cannot be changed.
 3. **Your data:** `Loans and repayments are stored in your account. Receipt photos stay on this device only.`
 4. **Privacy and support:** `Privacy policy`, `How to delete your data` (external page), app version.
-5. **Sign out** (neutral; confirmation `Sign out?` — receipts stay on this device for when you sign back in); **Delete account** at the bottom in danger text, visually separated.
+5. **Sign out** (neutral; confirmation `Sign out?` — receipts stay on this device for when you sign back in); **Delete account** in its own group at the bottom, danger text with a crimson icon square.
 
 **Account deletion flow** (`settings/delete-account`):
 1. Explanation screen: `Delete your account?` + `This permanently deletes your people, loans and repayments from MiniLedger, and removes receipt photos from this device. This can't be undone.` Actions `Cancel` / `Send code`.
@@ -657,9 +669,9 @@ Signing out clears tokens and cached data; another account signing in on the dev
 **Purpose:** Start recording money in one tap, with the direction decided up front so the form reads naturally.
 
 - Opened by the bottom-bar **Add** button and by `Add your first loan`. A bottom sheet (`surfaceRaised`, 22dp top radius, handle) titled `Add`.
-- Two large option rows (72dp, full width, one grouped container):
-  1. lent badge `arrow-up-right` · **`I lent money`** · `Someone owes you`
-  2. borrowed badge `arrow-down-left` · **`I borrowed money`** · `You owe someone`
+- Two large option cards (80dp, full width, 16dp radius, 12dp apart), each tinted with its direction's surface:
+  1. green `lentSurface` · lent badge `arrow-up-right` · **`I lent money`** · `Someone owes you`
+  2. rose `borrowedSurface` · borrowed badge `arrow-down-left` · **`I borrowed money`** · `You owe someone`
 - Tapping a row closes the sheet and pushes S06 with that direction preset. No third option, no Cancel button (the `×` Add button position, a scrim tap and Android back all close it).
 - Rows announce as `I lent money, someone owes you, button`. Focus starts on the first row and returns to the Add button on dismissal.
 
@@ -686,14 +698,14 @@ The approved concept boards communicate **composition and restraint**, not liter
 | S03 OTP | Cream page, white 6-cell containers, terracotta focused cell | Onyx page, charcoal cells, neutral borders, ember focused cell |
 | S04 Home | Espresso hero with soft S2 shadow; white tiles (S1) with light semantic badges; white grouped rows | **One deep-ember hero** on onyx, no shadow; charcoal tiles with near-black badges; charcoal rows |
 | S05 Loans | White grouped sections on cream; sticky cream filter block | Charcoal sections on onyx; sticky onyx filter block with hairline divider |
-| S14 Add sheet | White sheet, two rows with lent/borrowed badges | Raised charcoal sheet, near-black badges, black scrim |
-| S06 Add/Edit | White fields on cream; terracotta active direction thumb | Charcoal fields, `surfaceMuted` track, ember active thumb and CTA |
+| S14 Add sheet | White sheet, green and rose tinted option cards | Raised charcoal sheet, near-black green and rose cards, black scrim |
+| S06 Add/Edit | White fields on cream; green/rose direction thumb; quick chips; terracotta CTA | Charcoal fields, `surfaceMuted` track, green/rose thumb, ember CTA |
 | S07 Loan detail | White financial panel (S1); 8dp progress fill in the loan's state color (§2.7) | Charcoal panels; same state-colored progress fill |
 | S08 Repayment | White fields on cream, terracotta CTA | Charcoal fields on onyx, ember CTA |
-| S09 People | Cream canvas, `surfaceMuted` initials circles | Onyx canvas, charcoal rows, `surfaceMuted` initials circles |
-| S10 Person detail | White split balances with lent/borrowed labels | Charcoal balance groups, cream-white figures, semantic labels only |
+| S09 People | Cream canvas, initials with direction side bar, green/rose balance pills | Onyx canvas, charcoal rows, near-black green/rose pills |
+| S10 Person detail | Green and rose tinted balance tiles | Near-black green and rose tinted tiles, tinted figures |
 | S11 Receipt | White local-only notice; neutral viewer | Neutral black viewer; never tint the photo |
-| S12 Settings | Grouped white rows with hairline dividers | Grouped charcoal rows; Light/Dark/System selector with ember active state |
+| S12 Settings | Grouped white rows, muted icon squares, crimson delete group | Grouped charcoal rows, near-black icon squares; ember active selector |
 | S13 Confirmations | White dialog, neutral Cancel, crimson destructive text | Raised charcoal dialog, cream-white body, crimson destructive text, neutral Cancel |
 
 **Priority on smaller phones:** Keep the primary amount, direction, and next action visible; move secondary figures into sequential rows and allow longer labels to wrap. Never solve density by reducing text below accessible sizes.
@@ -713,19 +725,19 @@ The approved concept boards communicate **composition and restraint**, not liter
 | `DirectionSwitch` | Lent/Borrowed explicit, accessible, can be disabled with helper | Selected tinted background, labels + icon |
 | `PersonPicker` | Search active people (alphabetical), `Add "<name>" as new person` row | Sheet/list with initials rows |
 | `OtpInput` | One logical 6-digit field, paste/autofill, single auto-submit | Six cells, visible focus |
-| `SummaryHero` | One most important amount, tappable | Flat `heroSurface` card, 22dp radius, `onHero` figure, no decoration |
-| `SummaryTile` | Badge + label + amount + context line, optional tap | `surface`, 16dp radius, hairline, shadow S1 (light), 36dp semantic badge |
+| `SummaryHero` | Outstanding lent, received bar, footer, tappable | `heroSurface` gradient card, 22dp radius, line art + wallet mark (§10.3) |
+| `SummaryTile` | Badge + label + amount + context line, optional tap | Tone `*Surface` tint, 16dp radius, shadow S1 (light), faded corner glyph |
 | `IconBadge` | Semantic meaning for a figure or option | 36dp circle in `*Surface`, 18dp icon in `*Text` |
 | `SectionHeader` | Overline title, optional semantic icon, optional trailing text action | 12sp overline; action in `brandPrimary` |
 | `LoanRow` | Person, direction, remaining, due status | Large hit target; text status, subtle separator |
 | `StatusChip` | Text + semantic color + screen-reader label | Compact pill, adequate contrast |
-| `PersonRow` | Name + separate owes-you / you-owe amounts | Initials avatar, no fake profile pictures |
+| `PersonRow` | Name + separate owes-you / you-owe pills | Initials avatar with direction side bar, green/rose pills |
 | `Snackbar` | Low-risk success only, 4 s, announced to TalkBack | Raised surface above the bottom bar or form footer |
 | `FilterChips` | Selected state, horizontal scroll/focus | Small radius, no reliance on color alone |
 | `BottomTabBar` | Home · People · Add · Loans · Settings (§5.1) | `surface`, hairline top, shadow S2-up in light, sliding `brandSubtle` pill, raised Add circle |
 | `StatusRail` | Overdue / due-soon emphasis on a row (§2.7) | 3dp rounded leading bar in `dangerText` / `warningText` |
 | `AnimatedAmount` | Counts between values on confirmed data (§8.1) | Tabular digits; final value immediately under reduce motion |
-| `AddSheet` | S14 two-option chooser | Bottom sheet with two 72dp option rows |
+| `AddSheet` | S14 two-option chooser | Bottom sheet with two 80dp tinted option cards |
 | `BottomSheet` | Back/keyboard/dismiss, focus trap | Raised surface, radius 22dp top corners |
 | `ConfirmDialog` | Explicit irreversible message and choices | Small, legible, safe default |
 | `InlineNotice` | Offline/receipt/security info | Icon + plain-language text; not toast-only |
@@ -753,8 +765,8 @@ All interactive components must define **default, pressed, focused, disabled, lo
 - **Avatars/initials:** `surfaceMuted` circle with `textSecondary` initials; no random rainbow colors, no implied profile photos.
 - **Sheets and dialogs:** `surfaceRaised`, neutral handle and divider, black scrim, cream-white text. No translucent or tinted glass, no colored shadow.
 - **Skeletons and progress:** `surfaceMuted` placeholders with the §8.1 opacity pulse (no shimmer sweep); progress fills use the §2.7 state colors.
-- **Depth without shadows:** tiles and rows sit on `surface` over `canvas` with a hairline; the hero and Add button are the only colored surfaces; sheets use `surfaceRaised` plus an `outline` hairline.
-- **Financial values:** `textPrimary` cream-white by default; semantics live on labels, chips and icons, never on the whole number.
+- **Depth without shadows:** rows sit on `surface` over `canvas` with a hairline; tiles use their near-black tone tints; the cream hero and the Add button are the only bright surfaces; sheets use `surfaceRaised` plus an `outline` hairline.
+- **Financial values:** direction balances take the desaturated green / rose text tones (§2.3 amount rule); originals and received figures stay `textPrimary` cream-white.
 
 Reject any dark-theme screenshot where the **base background, most card surfaces or the bottom navigation look brown, espresso, orange or warm-tinted** instead of black/charcoal. That is a visual defect, not an alternate theme.
 
@@ -762,7 +774,7 @@ Reject any dark-theme screenshot where the **base background, most card surfaces
 
 - **Numerals:** all amounts use tabular figures (`fontVariant: ['tabular-nums']`) so columns align and counts don't jitter.
 - **Hairlines over boxes:** group related rows in one `surface` container with 1dp `outline` dividers inset by the 16dp row padding, rather than separate stacked cards.
-- **One accent per view:** on tab screens the only filled brand element is the bar's Add button (plus the hero on Home); empty-state CTAs use the secondary style there. Pushed screens (no bar) have at most one filled primary button.
+- **One accent per view:** terracotta is for actions only. On tab screens the only filled brand element is the bar's Add button; empty-state CTAs use the secondary style there. Pushed screens (no bar) have at most one filled primary button.
 - **Pressed states** (§8.1): buttons darken to `brandPressed` and scale to 0.97; tiles scale to 0.97 and drop one shadow level; rows scale to 0.985 with an Android ripple in `textPrimary` at 8% (light) / 12% (dark) opacity.
 - **Depth:** the §2.6 levels exactly; never invent a new shadow, never add a shadow in dark mode.
 - **Rhythm:** 20dp gutters, 12dp between tiles and grouped containers, 24dp before each section title, 32dp between major Home blocks.
@@ -921,7 +933,12 @@ Define **exactly two** reusable empty-state concepts if time permits; both must 
 
 ### 10.3 Hero treatment
 
-The Home hero carries no decoration (no binder rings, patterns, illustrations or glow). Its premium feel comes from the 40sp figure, generous padding, the §2.6 tonal depth and soft shadow, and being the single color surface on the page.
+(v1.6) The hero is the one decorated surface in the app. Two layers, both inline `react-native-svg`, both behind the text and hidden from accessibility:
+
+1. **Ledger line art:** two large concentric ring arcs and three horizontal ruled lines across the right half, 1.5dp strokes in `onHero` at 7% opacity. No fill, no gradient, no glow.
+2. **Wallet mark (`HeroWallet`):** the logo's wallet-notebook as a flat vector, ~88dp, top-right corner, rotated −8°, cropped by the card's 22dp corner. Fills use the brand palette (espresso frame `#4A2620`, terracotta cover `#C65A3A`, cream pages `#FBF3E6`, three binder rings, a small clasp) at 92% opacity so it sits into the surface in both the chocolate and cream heroes. On press-in its cover flap rotates open 6° with the §8.1 spring and returns on release; reduce motion keeps it still.
+
+The text column reserves 72dp on the right so the mark never sits under a figure. Nothing else on the page carries decoration except the tile corner glyphs (S04).
 
 ---
 
@@ -1065,3 +1082,11 @@ An AI coding agent or developer must verify these gates **screen by screen**; ne
 - Type: hero 40/48, screen title 28/34, section 18/24, new tile amount 20/26.
 - New components: `SummaryTile`, `IconBadge`, `SectionHeader`, `AddSheet`, `StatusRail`, `AnimatedAmount`; removed `LoanFAB` and `Metric`.
 - The brief's "summary card at the top + loan list with overdue highlighted" is met on Home (hero + tiles + attention list with overdue first) and in full on Loans.
+
+**v1.6 revision (22 October 2026):**
+- Semantic color remap: green = they owe you (`lent*`), soft rose = you owe (`borrowed*`), crimson = overdue only, neutral = settled/repaid; terracotta is reserved for actions (Add, primary buttons, links, active tab, focus). Direction balances are tinted; originals and received figures stay neutral.
+- Hero: dark chocolate in light mode, logo cream in dark mode; received bar, overdue footer, ledger line art and the wallet mark with a cover-flap press interaction (§10.3).
+- Home tiles: You owe, Overdue, **Due this week** (new API fields), Repaid to you; tinted backgrounds and faded corner glyphs. Total lent moves into the hero bar.
+- People: green/rose balance pills and an avatar side bar; instant transition to Person detail (cache-seeded header, deferred list).
+- Forms: due-date quick chips, recent-people chips, repayment 25% / 50% / Full chips; tinted direction thumb. Add sheet uses green/rose cards.
+- Loans: direction-tinted balances, section counts and totals. Loan detail: tinted header strip, countdown chip, repayment timeline. Settings: icon squares and a separate delete group.

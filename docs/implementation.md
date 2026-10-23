@@ -160,6 +160,23 @@ This file sequences the work and tracks progress. It **adds no rules**: behavior
 - Every Home tile opens Loans with the matching filters visibly applied.
 - Depth matches design §2.6 in both themes (no shadows in dark mode, no glows or badges anywhere), and every animation in design §8.1 is present and turns off with the OS reduce-motion setting.
 
+### Phase 5c — Visual refinement (design v1.6)
+
+**Goal:** semantic color, a decorated hero and faster navigation, with no change to financial behavior.
+
+- [ ] API: `dueSoonLent`, `dueSoonBorrowed`, `dueSoonLoans` (arch §4.4, §6.2) with tests
+- [ ] Tokens: v1.6 lent/borrowed/danger/hero values in both themes, neutral settled chip; contrast tests (design §2.1–§2.3)
+- [ ] Hero: received bar, overdue footer, line art, `HeroWallet` mark with cover-flap press (design S04, §10.3)
+- [ ] Tiles: You owe / Overdue / Due this week / Repaid to you with tinted backgrounds and corner glyphs (design S04)
+- [ ] People pills and side bar; Person detail seeded from the list cache, list deferred until the transition ends (design S09, S10)
+- [ ] Loans tinted balances and section totals; Loan detail strip, countdown chip and timeline (design S05, S07)
+- [ ] Add sheet cards, due-date / recent-people / repayment quick chips, tinted direction thumb (design S06, S08, S14)
+- [ ] Settings icon squares and delete group (design S12)
+
+**Exit criteria**
+- Terracotta appears only on actions; every balance reads green (owed to you), rose (you owe), crimson (overdue) or neutral (settled).
+- People → Person detail shows the name and balances on the first frame.
+
 ### Phase 6 — Deployment and Play release → production ready
 
 **Goal:** a publicly available, supportable Android app.

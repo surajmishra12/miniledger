@@ -319,6 +319,9 @@ overdueBorrowed = Σ outstanding of overdue BORROWED loans
 peopleOwingYou = COUNT(DISTINCT person_id) of LENT loans with outstanding > 0
 peopleYouOwe   = COUNT(DISTINCT person_id) of BORROWED loans with outstanding > 0
 lentLoans      = COUNT of LENT loans            overdueLoans = COUNT of overdue LENT loans
+dueSoon(loan)  = outstanding > 0 AND today <= due_date <= today + 6
+dueSoonLent    = Σ outstanding of dueSoon LENT  dueSoonBorrowed = Σ outstanding of dueSoon BORROWED
+dueSoonLoans   = COUNT of dueSoon loans (both directions)
 ```
 
 No stored status, overdue flag or balance column. The Home hero shows `outstandingLent` ("You are owed").
@@ -463,6 +466,7 @@ type SummaryDto = {
   totalLent: number; totalRepaid: number; overdueAmount: number; outstandingLent: number;
   totalBorrowed: number; totalReturned: number; outstandingBorrowed: number; overdueBorrowed: number;
   peopleOwingYou: number; peopleYouOwe: number; lentLoans: number; overdueLoans: number; // counts
+  dueSoonLent: number; dueSoonBorrowed: number; dueSoonLoans: number; // due today … today + 6
   currency: 'INR'; unit: 'paise'; asOfDate: string; timezone: string;
 };
 
@@ -577,6 +581,7 @@ Example `SummaryDto` (the PRD FR-05 example):
   "totalLent": 800000, "totalRepaid": 500000, "overdueAmount": 300000, "outstandingLent": 300000,
   "totalBorrowed": 400000, "totalReturned": 100000, "outstandingBorrowed": 300000, "overdueBorrowed": 0,
   "peopleOwingYou": 1, "peopleYouOwe": 1, "lentLoans": 2, "overdueLoans": 1,
+  "dueSoonLent": 0, "dueSoonBorrowed": 0, "dueSoonLoans": 0,
   "currency": "INR", "unit": "paise", "asOfDate": "2026-10-22", "timezone": "Asia/Kolkata"
 }
 ```

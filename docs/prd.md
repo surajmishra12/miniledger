@@ -206,6 +206,8 @@ Provide an authenticated summary endpoint and a home-screen summary card. All fi
 | `overdueBorrowed` | Sum of outstanding amounts of overdue `BORROWED` loans |
 | `peopleOwingYou` / `peopleYouOwe` | Number of distinct people with an outstanding `LENT` / `BORROWED` balance |
 | `lentLoans` / `overdueLoans` | Number of `LENT` loans / of overdue `LENT` loans |
+| `dueSoonLent` / `dueSoonBorrowed` | Sum of outstanding amounts of `LENT` / `BORROWED` loans that are not overdue and due today through today + 6 |
+| `dueSoonLoans` | Number of loans (both directions) counted in `dueSoonLent` + `dueSoonBorrowed` |
 
 **Assignment compatibility:** The required fields `totalLent`, `totalRepaid`, and `overdueAmount` **always refer to lent loans**, so borrowed activity never alters their meaning.
 
@@ -434,3 +436,4 @@ Contract requirements: one error format with stable codes, correct HTTP status c
 **v1.5 (22 October 2026)**
 - Navigation becomes five bottom slots: Home, People, Add, Loans, Settings. Home shows the summary card and the loans needing attention (overdue first); the complete list moves to the Loans tab. The centre Add button asks *lent or borrowed* first, then opens the loan form.
 - The summary adds four counts for context (`peopleOwingYou`, `peopleYouOwe`, `lentLoans`, `overdueLoans`); the existing figures and their meanings are unchanged.
+- (v1.6) The summary adds the due-this-week figures `dueSoonLent`, `dueSoonBorrowed` and `dueSoonLoans` for the Home *Due this week* tile.
