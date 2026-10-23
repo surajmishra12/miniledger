@@ -45,3 +45,9 @@ services:
         sync: false
       - key: REFRESH_TOKEN_HMAC_SECRET
         sync: false
+      # Optional store-review sign-in: this email gets a fixed 6-digit code and no email.
+      # Set both or neither; the code must not be repeated or sequential digits.
+      - key: REVIEW_ACCOUNT_EMAIL
+        sync: false
+      - key: REVIEW_ACCOUNT_CODE
+        sync: false

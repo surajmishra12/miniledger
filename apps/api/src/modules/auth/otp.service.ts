@@ -53,6 +53,15 @@ export function createOtpService(ctx: AppContext, sessions: SessionService) {
   const codeDigest = (challengeId: string, code: string) =>
     hmacHex(env.OTP_HMAC_SECRET, `${challengeId}:${code}`);
   const ipHash = (ip: string) => hmacHex(env.OTP_HMAC_SECRET, `ip:${ip}`);
+
+  // Store-review account (production only, validated in loadEnv): a fixed code and no email.
+  // Expiry, attempts, cooldown and rate limits apply to it exactly as to everyone else.
+  const reviewEmail =
+    env.AUTH_MODE === 'production' && env.REVIEW_ACCOUNT_EMAIL && env.REVIEW_ACCOUNT_CODE
+      ? normalizeEmail(env.REVIEW_ACCOUNT_EMAIL)
+      : null;
+  const isReviewAccount = (identifier: string) =>
+    reviewEmail !== null && identifierType === 'EMAIL' && identifier === reviewEmail;
   const mask = (identifier: string) =>
     identifierType === 'PHONE' ? maskPhone(identifier) : maskEmail(identifier);
 
@@ -75,7 +84,8 @@ export function createOtpService(ctx: AppContext, sessions: SessionService) {
     sessionId: string | null;
   }): Promise<ChallengeDto> {
     const { purpose, identifier, sessionId } = params;
-    const code = generateOtpCode();
+    const review = isReviewAccount(identifier);
+    const code = review ? env.REVIEW_ACCOUNT_CODE! : generateOtpCode();
     const id = randomUUID();
     const hashedIp = ipHash(params.ip);
 
@@ -177,7 +187,8 @@ export function createOtpService(ctx: AppContext, sessions: SessionService) {
     }, TX_OPTIONS);
 
     try {
-      await delivery.send({ challengeId: id, identifierType, identifier, code });
+      if (review) logger.info({ challengeId: id }, 'review account code issued (not emailed)');
+      else await delivery.send({ challengeId: id, identifierType, identifier, code });
     } catch (error) {
       logger.error({ err: error, challengeId: id }, 'OTP delivery failed');
       await prisma.otpChallenge.update({ where: { id }, data: { state: 'FAILED' } });

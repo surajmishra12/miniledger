@@ -201,3 +201,54 @@ describe('account deletion', () => {
     expectError(await deleteMe({ challengeId: uuid(), code: '12' }), 422, 'VALIDATION_FAILED');
   });
 });
+
+describe('store-review account', () => {
+  const REVIEW_CODE = '482917';
+  let t: TestApp;
+  beforeEach(() => {
+    t = createTestApp({
+      ...PRODUCTION_ENV,
+      REVIEW_ACCOUNT_EMAIL: 'PlayReview@Example.com',
+      REVIEW_ACCOUNT_CODE: REVIEW_CODE,
+    });
+  });
+
+  const requestCode = (identifier: string) =>
+    request(t.app).post('/v1/auth/otp/request').send({ identifier });
+  const verify = (challengeId: string, code: string) =>
+    request(t.app).post('/v1/auth/otp/verify').send({ challengeId, code });
+
+  it('signs in with the fixed code and sends no email', async () => {
+    const requested = await requestCode(' playreview@example.com ');
+    expect(requested.status).toBe(200);
+    expect(t.delivery.sent).toHaveLength(0);
+    const { challengeId } = challengeDtoSchema.parse(requested.body);
+
+    const verified = await verify(challengeId, REVIEW_CODE);
+    expect(verified.status).toBe(200);
+    expect(verified.body.user).toMatchObject({ identifierType: 'EMAIL' });
+  });
+
+  it('keeps the normal attempt limit for the review account', async () => {
+    const { challengeId } = challengeDtoSchema.parse(
+      (await requestCode('playreview@example.com')).body,
+    );
+    for (let i = 0; i < 5; i += 1) {
+      expect((await verify(challengeId, '000001')).status).not.toBe(200);
+    }
+    // The challenge is spent after five wrong tries, even with the right code.
+    expect((await verify(challengeId, REVIEW_CODE)).status).not.toBe(200);
+  });
+
+  it('never accepts the fixed code for anyone else', async () => {
+    const requested = await requestCode('someone@example.com');
+    expect(t.delivery.sent).toHaveLength(1);
+    const { challengeId } = challengeDtoSchema.parse(requested.body);
+    const sentCode = t.delivery.lastCode();
+
+    if (sentCode !== REVIEW_CODE) {
+      expect((await verify(challengeId, REVIEW_CODE)).status).not.toBe(200);
+    }
+    expect((await verify(challengeId, sentCode)).status).toBe(200);
+  });
+});

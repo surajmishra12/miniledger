@@ -2,10 +2,19 @@
  * Runtime environment validation (architecture.md §7.1, §11.1).
  * The process must refuse to start on any misconfiguration ("fail closed").
  */
+import { normalizeEmail } from '@miniledger/shared';
 import { z } from 'zod';
 
 const MIN_SECRET_BYTES = 32;
 const SECURE_SSL_MODES = new Set(['require', 'verify-ca', 'verify-full']);
+
+/** Codes anyone would try first; refused for the store-review account. */
+function isGuessableCode(code: string): boolean {
+  const sameDigit = /^(\d)\1{5}$/.test(code);
+  const ascending = '01234567890'.includes(code);
+  const descending = '09876543210'.includes(code);
+  return sameDigit || ascending || descending;
+}
 
 const secret = z
   .string({ error: 'is required' })
@@ -36,6 +45,9 @@ const envSchema = z.object({
   TRUST_PROXY_HOPS: z.coerce.number().int().min(0).max(5).default(0),
   LOG_LEVEL: z.enum(['fatal', 'error', 'warn', 'info', 'debug', 'trace', 'silent']).default('info'),
   RENDER: optionalString,
+  /** Store-review sign-in (production only): this one email gets REVIEW_ACCOUNT_CODE, not an email. */
+  REVIEW_ACCOUNT_EMAIL: optionalString,
+  REVIEW_ACCOUNT_CODE: optionalString,
 });
 
 export type Env = z.output<typeof envSchema>;
@@ -81,6 +93,24 @@ export function loadEnv(source: NodeJS.ProcessEnv = process.env): Env {
     const sslMode = new URL(env.DATABASE_URL).searchParams.get('sslmode');
     if (sslMode === null || !SECURE_SSL_MODES.has(sslMode)) {
       problems.push('DATABASE_URL must use sslmode=require when AUTH_MODE=production');
+    }
+  }
+
+  const reviewEmail = env.REVIEW_ACCOUNT_EMAIL;
+  const reviewCode = env.REVIEW_ACCOUNT_CODE;
+  if ((reviewEmail === undefined) !== (reviewCode === undefined)) {
+    problems.push('REVIEW_ACCOUNT_EMAIL and REVIEW_ACCOUNT_CODE must be set together');
+  } else if (reviewEmail !== undefined && reviewCode !== undefined) {
+    if (env.AUTH_MODE !== 'production') {
+      problems.push('REVIEW_ACCOUNT_EMAIL is only used when AUTH_MODE=production');
+    }
+    if (normalizeEmail(reviewEmail) === null) {
+      problems.push('REVIEW_ACCOUNT_EMAIL must be a valid email address');
+    }
+    if (!/^\d{6}$/.test(reviewCode)) {
+      problems.push('REVIEW_ACCOUNT_CODE must be exactly 6 digits');
+    } else if (isGuessableCode(reviewCode)) {
+      problems.push('REVIEW_ACCOUNT_CODE is too easy to guess (no repeated or sequential digits)');
     }
   }
 

@@ -26,6 +26,7 @@ npx eas-cli@latest submit -p android --profile production   # uploads to the int
 - Set the real API URL in `eas.json` (`EXPO_PUBLIC_API_URL`) if the Render service name differs. `app.config.ts` refuses to build `production` with a non-HTTPS or local URL.
 - Production uses the application ID `com.surajmishra.miniledger`; development builds use `.dev`, so both can be installed side by side.
 - The Android manifest requests the camera only (plus internet and vibration); storage, media and audio permissions are blocked.
+- **Store-review sign-in:** set `REVIEW_ACCOUNT_EMAIL=playreview@surajmishra.me` and a random 6-digit `REVIEW_ACCOUNT_CODE` on Render (no repeated or sequential digits). That email signs in with that code and receives no email. Give both in Play Console → App access. Remove the two variables to turn it off.
 - Play Console: describe MiniLedger as a personal record-keeping tool that does not offer or arrange loans; fill in Data Safety to match [`web/privacy.html`](../web/privacy.html) (email address, user-entered financial records, encrypted in transit, deletable; no sharing); add the deletion URL `https://miniledger.surajmishra.me/delete-account.html`; give reviewers a dedicated test mailbox in App access.
 
 ## Operations

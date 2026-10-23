@@ -70,3 +70,36 @@ describe('loadEnv', () => {
     ).not.toHaveLength(0);
   });
 });
+
+describe('store-review account settings', () => {
+  const review = { REVIEW_ACCOUNT_EMAIL: 'playreview@example.com', REVIEW_ACCOUNT_CODE: '482917' };
+
+  it('accepts an email with a non-guessable 6-digit code in production', () => {
+    expect(loadEnv({ ...production, ...review }).REVIEW_ACCOUNT_CODE).toBe('482917');
+  });
+
+  it('requires both values together', () => {
+    expect(
+      problemsFor({ ...production, REVIEW_ACCOUNT_EMAIL: review.REVIEW_ACCOUNT_EMAIL }),
+    ).not.toHaveLength(0);
+    expect(
+      problemsFor({ ...production, REVIEW_ACCOUNT_CODE: review.REVIEW_ACCOUNT_CODE }),
+    ).not.toHaveLength(0);
+  });
+
+  it.each(['123456', '654321', '000000', '111111', '12345', 'abcdef'])(
+    'refuses the code %s without echoing it',
+    (code) => {
+      const problems = problemsFor({ ...production, ...review, REVIEW_ACCOUNT_CODE: code });
+      expect(problems.join(' ')).toContain('REVIEW_ACCOUNT_CODE');
+      expect(problems.join(' ')).not.toContain(code);
+    },
+  );
+
+  it('refuses an invalid email and assignment mode', () => {
+    expect(
+      problemsFor({ ...production, ...review, REVIEW_ACCOUNT_EMAIL: 'not-an-email' }),
+    ).not.toHaveLength(0);
+    expect(problemsFor({ ...base, ...review })).not.toHaveLength(0);
+  });
+});

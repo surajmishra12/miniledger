@@ -826,6 +826,7 @@ Routes are listed in §3 and map to `design.md` S01–S14. Five bottom slots (`d
 | `RESEND_API_KEY` | — | required | |
 | `RESEND_FROM_EMAIL` | — | required | `MiniLedger <miniledger@surajmishra.me>` (verified domain `surajmishra.me`) |
 | `PUBLIC_API_ORIGIN` | — | required | `https://miniledger-api.surajmishra.me` (Render custom domain) |
+| `REVIEW_ACCOUNT_EMAIL` / `REVIEW_ACCOUNT_CODE` | — | optional (production only, set together) | Store-review sign-in: this one email gets the fixed 6-digit code instead of an emailed one; expiry, attempts, cooldown and rate limits still apply; repeated or sequential codes are refused |
 | `OTP_DAILY_SEND_LIMIT` | — | default `90` | Below Resend Free's 100/day |
 | `TRUST_PROXY_HOPS` | `0` | `1` | |
 | `LOG_LEVEL` | `debug` | `info` | |
