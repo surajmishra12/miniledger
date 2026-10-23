@@ -7,7 +7,7 @@
     "node": ">=22.12"
   },
   "scripts": {
-    "build": "pnpm --filter @miniledger/shared build && pnpm --filter @miniledger/api build",
+    "build": "pnpm --filter @miniledger/api build",
     "lint": "eslint .",
     "format": "prettier --write .",
     "format:check": "prettier --check .",

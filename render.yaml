@@ -9,8 +9,9 @@ services:
     region: singapore
     branch: main
     autoDeploy: true
-    # NODE_ENV=production would skip devDependencies, but the build needs prisma and esbuild.
-    buildCommand: corepack enable && NODE_ENV=development pnpm install --frozen-lockfile && pnpm build
+    # --prod=false: NODE_ENV=production would otherwise skip the devDependencies the build needs.
+    # pnpm build builds @miniledger/shared first, then bundles the API.
+    buildCommand: corepack enable && pnpm install --frozen-lockfile --prod=false && pnpm build
     # Plain node at runtime (same as `pnpm --filter @miniledger/api start`), no package manager needed.
     startCommand: node --enable-source-maps apps/api/dist/server.js
     healthCheckPath: /health
