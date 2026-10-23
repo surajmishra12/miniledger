@@ -5,7 +5,20 @@ import { displayNameSchema } from '@miniledger/shared';
 import { useMutation } from '@tanstack/react-query';
 import Constants from 'expo-constants';
 import { router } from 'expo-router';
-import { ChevronRight, ExternalLink } from 'lucide-react-native';
+import {
+  ChevronRight,
+  ExternalLink,
+  FileX2,
+  Info,
+  LogOut,
+  Mail,
+  Palette,
+  ShieldCheck,
+  Smartphone,
+  Trash2,
+  UserRound,
+  type LucideIcon,
+} from 'lucide-react-native';
 import { useState, type ReactNode } from 'react';
 import { Linking, Modal, Pressable, StyleSheet, View } from 'react-native';
 
@@ -13,6 +26,7 @@ import { AppText } from '@/components/AppText';
 import { Button } from '@/components/Button';
 import { ConfirmDialog } from '@/components/ConfirmDialog';
 import { Header } from '@/components/Header';
+import { TONES, type BadgeTone } from '@/components/IconBadge';
 import { RadioRow } from '@/components/RadioRow';
 import { Screen } from '@/components/Screen';
 import { useSnackbar } from '@/components/Snackbar';
@@ -25,6 +39,20 @@ import { errorCopy } from '@/lib/error-copy';
 import { haptics } from '@/lib/haptics';
 import { useTheme, type ThemePreference } from '@/theme/theme-provider';
 import { MIN_TOUCH_TARGET, radius, space } from '@/theme/tokens';
+
+/** 32dp rounded square with a muted tone (design.md S12). */
+function IconSquare({ icon: Icon, tone = 'neutral' }: { icon: LucideIcon; tone?: BadgeTone }) {
+  const { colors } = useTheme();
+  const t = TONES[tone];
+  return (
+    <View
+      importantForAccessibility="no-hide-descendants"
+      style={[styles.square, { backgroundColor: colors[t.bg] }]}
+    >
+      <Icon size={17} color={colors[t.fg]} strokeWidth={2} />
+    </View>
+  );
+}
 
 function Section({ title, children }: { title: string; children: ReactNode }) {
   return (
@@ -42,18 +70,25 @@ function Row({
   value,
   onPress,
   external,
+  icon,
+  tone,
+  destructive,
 }: {
   label: string;
   value?: string | undefined;
   onPress?: () => void;
   external?: boolean;
+  icon: LucideIcon;
+  tone?: BadgeTone;
+  destructive?: boolean;
 }) {
   const { colors } = useTheme();
   const Icon = external ? ExternalLink : ChevronRight;
   const content = (
     <>
+      <IconSquare icon={icon} tone={tone} />
       <View style={styles.rowText}>
-        <AppText>{label}</AppText>
+        <AppText color={destructive ? 'dangerText' : 'textPrimary'}>{label}</AppText>
         {value ? (
           <AppText variant="secondary" color="textSecondary" numberOfLines={1}>
             {value}
@@ -173,6 +208,11 @@ export default function SettingsScreen() {
       <Header title="Settings" large />
 
       <Section title="Appearance">
+        <View style={styles.appearanceTitle}>
+          <IconSquare icon={Palette} tone="warning" />
+          <AppText>Theme</AppText>
+        </View>
+        <Divider />
         <View accessibilityRole="radiogroup" style={styles.radios}>
           {APPEARANCE.map((option) => (
             <RadioRow
@@ -190,11 +230,13 @@ export default function SettingsScreen() {
 
       <Section title="Account">
         <Row
+          icon={user?.identifierType === 'EMAIL' ? Mail : Smartphone}
           label={user?.identifierType === 'EMAIL' ? 'Email' : 'Mobile number'}
           value={user?.identifier}
         />
         <Divider />
         <Row
+          icon={UserRound}
           label="Display name"
           value={user?.displayName ?? 'Not set'}
           onPress={() => setEditingName(true)}
@@ -202,8 +244,9 @@ export default function SettingsScreen() {
       </Section>
 
       <Section title="Your data">
-        <View style={styles.paragraph}>
-          <AppText color="textSecondary">
+        <View style={[styles.row, styles.paragraph]}>
+          <IconSquare icon={ShieldCheck} tone="lent" />
+          <AppText color="textSecondary" style={styles.rowText}>
             Loans and repayments are stored in your account. Receipt photos stay on this device
             only.
           </AppText>
@@ -211,29 +254,37 @@ export default function SettingsScreen() {
       </Section>
 
       <Section title="Privacy and support">
-        <Row label="Privacy policy" external onPress={() => void Linking.openURL(PRIVACY_URL)} />
+        <Row
+          icon={ShieldCheck}
+          label="Privacy policy"
+          external
+          onPress={() => void Linking.openURL(PRIVACY_URL)}
+        />
         <Divider />
         <Row
+          icon={FileX2}
           label="How to delete your data"
           external
           onPress={() => void Linking.openURL(DELETE_DATA_URL)}
         />
         <Divider />
-        <Row label="App version" value={version} />
+        <Row icon={Info} label="App version" value={version} />
       </Section>
 
-      <Button variant="secondary" label="Sign out" onPress={() => setConfirm(true)} />
+      <Surface>
+        <Row icon={LogOut} label="Sign out" onPress={() => setConfirm(true)} />
+      </Surface>
 
       <View style={styles.danger}>
-        <Pressable
-          accessibilityRole="button"
-          onPress={() => router.push('/settings/delete-account')}
-          style={({ pressed }) => [styles.deleteButton, pressed && { opacity: 0.6 }]}
-        >
-          <AppText variant="button" color="dangerText">
-            Delete account
-          </AppText>
-        </Pressable>
+        <Surface>
+          <Row
+            icon={Trash2}
+            tone="danger"
+            label="Delete account"
+            destructive
+            onPress={() => router.push('/settings/delete-account')}
+          />
+        </Surface>
       </View>
 
       <ConfirmDialog
@@ -263,7 +314,7 @@ export default function SettingsScreen() {
 
 const styles = StyleSheet.create({
   section: { gap: space.s2 },
-  paragraph: { padding: space.s4 },
+  paragraph: { alignItems: 'flex-start' },
   radios: { padding: space.s2 },
   row: {
     minHeight: MIN_TOUCH_TARGET + 8,
@@ -274,12 +325,20 @@ const styles = StyleSheet.create({
     paddingVertical: space.s3,
   },
   rowText: { flex: 1, gap: 2 },
-  danger: { marginTop: space.s6, alignItems: 'center' },
-  deleteButton: {
-    minHeight: MIN_TOUCH_TARGET,
-    paddingHorizontal: space.s4,
+  danger: { marginTop: space.s4 },
+  square: {
+    width: 32,
+    height: 32,
+    borderRadius: 9,
+    alignItems: 'center',
     justifyContent: 'center',
-    borderRadius: radius.md,
+  },
+  appearanceTitle: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: space.s3,
+    paddingHorizontal: space.s4,
+    paddingVertical: space.s3,
   },
   scrim: { flex: 1, justifyContent: 'center', padding: space.s6 },
   dialog: {

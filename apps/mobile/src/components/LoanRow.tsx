@@ -16,7 +16,7 @@ type Props = { loan: LoanDto; onPress: () => void; showPerson?: boolean };
 const TONE_CHIP: Partial<Record<string, ChipKind>> = {
   danger: 'danger',
   warning: 'warning',
-  success: 'success',
+  success: 'settled',
 };
 
 /**
@@ -36,6 +36,15 @@ export function LoanRow({ loan, onPress, showPerson = true }: Props) {
       : status.tone === 'warning'
         ? colors.warningText
         : null;
+
+  // Direction balances are tinted (green owed to you, rose you owe); overdue is crimson.
+  const amountColor = repaid
+    ? 'textSecondary'
+    : loan.isOverdue
+      ? 'dangerText'
+      : lent
+        ? 'lentText'
+        : 'borrowedText';
 
   const spoken = [
     showPerson ? loan.person.name : null,
@@ -79,12 +88,7 @@ export function LoanRow({ loan, onPress, showPerson = true }: Props) {
         </View>
       </View>
       <View style={styles.amounts}>
-        <AppText
-          variant="rowTitle"
-          weight="700"
-          tabular
-          color={repaid ? 'textSecondary' : 'textPrimary'}
-        >
+        <AppText variant="rowTitle" weight="700" tabular color={amountColor}>
           {formatPaise(repaid ? loan.principalPaise : loan.outstandingPaise)}
         </AppText>
         {partial ? (

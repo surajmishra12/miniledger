@@ -14,13 +14,12 @@ import { Button } from '@/components/Button';
 import { ConfirmDialog } from '@/components/ConfirmDialog';
 import { EmptyState } from '@/components/EmptyState';
 import { Header } from '@/components/Header';
-import { IconBadge } from '@/components/IconBadge';
 import { IconButton } from '@/components/IconButton';
 import { InlineNotice } from '@/components/InlineNotice';
 import { Screen } from '@/components/Screen';
 import { SkeletonBlock } from '@/components/Skeleton';
 import { useSnackbar } from '@/components/Snackbar';
-import { Divider, Surface } from '@/components/Surface';
+import { Surface } from '@/components/Surface';
 import { useSession } from '@/features/auth/session';
 import { deleteLoan, deleteRepayment, settleLoan, useLoan } from '@/features/ledger/api';
 import { LoanFinancials } from '@/features/ledger/LoanFinancials';
@@ -44,33 +43,66 @@ type Dialog =
   | { kind: 'removeRepayment'; repayment: RepaymentDto }
   | null;
 
-function RepaymentRow({ repayment, onMenu }: { repayment: RepaymentDto; onMenu: () => void }) {
+type TimelineEntry =
+  | { kind: 'repayment'; repayment: RepaymentDto }
+  | { kind: 'created'; date: string; amountPaise: number };
+
+/** One step of the repayment timeline: dot and rail on the left, details on the right. */
+function TimelineItem({
+  entry,
+  last,
+  onMenu,
+}: {
+  entry: TimelineEntry;
+  last: boolean;
+  onMenu?: () => void;
+}) {
+  const { colors } = useTheme();
+  const created = entry.kind === 'created';
+  const amount = created ? entry.amountPaise : entry.repayment.amountPaise;
+  const date = created ? entry.date : entry.repayment.paidOn;
   return (
-    <View style={styles.repayment}>
-      <IconBadge icon={CheckCheck} tone="success" size={32} />
-      <View style={styles.flex}>
-        <AppText variant="rowTitle" weight="700" tabular>
-          {formatPaise(repayment.amountPaise)}
+    <View style={styles.step}>
+      <View style={styles.rail}>
+        <View
+          style={[
+            styles.dot,
+            created
+              ? { borderColor: colors.outlineStrong, backgroundColor: colors.surface }
+              : { borderColor: colors.successText, backgroundColor: colors.successSurface },
+          ]}
+        />
+        {last ? null : <View style={[styles.line, { backgroundColor: colors.outline }]} />}
+      </View>
+      <View style={[styles.flex, styles.stepBody]}>
+        <AppText
+          variant="rowTitle"
+          weight="700"
+          tabular
+          color={created ? 'textSecondary' : 'textPrimary'}
+        >
+          {created ? `Loan created · ${formatPaise(amount)}` : formatPaise(amount)}
         </AppText>
         <AppText variant="secondary" color="textSecondary">
-          {formatDateLong(repayment.paidOn)}
+          {formatDateLong(date)}
         </AppText>
-        {repayment.note ? (
+        {!created && entry.repayment.note ? (
           <AppText variant="secondary" color="textSecondary">
-            {repayment.note}
+            {entry.repayment.note}
           </AppText>
         ) : null}
       </View>
-      <IconButton
-        icon={EllipsisVertical}
-        label={`Options for repayment of ${formatPaise(repayment.amountPaise)}`}
-        onPress={onMenu}
-        color="textSecondary"
-      />
+      {onMenu ? (
+        <IconButton
+          icon={EllipsisVertical}
+          label={`Options for repayment of ${formatPaise(amount)}`}
+          onPress={onMenu}
+          color="textSecondary"
+        />
+      ) : null}
     </View>
   );
 }
-
 /** Fully repaid: a calm success state instead of enabled actions (design.md S07, §9.2). */
 function SettledBlock() {
   const { colors } = useTheme();
@@ -249,25 +281,27 @@ export default function LoanDetailScreen() {
         <AppText variant="section" accessibilityRole="header">
           Repayment history
         </AppText>
-        {data.repayments.length === 0 ? (
-          <Surface>
-            <View style={styles.noRepayments}>
-              <AppText color="textSecondary">No repayments recorded yet.</AppText>
-            </View>
-          </Surface>
-        ) : (
-          <Surface>
-            {data.repayments.map((repayment, index) => (
-              <View key={repayment.id}>
-                {index > 0 ? <Divider inset={60} /> : null}
-                <RepaymentRow
-                  repayment={repayment}
-                  onMenu={() => setDialog({ kind: 'repaymentMenu', repayment })}
-                />
-              </View>
+        <Surface>
+          <View style={styles.timeline}>
+            {data.repayments.length === 0 ? (
+              <AppText color="textSecondary" style={styles.noRepayments}>
+                No repayments recorded yet.
+              </AppText>
+            ) : null}
+            {data.repayments.map((repayment) => (
+              <TimelineItem
+                key={repayment.id}
+                entry={{ kind: 'repayment', repayment }}
+                last={false}
+                onMenu={() => setDialog({ kind: 'repaymentMenu', repayment })}
+              />
             ))}
-          </Surface>
-        )}
+            <TimelineItem
+              entry={{ kind: 'created', date: data.loanDate, amountPaise: data.principalPaise }}
+              last
+            />
+          </View>
+        </Surface>
       </View>
 
       <ReceiptAttach
@@ -283,10 +317,6 @@ export default function LoanDetailScreen() {
         }}
         onOpen={() => router.push(`/loans/${data.id}/receipt`)}
       />
-
-      <AppText variant="secondary" color="textSecondary">
-        Loan date {formatDateLong(data.loanDate)}
-      </AppText>
 
       <ActionSheet
         visible={dialog?.kind === 'menu'}
@@ -376,7 +406,7 @@ const styles = StyleSheet.create({
   person: { flexDirection: 'row', alignItems: 'center', gap: space.s2, minHeight: 48 },
   section: { gap: space.s3 },
   actions: { gap: space.s3 },
-  noRepayments: { padding: space.s4 },
+  noRepayments: { paddingBottom: space.s4 },
   settled: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -384,12 +414,10 @@ const styles = StyleSheet.create({
     padding: space.s4,
     borderRadius: radius.lg,
   },
-  repayment: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: space.s3,
-    paddingVertical: space.s3,
-    paddingLeft: space.s4,
-    paddingRight: space.s1,
-  },
+  timeline: { paddingTop: space.s4, paddingBottom: space.s2, paddingLeft: space.s4 },
+  step: { flexDirection: 'row', gap: space.s3, paddingRight: space.s1 },
+  rail: { width: 14, alignItems: 'center' },
+  dot: { width: 12, height: 12, borderRadius: 6, borderWidth: 2, marginTop: 5 },
+  line: { width: 2, flex: 1, marginTop: 4, marginBottom: -1, borderRadius: 1 },
+  stepBody: { paddingBottom: space.s4, gap: 2 },
 });

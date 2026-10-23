@@ -2,7 +2,7 @@
  * S05 Loans: every loan, searchable and filterable, grouped by urgency under the default sort
  * (design.md S05). This is the brief's "loan list with overdue highlighted".
  */
-import type { LoanDto } from '@miniledger/shared';
+import { formatPaise, type LoanDto } from '@miniledger/shared';
 import { router, useLocalSearchParams, useScrollToTop } from 'expo-router';
 import {
   ArrowUpDown,
@@ -48,6 +48,7 @@ import { EmptyLedgerIllustration } from '@/features/ledger/illustrations';
 import {
   buildLoanItems,
   filterSummary,
+  sectionStats,
   type ListItem,
   type LoanSection,
 } from '@/features/ledger/sections';
@@ -74,7 +75,7 @@ const SECTIONS: Record<
   overdue: { title: 'Overdue', icon: CircleAlert, color: 'dangerText' },
   soon: { title: 'Due soon', icon: CalendarClock, color: 'warningText' },
   upcoming: { title: 'Upcoming', color: 'textSecondary' },
-  repaid: { title: 'Repaid', icon: CheckCheck, color: 'successText' },
+  repaid: { title: 'Repaid', icon: CheckCheck, color: 'textSecondary' },
 };
 
 type Row = { kind: 'title' } | { kind: 'filters' } | { kind: 'state' } | ListItem<LoanDto>;
@@ -156,6 +157,11 @@ export default function LoansScreen() {
     }
     return out;
   }, [loans.data]);
+
+  const stats = useMemo(
+    () => sectionStats(loanItems, !loans.hasNextPage),
+    [loanItems, loans.hasNextPage],
+  );
 
   const noLoansAtAll =
     !!summary.data && summary.data.totalLent === 0 && summary.data.totalBorrowed === 0;
@@ -279,7 +285,19 @@ export default function LoansScreen() {
         return <View style={styles.state}>{state}</View>;
       case 'section': {
         const s = SECTIONS[item.section];
-        return <SectionHeader variant="overline" title={s.title} icon={s.icon} color={s.color} />;
+        const st = stats[item.section];
+        return (
+          <SectionHeader
+            variant="overline"
+            title={s.title}
+            icon={s.icon}
+            color={s.color}
+            count={st?.complete ? st.count : undefined}
+            trailing={
+              st?.complete && item.section !== 'repaid' ? formatPaise(st.totalPaise) : undefined
+            }
+          />
+        );
       }
       case 'loan':
         return (

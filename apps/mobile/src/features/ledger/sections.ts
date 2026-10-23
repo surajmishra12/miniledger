@@ -57,3 +57,31 @@ export function filterSummary(filters: {
   if (filters.search) parts.push(`“${filters.search}”`);
   return parts.length ? `Showing ${parts.join(' · ')}` : null;
 }
+
+export type SectionStats = { count: number; totalPaise: number; complete: boolean };
+
+/**
+ * Row count and remaining total per section of an attention-sorted list (design.md S05).
+ * A section is `complete` once a later section has started or every page is loaded, so a
+ * header never shows a partial total as if it were final.
+ */
+export function sectionStats(
+  loans: Pick<
+    LoanDto,
+    'repaymentStatus' | 'isOverdue' | 'daysOverdue' | 'dueDate' | 'asOfDate' | 'outstandingPaise'
+  >[],
+  allLoaded: boolean,
+): Partial<Record<LoanSection, SectionStats>> {
+  const out: Partial<Record<LoanSection, SectionStats>> = {};
+  let last: LoanSection | null = null;
+  for (const loan of loans) {
+    const section = sectionOf(loan);
+    if (last && last !== section) out[last]!.complete = true;
+    const entry = (out[section] ??= { count: 0, totalPaise: 0, complete: false });
+    entry.count += 1;
+    entry.totalPaise += loan.outstandingPaise;
+    last = section;
+  }
+  if (last && allLoaded) out[last]!.complete = true;
+  return out;
+}

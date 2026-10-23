@@ -10,7 +10,6 @@ import { StyleSheet, View } from 'react-native';
 import { AppText } from '@/components/AppText';
 import { BottomSheet } from '@/components/BottomSheet';
 import { IconBadge } from '@/components/IconBadge';
-import { Divider } from '@/components/Surface';
 import { Tappable } from '@/components/Tappable';
 import { haptics } from '@/lib/haptics';
 import { useTheme } from '@/theme/theme-provider';
@@ -47,22 +46,30 @@ function Option({
       onPress={onPress}
       ripple
       scaleTo={0.985}
-      style={styles.option}
+      style={[
+        styles.option,
+        { backgroundColor: colors[tone === 'lent' ? 'lentSurface' : 'borrowedSurface'] },
+      ]}
     >
-      <IconBadge icon={icon} tone={tone} size={44} />
+      <IconBadge icon={icon} tone={tone} size={44} onTint />
       <View style={styles.optionText}>
-        <AppText variant="rowTitle">{title}</AppText>
+        <AppText variant="rowTitle" color={tone === 'lent' ? 'lentText' : 'borrowedText'}>
+          {title}
+        </AppText>
         <AppText variant="secondary" color="textSecondary">
           {body}
         </AppText>
       </View>
-      <ChevronRight size={20} color={colors.textTertiary} strokeWidth={1.75} />
+      <ChevronRight
+        size={20}
+        color={colors[tone === 'lent' ? 'lentText' : 'borrowedText']}
+        strokeWidth={1.75}
+      />
     </Tappable>
   );
 }
 
 export function AddSheetProvider({ children }: { children: ReactNode }) {
-  const { colors } = useTheme();
   const [visible, setVisible] = useState(false);
   const open = useCallback(() => {
     haptics.impact();
@@ -80,9 +87,7 @@ export function AddSheetProvider({ children }: { children: ReactNode }) {
     <AddSheetContext.Provider value={value}>
       {children}
       <BottomSheet visible={visible} title="Add" onClose={close}>
-        <View
-          style={[styles.group, { backgroundColor: colors.surface, borderColor: colors.outline }]}
-        >
+        <View style={styles.group}>
           <Option
             icon={ArrowUpRight}
             tone="lent"
@@ -90,7 +95,6 @@ export function AddSheetProvider({ children }: { children: ReactNode }) {
             body="Someone owes you"
             onPress={() => choose('LENT')}
           />
-          <Divider inset={72} />
           <Option
             icon={ArrowDownLeft}
             tone="borrowed"
@@ -105,13 +109,14 @@ export function AddSheetProvider({ children }: { children: ReactNode }) {
 }
 
 const styles = StyleSheet.create({
-  group: { borderRadius: radius.lg, borderWidth: StyleSheet.hairlineWidth * 2, overflow: 'hidden' },
+  group: { gap: space.s3 },
   option: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: space.s4,
     paddingHorizontal: space.s4,
-    minHeight: 76,
+    minHeight: 80,
+    borderRadius: radius.lg,
   },
   optionText: { flex: 1, gap: 2 },
 });

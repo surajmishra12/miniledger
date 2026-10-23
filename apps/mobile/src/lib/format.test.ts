@@ -1,10 +1,14 @@
 import {
+  addOneMonth,
   balanceLines,
+  duePresets,
   dueStatus,
+  endOfMonth,
   formatDateLong,
   formatDateShort,
   initials,
   plural,
+  quickAmounts,
   repaidShare,
   repaymentMaxPaise,
 } from './format';
@@ -75,5 +79,31 @@ describe('repaymentMaxPaise', () => {
   it('adds the edited repayment back to the remaining balance', () => {
     expect(repaymentMaxPaise(10000)).toBe(10000);
     expect(repaymentMaxPaise(10000, 40000)).toBe(50000);
+  });
+});
+
+describe('duePresets', () => {
+  it('counts from the loan date and clamps month ends', () => {
+    expect(duePresets('2026-10-22').map((p) => p.date)).toEqual([
+      '2026-10-29',
+      '2026-11-05',
+      '2026-11-22',
+      '2026-10-31',
+    ]);
+    expect(addOneMonth('2027-01-31')).toBe('2027-02-28');
+    expect(addOneMonth('2026-12-15')).toBe('2027-01-15');
+    expect(endOfMonth('2026-10-31')).toBe('2026-11-30');
+    expect(endOfMonth('2026-12-31')).toBe('2027-01-31');
+  });
+});
+
+describe('quickAmounts', () => {
+  it('rounds shares down to the rupee and always offers the exact full amount', () => {
+    expect(quickAmounts(300050)).toEqual([
+      { key: '25', label: '25%', paise: 75000 },
+      { key: '50', label: '50%', paise: 150000 },
+      { key: 'full', label: 'Full', paise: 300050 },
+    ]);
+    expect(quickAmounts(150)).toEqual([{ key: 'full', label: 'Full', paise: 150 }]);
   });
 });

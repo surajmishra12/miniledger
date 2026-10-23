@@ -2,6 +2,7 @@ import {
   ArrowDownLeft,
   ArrowUpRight,
   CalendarClock,
+  CalendarDays,
   CheckCheck,
   CircleAlert,
   type LucideIcon,
@@ -13,7 +14,7 @@ import { radius, space, type ColorTokens } from '@/theme/tokens';
 
 import { AppText } from './AppText';
 
-export type ChipKind = 'lent' | 'borrowed' | 'success' | 'warning' | 'danger';
+export type ChipKind = 'lent' | 'borrowed' | 'success' | 'warning' | 'danger' | 'settled' | 'due';
 
 export const CHIP_KINDS: Record<
   ChipKind,
@@ -24,10 +25,23 @@ export const CHIP_KINDS: Record<
   success: { text: 'successText', surface: 'successSurface', icon: CheckCheck },
   warning: { text: 'warningText', surface: 'warningSurface', icon: CalendarClock },
   danger: { text: 'dangerText', surface: 'dangerSurface', icon: CircleAlert },
+  /** Finished loans read neutral, not celebratory (design.md §2.3 v1.6). */
+  settled: { text: 'textSecondary', surface: 'surfaceMuted', icon: CheckCheck },
+  /** Plain countdown ("Due in 5 days") on Loan detail. */
+  due: { text: 'textSecondary', surface: 'surfaceMuted', icon: CalendarDays },
 };
 
 /** Text + icon + semantic tint; never colour alone (design.md §2.3). */
-export function StatusChip({ kind, label }: { kind: ChipKind; label: string }) {
+export function StatusChip({
+  kind,
+  label,
+  onTint = false,
+}: {
+  kind: ChipKind;
+  label: string;
+  /** On a tinted strip the chip uses a plain surface so it never disappears into the tint. */
+  onTint?: boolean;
+}) {
   const { colors } = useTheme();
   const k = CHIP_KINDS[kind];
   const Icon = k.icon;
@@ -35,7 +49,7 @@ export function StatusChip({ kind, label }: { kind: ChipKind; label: string }) {
     <View
       accessible
       accessibilityLabel={label}
-      style={[styles.chip, { backgroundColor: colors[k.surface] }]}
+      style={[styles.chip, { backgroundColor: onTint ? colors.surface : colors[k.surface] }]}
     >
       <Icon size={14} color={colors[k.text]} strokeWidth={1.75} />
       <AppText variant="overline" color={k.text}>

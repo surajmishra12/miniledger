@@ -23,12 +23,13 @@ import { DateField } from '@/components/DateField';
 import { Header } from '@/components/Header';
 import { InlineNotice } from '@/components/InlineNotice';
 import { MoneyField } from '@/components/MoneyField';
+import { QuickChips } from '@/components/QuickChips';
 import { Screen } from '@/components/Screen';
 import { useSnackbar } from '@/components/Snackbar';
 import { TextField } from '@/components/TextField';
 import { ApiError } from '@/lib/api-client';
 import { errorCopy, isConnectionProblem, OFFLINE_SAVE_COPY } from '@/lib/error-copy';
-import { repaymentMaxPaise } from '@/lib/format';
+import { quickAmounts, repaymentMaxPaise } from '@/lib/format';
 import { haptics } from '@/lib/haptics';
 import { newId } from '@/lib/ids';
 import { invalidateLedger } from '@/lib/query-client';
@@ -45,6 +46,7 @@ export function RepaymentForm({ loan, repayment }: Props) {
   const lent = loan.direction === 'LENT';
   const today = loan.asOfDate;
   const maxPaise = repaymentMaxPaise(loan.outstandingPaise, repayment?.amountPaise);
+  const quick = quickAmounts(maxPaise);
 
   const initial = {
     amount: repayment ? paiseToRupeesInput(repayment.amountPaise) : '',
@@ -181,13 +183,18 @@ export function RepaymentForm({ loan, repayment }: Props) {
           }}
           error={errors.amount}
         />
-        <Button
-          variant="secondary"
-          compact
-          label="Use full amount"
-          accessibilityHint={`Fills ${formatPaise(maxPaise)}`}
-          onPress={() => {
-            setAmount(paiseToRupeesInput(maxPaise));
+        <QuickChips
+          label="Quick amounts"
+          chips={quick.map((q) => ({
+            key: q.key,
+            label: q.label,
+            accessibilityLabel: `${q.label}, ${formatPaise(q.paise)}`,
+          }))}
+          selectedKey={quick.find((q) => paiseToRupeesInput(q.paise) === amount)?.key ?? null}
+          onPick={(key) => {
+            const hit = quick.find((q) => q.key === key);
+            if (!hit) return;
+            setAmount(paiseToRupeesInput(hit.paise));
             setErrors((e) => ({ ...e, amount: undefined }));
           }}
         />

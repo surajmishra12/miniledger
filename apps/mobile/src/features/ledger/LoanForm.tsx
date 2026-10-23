@@ -24,20 +24,21 @@ import { ConfirmDialog } from '@/components/ConfirmDialog';
 import { DateField } from '@/components/DateField';
 import { Header } from '@/components/Header';
 import { InlineNotice } from '@/components/InlineNotice';
+import { QuickChips } from '@/components/QuickChips';
 import { MoneyField } from '@/components/MoneyField';
 import { Screen } from '@/components/Screen';
 import { useSnackbar } from '@/components/Snackbar';
 import { TextField, type TextInputRef } from '@/components/TextField';
 import { api, ApiError } from '@/lib/api-client';
 import { errorCopy, isConnectionProblem, OFFLINE_SAVE_COPY } from '@/lib/error-copy';
-import { deviceToday } from '@/lib/format';
+import { deviceToday, duePresets } from '@/lib/format';
 import { haptics } from '@/lib/haptics';
 import { newId } from '@/lib/ids';
 import { invalidateLedger } from '@/lib/query-client';
 import { useTheme } from '@/theme/theme-provider';
 import { radius, space } from '@/theme/tokens';
 
-import { createLoan, updateLoan } from './api';
+import { createLoan, updateLoan, useLoanList } from './api';
 import { PersonPicker, type PersonChoice } from './PersonPicker';
 
 type Direction = 'LENT' | 'BORROWED';
@@ -101,7 +102,13 @@ function DirectionSwitch({
             }}
             style={[
               styles.directionOption,
-              selected && { backgroundColor: colors.surfaceRaised, borderColor: colors.outline },
+              selected && {
+                // The chosen direction wears its own colour: green lent, rose borrowed (v1.6).
+                backgroundColor: disabled
+                  ? colors.surfaceRaised
+                  : colors[option.value === 'LENT' ? 'lentSurface' : 'borrowedSurface'],
+                borderColor: disabled ? colors.outline : colors[tone],
+              },
             ]}
           >
             <Icon size={22} color={colors[color]} strokeWidth={2} />
@@ -112,6 +119,31 @@ function DirectionSwitch({
         );
       })}
     </View>
+  );
+}
+
+/** Up to five active people from the latest loans, one tap to choose (design.md S06 item 3). */
+function RecentPeople({ onPick }: { onPick: (choice: PersonChoice) => void }) {
+  const recent = useLoanList({ sort: 'recent' }, 10);
+  const people: { id: string; name: string }[] = [];
+  for (const loan of recent.data?.pages[0]?.items ?? []) {
+    if (loan.person.archived || people.some((p) => p.id === loan.person.id)) continue;
+    people.push(loan.person);
+    if (people.length === 5) break;
+  }
+  return (
+    <QuickChips
+      label="Recent people"
+      chips={people.map((p) => ({
+        key: p.id,
+        label: p.name,
+        accessibilityLabel: `Choose ${p.name}`,
+      }))}
+      onPick={(id) => {
+        const hit = people.find((p) => p.id === id);
+        if (hit) onPick({ kind: 'existing', id: hit.id, name: hit.name });
+      }}
+    />
   );
 }
 
@@ -288,6 +320,13 @@ export function LoanForm(props: Props) {
   };
 
   const directionLocked = !!editing && editing.repaymentCount > 0;
+  const presets = duePresets(loanDate);
+  const choosePerson = (choice: PersonChoice) => {
+    setPerson(choice);
+    setErrors((e) => ({ ...e, person: undefined }));
+    // Next step of the 10-second flow: amount, with the keyboard up (design.md S06).
+    if (!amount) setTimeout(() => amountRef.current?.focus(), 350);
+  };
 
   return (
     <Screen
@@ -321,16 +360,13 @@ export function LoanForm(props: Props) {
       <PersonPicker
         label={direction === 'LENT' ? 'Lent to' : 'Borrowed from'}
         value={person}
-        onChange={(choice) => {
-          setPerson(choice);
-          setErrors((e) => ({ ...e, person: undefined }));
-          // Next step of the 10-second flow: amount, with the keyboard up (design.md S06).
-          if (!amount) setTimeout(() => amountRef.current?.focus(), 350);
-        }}
+        onChange={choosePerson}
         allowNew={!editing}
         autoOpen={props.mode === 'create' && !!props.pickPerson && !initial.person}
         error={errors.person}
       />
+
+      {!editing && !person ? <RecentPeople onPick={choosePerson} /> : null}
 
       <MoneyField
         ref={amountRef}
@@ -360,6 +396,21 @@ export function LoanForm(props: Props) {
         }}
         error={errors.dueDate}
         helper={dueDate && dueDate < loanDate ? 'Due date is before the loan date.' : undefined}
+      />
+      <QuickChips
+        label="Quick due dates"
+        chips={presets.map((p) => ({
+          key: p.key,
+          label: p.label,
+          accessibilityLabel: `Due in ${p.label}`,
+        }))}
+        selectedKey={presets.find((p) => p.date === dueDate)?.key ?? null}
+        onPick={(key) => {
+          const preset = presets.find((p) => p.key === key);
+          if (!preset) return;
+          setDueDate(preset.date);
+          setErrors((e) => ({ ...e, dueDate: undefined }));
+        }}
       />
 
       <Pressable

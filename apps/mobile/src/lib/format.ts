@@ -1,7 +1,13 @@
 /**
  * Display helpers (design.md §1.3, §11). Deterministic; no Intl dependency for dates.
  */
-import { daysBetween, formatPaise, type LoanDto, type PersonDto } from '@miniledger/shared';
+import {
+  addDays,
+  daysBetween,
+  formatPaise,
+  type LoanDto,
+  type PersonDto,
+} from '@miniledger/shared';
 
 const MONTHS_SHORT = [
   'Jan',
@@ -156,4 +162,54 @@ export function balanceLines(person: Pick<PersonDto, 'owesYouPaise' | 'youOwePai
 /** Largest repayment allowed: remaining balance, plus the edited repayment's own amount (S08). */
 export function repaymentMaxPaise(outstandingPaise: number, editingAmountPaise = 0): number {
   return outstandingPaise + editingAmountPaise;
+}
+
+function daysInMonth(year: number, month: number): number {
+  return new Date(Date.UTC(year, month, 0)).getUTCDate();
+}
+
+const iso = (y: number, m: number, d: number) =>
+  `${y}-${String(m).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+
+/** Same day next month, clamped to the month's length (31 Jan → 28/29 Feb). */
+export function addOneMonth(date: string): string {
+  const [y, m, d] = parts(date);
+  const [ny, nm] = m === 12 ? [y + 1, 1] : [y, m + 1];
+  return iso(ny, nm, Math.min(d, daysInMonth(ny, nm)));
+}
+
+/** Last day of the date's month; on the last day itself, the end of the next month. */
+export function endOfMonth(date: string): string {
+  const [y, m, d] = parts(date);
+  const last = daysInMonth(y, m);
+  if (d < last) return iso(y, m, last);
+  const [ny, nm] = m === 12 ? [y + 1, 1] : [y, m + 1];
+  return iso(ny, nm, daysInMonth(ny, nm));
+}
+
+export type DuePreset = { key: string; label: string; date: string };
+
+/** Quick due dates counted from the loan date (design.md S06 field 5). */
+export function duePresets(loanDate: string): DuePreset[] {
+  return [
+    { key: '1w', label: '1 week', date: addDays(loanDate, 7) },
+    { key: '2w', label: '2 weeks', date: addDays(loanDate, 14) },
+    { key: '1m', label: '1 month', date: addOneMonth(loanDate) },
+    { key: 'eom', label: 'End of month', date: endOfMonth(loanDate) },
+  ];
+}
+
+/**
+ * Quick repayment amounts as rupee input strings (design.md S08): 25% and 50% rounded down to
+ * the rupee (hidden when that is ₹0), Full is the exact remaining balance.
+ */
+export function quickAmounts(
+  outstandingPaise: number,
+): { key: string; label: string; paise: number }[] {
+  const share = (pct: number) => Math.floor((outstandingPaise * pct) / 100 / 100) * 100;
+  const out = [
+    { key: '25', label: '25%', paise: share(25) },
+    { key: '50', label: '50%', paise: share(50) },
+  ].filter((q) => q.paise > 0 && q.paise < outstandingPaise);
+  return [...out, { key: 'full', label: 'Full', paise: outstandingPaise }];
 }
