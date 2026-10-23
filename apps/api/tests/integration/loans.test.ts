@@ -272,6 +272,9 @@ describe('GET /v1/summary', () => {
       peopleYouOwe: 1,
       lentLoans: 2,
       overdueLoans: 1,
+      dueSoonLent: 0,
+      dueSoonBorrowed: 0,
+      dueSoonLoans: 0,
       currency: 'INR',
       unit: 'paise',
       asOfDate: TODAY,
@@ -322,6 +325,22 @@ describe('GET /v1/summary', () => {
       peopleYouOwe: 1,
       lentLoans: 3,
       overdueLoans: 2,
+    });
+  });
+
+  it('sums outstanding loans due today through today + 6 as due this week', async () => {
+    const today = await newLoan({ personName: 'A', amount: '100', dueDate: TODAY });
+    await addRepayment(today.id, 4000);
+    await newLoan({ personName: 'B', amount: '200', dueDate: '2026-10-28' }); // today + 6
+    await newLoan({ personName: 'C', amount: '50', direction: 'BORROWED', dueDate: '2026-10-25' });
+    await newLoan({ personName: 'D', amount: '300', dueDate: NEXT_WEEK }); // today + 7: not yet
+    await newLoan({ personName: 'E', amount: '400', loanDate: '2026-10-01', dueDate: YESTERDAY }); // overdue
+    const done = await newLoan({ personName: 'F', amount: '500', dueDate: TODAY });
+    await settle(done.id);
+    expect(await summary()).toMatchObject({
+      dueSoonLent: 6000 + 20000,
+      dueSoonBorrowed: 5000,
+      dueSoonLoans: 3,
     });
   });
 });

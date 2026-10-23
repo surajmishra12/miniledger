@@ -20,7 +20,10 @@ type SummaryRow = Record<
   | 'people_owing_you'
   | 'people_you_owe'
   | 'lent_loans'
-  | 'overdue_loans',
+  | 'overdue_loans'
+  | 'due_soon_lent'
+  | 'due_soon_borrowed'
+  | 'due_soon_loans',
   unknown
 >;
 
@@ -52,7 +55,19 @@ export function createSummaryRoutes(ctx: AppContext): Router {
         COUNT(*) FILTER (WHERE direction = 'LENT') AS lent_loans,
         COUNT(*) FILTER (
           WHERE direction = 'LENT' AND principal_paise > repaid AND due_date < ${asOfDate}::date
-        ) AS overdue_loans
+        ) AS overdue_loans,
+        COALESCE(SUM(principal_paise - repaid) FILTER (
+          WHERE direction = 'LENT' AND principal_paise > repaid
+            AND due_date BETWEEN ${asOfDate}::date AND ${asOfDate}::date + 6
+        ), 0) AS due_soon_lent,
+        COALESCE(SUM(principal_paise - repaid) FILTER (
+          WHERE direction = 'BORROWED' AND principal_paise > repaid
+            AND due_date BETWEEN ${asOfDate}::date AND ${asOfDate}::date + 6
+        ), 0) AS due_soon_borrowed,
+        COUNT(*) FILTER (
+          WHERE principal_paise > repaid
+            AND due_date BETWEEN ${asOfDate}::date AND ${asOfDate}::date + 6
+        ) AS due_soon_loans
       FROM (
         SELECT l.direction, l.person_id, l.principal_paise, l.due_date, COALESCE(r.repaid, 0) AS repaid
         FROM loans l
@@ -80,6 +95,9 @@ export function createSummaryRoutes(ctx: AppContext): Router {
       peopleYouOwe: toSafeInteger(row?.people_you_owe),
       lentLoans: toSafeInteger(row?.lent_loans),
       overdueLoans: toSafeInteger(row?.overdue_loans),
+      dueSoonLent: toSafeInteger(row?.due_soon_lent),
+      dueSoonBorrowed: toSafeInteger(row?.due_soon_borrowed),
+      dueSoonLoans: toSafeInteger(row?.due_soon_loans),
       currency: 'INR',
       unit: 'paise',
       asOfDate,

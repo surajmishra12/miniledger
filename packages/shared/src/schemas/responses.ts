@@ -78,6 +78,10 @@ export const summaryDtoSchema = z.strictObject({
   peopleYouOwe: z.number().int().nonnegative(),
   lentLoans: z.number().int().nonnegative(),
   overdueLoans: z.number().int().nonnegative(),
+  /** Outstanding, not overdue, due today … today + 6 (Home "Due this week"). */
+  dueSoonLent: paise,
+  dueSoonBorrowed: paise,
+  dueSoonLoans: z.number().int().nonnegative(),
   currency: z.literal('INR'),
   unit: z.literal('paise'),
   asOfDate: isoDate,
