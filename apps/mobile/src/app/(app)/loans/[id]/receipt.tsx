@@ -95,7 +95,7 @@ export default function ReceiptViewerScreen() {
   return (
     <SafeAreaView style={[styles.fill, { backgroundColor: colors.viewerCanvas }]}>
       <View style={styles.top}>
-        <IconButton icon={X} label="Close receipt" color="onHero" onPress={() => router.back()} />
+        <IconButton icon={X} label="Close receipt" color="onViewer" onPress={() => router.back()} />
       </View>
       {uri ? (
         <GestureDetector gesture={gestures}>
@@ -112,7 +112,7 @@ export default function ReceiptViewerScreen() {
         </GestureDetector>
       ) : (
         <View style={styles.missing}>
-          <AppText color="onHero" align="center">
+          <AppText color="onViewer" align="center">
             Receipt unavailable on this device.
           </AppText>
         </View>

@@ -71,8 +71,8 @@ describe('theme tokens', () => {
       [c.dangerText, c.borrowedSurface, 4.5],
       [c.heroPositive, c.heroSurface, 3],
       [c.heroAlert, c.heroSurface, 3],
-      // The receipt viewer draws onHero on black in both themes.
-      [c.onHero, c.viewerCanvas, 4.5],
+      // The receipt viewer draws onViewer on black in both themes.
+      [c.onViewer, c.viewerCanvas, 4.5],
     ];
     for (const [fg, bg, min] of pairs) {
       expect(contrast(fg, bg)).toBeGreaterThanOrEqual(min);

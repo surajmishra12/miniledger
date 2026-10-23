@@ -1,7 +1,7 @@
 /**
  * S10 Person detail: separate balances, their loans, rename / archive / delete (design.md S10).
  */
-import type { LoanDto } from '@miniledger/shared';
+import { formatPaise, type LoanDto } from '@miniledger/shared';
 import { useMutation } from '@tanstack/react-query';
 import { router, useLocalSearchParams } from 'expo-router';
 import {
@@ -11,6 +11,7 @@ import {
   ArrowUpRight,
   EllipsisVertical,
   Pencil,
+  Send,
   Trash2,
 } from 'lucide-react-native';
 import { useMemo, useState } from 'react';
@@ -18,6 +19,7 @@ import { ActivityIndicator, FlatList, RefreshControl, StyleSheet, View } from 'r
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { ActionSheet, type SheetAction } from '@/components/ActionSheet';
+import { AnimatedAmount } from '@/components/AnimatedAmount';
 import { AppText } from '@/components/AppText';
 import { Avatar } from '@/components/Avatar';
 import { Button } from '@/components/Button';
@@ -31,7 +33,6 @@ import { LoanRow } from '@/components/LoanRow';
 import { SectionHeader } from '@/components/SectionHeader';
 import { SkeletonBlock, SkeletonList } from '@/components/Skeleton';
 import { useSnackbar } from '@/components/Snackbar';
-import { SummaryTile } from '@/components/SummaryTile';
 import { Divider } from '@/components/Surface';
 import { deletePerson, updatePerson, useLoanList, usePerson } from '@/features/ledger/api';
 import { PersonNameDialog } from '@/features/ledger/PersonNameDialog';
@@ -40,10 +41,93 @@ import { errorCopy } from '@/lib/error-copy';
 import { plural } from '@/lib/format';
 import { useTransitionDone } from '@/lib/hooks';
 import { invalidateLedger } from '@/lib/query-client';
+import { personReminder, shareReminder } from '@/lib/remind';
 import { useTheme } from '@/theme/theme-provider';
 import { radius, space } from '@/theme/tokens';
 
+const openLoan = (loan: LoanDto) => router.push(`/loans/${loan.id}`);
+
 type Dialog = 'menu' | 'rename' | 'archive' | 'delete' | null;
+
+/** Two-column statement, never netted (design.md S10 v2): direction on small arrows, amounts in ink. */
+function Statement({
+  owesYou,
+  youOwe,
+  overdue,
+}: {
+  owesYou: number;
+  youOwe: number;
+  overdue: number | null;
+}) {
+  const { colors, shadow } = useTheme();
+  const column = (
+    label: string,
+    paise: number,
+    lent: boolean,
+    sub: string,
+    subColor: 'dangerText' | 'textTertiary' | 'textSecondary',
+  ) => {
+    const Icon = lent ? ArrowUpRight : ArrowDownLeft;
+    const zero = paise === 0;
+    return (
+      <View
+        style={styles.column}
+        accessible
+        accessibilityLabel={`${label} ${formatPaise(paise)}, ${sub}`}
+      >
+        <View style={styles.columnLabel}>
+          <Icon
+            size={15}
+            color={zero ? colors.textTertiary : colors[lent ? 'lentText' : 'borrowedText']}
+            strokeWidth={2.5}
+          />
+          <AppText variant="secondary" weight="600" color={zero ? 'textTertiary' : 'textSecondary'}>
+            {label}
+          </AppText>
+        </View>
+        <AnimatedAmount
+          paise={paise}
+          variant="cardAmount"
+          color={zero ? 'textTertiary' : 'textPrimary'}
+          numberOfLines={1}
+          adjustsFontSizeToFit
+        />
+        <AppText variant="secondary" color={subColor} numberOfLines={1}>
+          {sub}
+        </AppText>
+      </View>
+    );
+  };
+  return (
+    <View
+      style={[
+        styles.statement,
+        { backgroundColor: colors.surface, borderColor: colors.outline },
+        shadow('s1'),
+      ]}
+    >
+      {column(
+        'Owes you',
+        owesYou,
+        true,
+        overdue
+          ? `${formatPaise(overdue)} overdue`
+          : owesYou > 0
+            ? 'Nothing overdue'
+            : 'Nothing owed',
+        overdue ? 'dangerText' : 'textTertiary',
+      )}
+      <View style={[styles.columnRule, { backgroundColor: colors.outline }]} />
+      {column(
+        'You owe',
+        youOwe,
+        false,
+        youOwe > 0 ? 'To pay back' : 'Nothing to pay',
+        youOwe > 0 ? 'textSecondary' : 'textTertiary',
+      )}
+    </View>
+  );
+}
 
 export default function PersonDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -74,6 +158,15 @@ export default function PersonDetailScreen() {
     }
     return items;
   }, [loans.data]);
+
+  // Overdue money they owe you, once every page is loaded (the API gives no per-person figure).
+  const overduePaise = useMemo(() => {
+    if (loans.hasNextPage || !loans.data) return null;
+    const sum = rows
+      .filter((l) => l.direction === 'LENT' && l.isOverdue)
+      .reduce((total, l) => total + l.outstandingPaise, 0);
+    return sum > 0 ? sum : null;
+  }, [rows, loans.hasNextPage, loans.data]);
 
   if (person.isPending) {
     return (
@@ -191,22 +284,16 @@ export default function PersonDetailScreen() {
         />
       ) : null}
       {error ? <InlineNotice tone="danger" message={error} /> : null}
-      <View style={styles.tiles}>
-        <SummaryTile
-          icon={ArrowUpRight}
-          tone={data.owesYouPaise > 0 ? 'lent' : 'neutral'}
-          label="They owe you"
-          paise={data.owesYouPaise}
-          context={data.owesYouPaise > 0 ? 'Still to receive' : 'Nothing owed'}
+      <Statement owesYou={data.owesYouPaise} youOwe={data.youOwePaise} overdue={overduePaise} />
+      {data.owesYouPaise > 0 && !data.archived ? (
+        <Button
+          variant="secondary"
+          icon={Send}
+          label={`Remind ${data.name.trim().split(/\s+/)[0] ?? data.name}`}
+          accessibilityHint="Opens your apps to send a reminder message"
+          onPress={() => void shareReminder(personReminder(data.name, data.owesYouPaise))}
         />
-        <SummaryTile
-          icon={ArrowDownLeft}
-          tone={data.youOwePaise > 0 ? 'borrowed' : 'neutral'}
-          label="You owe them"
-          paise={data.youOwePaise}
-          context={data.youOwePaise > 0 ? 'Still to pay back' : 'Nothing to pay back'}
-        />
-      </View>
+      ) : null}
       <SectionHeader title="Loans" />
     </View>
   );
@@ -256,12 +343,8 @@ export default function PersonDetailScreen() {
                 },
               ]}
             >
-              <LoanRow
-                loan={item}
-                showPerson={false}
-                onPress={() => router.push(`/loans/${item.id}`)}
-              />
-              {last ? null : <Divider inset={16} />}
+              <LoanRow loan={item} showPerson={false} onPress={openLoan} />
+              {last ? null : <Divider inset={64} />}
             </View>
           );
         }}
@@ -347,6 +430,15 @@ const styles = StyleSheet.create({
   flex: { flex: 1 },
   identity: { flexDirection: 'row', alignItems: 'center', gap: space.s4 },
   tiles: { flexDirection: 'row', gap: space.s3, flexWrap: 'wrap' },
+  statement: {
+    flexDirection: 'row',
+    borderRadius: radius.lg,
+    borderWidth: StyleSheet.hairlineWidth * 2,
+    paddingVertical: space.s4,
+  },
+  column: { flex: 1, paddingHorizontal: space.s4, gap: 2 },
+  columnLabel: { flexDirection: 'row', alignItems: 'center', gap: 4, marginBottom: 2 },
+  columnRule: { width: StyleSheet.hairlineWidth * 2, marginVertical: space.s1 },
   rowWrap: { borderLeftWidth: 1, borderRightWidth: 1, overflow: 'hidden' },
   footer: { paddingHorizontal: space.s5, paddingTop: space.s3, paddingBottom: space.s4 },
 });

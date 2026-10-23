@@ -20,16 +20,13 @@ export function IconBadge({
   icon: Icon,
   tone,
   size = 36,
-  onTint = false,
 }: {
   icon: LucideIcon;
   tone: BadgeTone;
   size?: number;
-  /** The badge sits on its own tone's tint (tiles, cards): use a plain surface circle instead. */
-  onTint?: boolean;
 }) {
   const { colors } = useTheme();
-  const t = onTint ? { ...TONES[tone], bg: 'surface' as const } : TONES[tone];
+  const t = TONES[tone];
   return (
     <View
       importantForAccessibility="no-hide-descendants"

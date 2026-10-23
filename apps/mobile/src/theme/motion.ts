@@ -12,6 +12,9 @@ export const curves = {
 /** Settles without visible overshoot. */
 export const spring: WithSpringConfig = { damping: 22, stiffness: 260, mass: 1 };
 
+/** A little bounce for the wallet's personality moments; used nowhere else. */
+export const springLively: WithSpringConfig = { damping: 11, stiffness: 170, mass: 1 };
+
 export const durations = {
   pressIn: 100,
   pressOut: 160,

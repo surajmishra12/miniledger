@@ -32,16 +32,7 @@ export const CHIP_KINDS: Record<
 };
 
 /** Text + icon + semantic tint; never colour alone (design.md §2.3). */
-export function StatusChip({
-  kind,
-  label,
-  onTint = false,
-}: {
-  kind: ChipKind;
-  label: string;
-  /** On a tinted strip the chip uses a plain surface so it never disappears into the tint. */
-  onTint?: boolean;
-}) {
+export function StatusChip({ kind, label }: { kind: ChipKind; label: string }) {
   const { colors } = useTheme();
   const k = CHIP_KINDS[kind];
   const Icon = k.icon;
@@ -49,7 +40,7 @@ export function StatusChip({
     <View
       accessible
       accessibilityLabel={label}
-      style={[styles.chip, { backgroundColor: onTint ? colors.surface : colors[k.surface] }]}
+      style={[styles.chip, { backgroundColor: colors[k.surface] }]}
     >
       <Icon size={14} color={colors[k.text]} strokeWidth={1.75} />
       <AppText variant="overline" color={k.text}>

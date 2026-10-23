@@ -1,16 +1,24 @@
 import { formatPaise } from '@miniledger/shared';
 import { ChevronRight } from 'lucide-react-native';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { StyleSheet, View, type LayoutChangeEvent } from 'react-native';
-import Animated, { useAnimatedStyle, useSharedValue, withTiming } from 'react-native-reanimated';
+import Animated, {
+  useAnimatedStyle,
+  useSharedValue,
+  withDelay,
+  withSequence,
+  withSpring,
+  withTiming,
+} from 'react-native-reanimated';
 
 import { plural } from '@/lib/format';
-import { curves, durations } from '@/theme/motion';
+import { curves, durations, springLively } from '@/theme/motion';
 import { useTheme } from '@/theme/theme-provider';
 import { radius, space, type ColorTokens } from '@/theme/tokens';
 
 import { AnimatedAmount } from './AnimatedAmount';
 import { AppText } from './AppText';
+import { HeroWallet } from './HeroWallet';
 import { Tappable } from './Tappable';
 
 type Props = {
@@ -24,6 +32,7 @@ type Props = {
 };
 
 const GAP = 3;
+const WALLET = 76;
 
 /**
  * One stacked bar for everything you lent: repaid (green), still owed (neutral), overdue (coral).
@@ -130,9 +139,9 @@ function Figure({
 }
 
 /**
- * The one coloured surface on Home (design.md S04 v2): what you'll receive, a stacked bar of
- * everything you lent, and the brief's three figures (lent, repaid, overdue) as a legend.
- * Amounts stay in neutral ink; colour only marks repaid and overdue.
+ * The one coloured surface on Home (design.md S04 v2): what you'll receive with the living wallet
+ * mark beside it, a stacked bar of everything you lent, and the brief's three figures (lent,
+ * repaid, overdue) as a legend. Amounts stay in ink; colour only marks repaid and overdue.
  */
 export function SummaryHero({
   outstandingLentPaise,
@@ -143,8 +152,27 @@ export function SummaryHero({
   countUp,
   onPress,
 }: Props) {
-  const { colors, scheme } = useTheme();
+  const { colors, scheme, reduceMotion } = useTheme();
   const owed = outstandingLentPaise > 0;
+
+  // The wallet comes alive on events only: a peek after the first count-up, a peek whenever a
+  // payment changes the figures, and the cover opening while the card is pressed.
+  const open = useSharedValue(0);
+  const seen = useRef<string | null>(null);
+  const figures = `${outstandingLentPaise}:${totalRepaidPaise}`;
+  useEffect(() => {
+    const first = seen.current === null;
+    if (seen.current === figures) return;
+    seen.current = figures;
+    if (reduceMotion || (first && !countUp)) return;
+    open.set(
+      withDelay(
+        first ? durations.amount + 150 : 0,
+        withSequence(withSpring(1, springLively), withDelay(420, withSpring(0, springLively))),
+      ),
+    );
+  }, [figures, countUp, reduceMotion, open]);
+
   const lentAny = totalLentPaise > 0;
   const context = owed
     ? `from ${plural(peopleOwingYou, 'person', 'people')}`
@@ -168,6 +196,12 @@ export function SummaryHero({
       accessibilityHint={onPress ? 'Shows the loans people still owe you' : undefined}
       disabled={!onPress}
       onPress={onPress}
+      onPressIn={() => {
+        if (!reduceMotion) open.set(withSpring(1, springLively));
+      }}
+      onPressOut={() => {
+        open.set(reduceMotion ? 0 : withSpring(0, springLively));
+      }}
       shadow="s2"
       scaleTo={0.985}
       style={[
@@ -180,24 +214,28 @@ export function SummaryHero({
       ]}
     >
       <View style={styles.top}>
-        <AppText variant="overline" color="onHeroMuted">
-          YOU&apos;LL RECEIVE
-        </AppText>
-        {onPress ? <ChevronRight size={20} color={colors.onHeroMuted} strokeWidth={1.75} /> : null}
-      </View>
-
-      <View style={styles.headline}>
-        <AnimatedAmount
-          paise={outstandingLentPaise}
-          countUp={countUp}
-          variant="hero"
-          color="onHero"
-          numberOfLines={1}
-          adjustsFontSizeToFit
-        />
-        <AppText variant="secondary" color="onHeroMuted">
-          {context}
-        </AppText>
+        <View style={styles.headline}>
+          <AppText variant="overline" color="onHeroMuted">
+            YOU&apos;LL RECEIVE
+          </AppText>
+          <AnimatedAmount
+            paise={outstandingLentPaise}
+            countUp={countUp}
+            variant="hero"
+            color="onHero"
+            numberOfLines={1}
+            adjustsFontSizeToFit
+          />
+          <View style={styles.context}>
+            <AppText variant="secondary" color="onHeroMuted" numberOfLines={1}>
+              {context}
+            </AppText>
+            {onPress ? <ChevronRight size={16} color={colors.onHeroMuted} strokeWidth={2} /> : null}
+          </View>
+        </View>
+        <View style={styles.wallet}>
+          <HeroWallet size={WALLET} open={open} rimmed={scheme === 'light'} coin />
+        </View>
       </View>
 
       {lentAny ? (
@@ -228,8 +266,10 @@ const styles = StyleSheet.create({
     paddingBottom: space.s5,
     gap: space.s4,
   },
-  top: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
-  headline: { gap: 2, marginTop: -space.s2 },
+  top: { flexDirection: 'row', alignItems: 'flex-start', gap: space.s3 },
+  headline: { flex: 1, gap: 2 },
+  context: { flexDirection: 'row', alignItems: 'center', gap: 2 },
+  wallet: { marginTop: -space.s1, marginRight: -space.s2 },
   track: { height: 8, borderRadius: 4, overflow: 'hidden' },
   trackTint: { opacity: 0.12 },
   clip: { height: 8, overflow: 'hidden' },

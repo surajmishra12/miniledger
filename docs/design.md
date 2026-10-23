@@ -492,7 +492,7 @@ Each screen has a defined purpose, top-level hierarchy, actions, states and acce
 **Order from top to bottom (one vertical scroll):**
 
 1. **Header:** the live wordmark `MiniLedger` (§1.2), left-aligned, 56dp tall. Nothing else.
-2. **Summary card** (`SummaryHero`, flat `heroSurface`: dark chocolate `#3B2218` in light mode with shadow S2, espresso `#2A1C17` with an `outline` hairline in dark mode; 22dp radius, 20dp padding). No gradient, line art or illustration. Content, top-down:
+2. **Summary card** (`SummaryHero`, flat `heroSurface`: dark chocolate `#3B2218` in light mode with shadow S2, logo cream `#F3E6D2` in dark mode; 22dp radius, 20dp padding). No gradient or line art. The **wallet mark** (`HeroWallet`, 76dp, brand colours) sits top-right beside the amount and comes alive on events only, never in an idle loop: after the first count-up and whenever a payment changes the figures, its cover swings open on the spine, the wallet lifts 3dp and a ₹ coin rises out of the pages, then it closes (lively spring); pressing the card holds it open. Reduce motion keeps it still. Content, top-down:
    - overline `YOU'LL RECEIVE` in `onHeroMuted`, trailing `chevron-right`;
    - **outstanding lent** in the 40sp hero style in `onHero`, then `from 3 people` (`peopleOwingYou`); `Everything you lent has been repaid` or `Nothing owed to you right now` at zero;
    - one 8dp **stacked bar** of `totalLent`: repaid (`heroPositive`), still owed and not overdue (`onHero` at 32%), overdue (`heroAlert`), 3dp gaps, on a 12% `onHero` track; it reveals left to right on first load (450 ms);
@@ -1081,3 +1081,13 @@ An AI coding agent or developer must verify these gates **screen by screen**; ne
 - People: green/rose balance pills and an avatar side bar; instant transition to Person detail (cache-seeded header, deferred list).
 - Forms: due-date quick chips, recent-people chips, repayment 25% / 50% / Full chips; tinted direction thumb. Add sheet uses green/rose cards.
 - Loans: direction-tinted balances, section counts and totals. Loan detail: tinted header strip, countdown chip, repayment timeline. Settings: icon squares and a separate delete group.
+
+**v2.0 revision (23 October 2026):** supersedes the v1.6 colour and decoration rules on every screen.
+- **Colour rule:** about 90% neutrals; amounts are always ink (`textPrimary`; repaid `textTertiary`). Semantic hues appear only on small marks: the 18dp direction arrow badge (green they owe you, rose you owe), one status line, the 3dp rail, chips, progress fills. Terracotta only on actions. No tinted tiles, pills, strips, gradients or line art.
+- **Summary card:** chocolate in light mode, logo cream in dark mode, with the event-driven wallet mark (S04).
+- **Rows:** one `LoanRow` everywhere (avatar + direction badge, name, one status line, ink amount; inline `Remind` on Home for overdue money you lent). In Person detail the title is `Lent ₹2,000` with a 36dp direction badge. `PersonRow`: one line per direction, small coloured arrow, ink label and amount.
+- **Loans:** section headers keep their small semantic icon and colour; counts and totals are removed.
+- **Person detail:** a two-column statement card (Owes you / You owe, ink amounts, overdue under the figure) and a `Remind` button when they owe you; tiles are removed.
+- **Loan detail:** neutral card (no tinted strip), Remaining in ink, state-coloured bar, `Remind` beside the due line for money you lent; the settled check springs in when a loan has just been repaid.
+- **Forms and sheets:** neutral raised direction thumb with a coloured arrow; Add sheet uses neutral cards with coloured badges; Settings icon squares are monochrome except Delete account.
+- **Reminders** use the Android share sheet with a polite prefilled message; nothing is sent by MiniLedger.

@@ -100,7 +100,7 @@ export default function PeopleScreen() {
         ]}
       >
         <PersonRow person={item.person} onPress={openPerson} />
-        {item.last ? null : <Divider inset={72} />}
+        {item.last ? null : <Divider inset={68} />}
       </View>
     );
   };

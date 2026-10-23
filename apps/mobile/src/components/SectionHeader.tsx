@@ -14,9 +14,6 @@ type Props = {
   color?: keyof ColorTokens;
   actionLabel?: string;
   onAction?: () => void;
-  /** Overline sections: row count after the title and a right-aligned figure. */
-  count?: number;
-  trailing?: string;
 };
 
 /** Section title with an optional semantic icon and trailing text action (design.md §7). */
@@ -27,31 +24,16 @@ export function SectionHeader({
   color = variant === 'overline' ? 'textSecondary' : 'textPrimary',
   actionLabel,
   onAction,
-  count,
-  trailing,
 }: Props) {
   const { colors } = useTheme();
-  const spoken = [title, count === undefined ? null : `${count}`, trailing]
-    .filter(Boolean)
-    .join(', ');
   return (
     <View style={[styles.row, variant === 'overline' ? styles.overline : styles.section]}>
-      <View style={styles.title} accessible accessibilityRole="header" accessibilityLabel={spoken}>
+      <View style={styles.title}>
         {Icon ? <Icon size={16} color={colors[color]} strokeWidth={2} /> : null}
-        <AppText variant={variant} color={color}>
+        <AppText variant={variant} color={color} accessibilityRole="header">
           {variant === 'overline' ? title.toUpperCase() : title}
         </AppText>
-        {count !== undefined ? (
-          <AppText variant={variant} color="textTertiary" tabular>
-            · {count}
-          </AppText>
-        ) : null}
       </View>
-      {trailing ? (
-        <AppText variant="overline" color={color} tabular importantForAccessibility="no">
-          {trailing}
-        </AppText>
-      ) : null}
       {actionLabel && onAction ? (
         <Pressable
           accessibilityRole="button"

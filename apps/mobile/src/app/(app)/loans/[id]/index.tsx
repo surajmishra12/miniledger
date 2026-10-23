@@ -7,6 +7,12 @@ import { router, useLocalSearchParams } from 'expo-router';
 import { CheckCheck, ChevronRight, EllipsisVertical, Pencil, Trash2 } from 'lucide-react-native';
 import { useEffect, useState } from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
+import Animated, {
+  useAnimatedStyle,
+  useSharedValue,
+  withDelay,
+  withSpring,
+} from 'react-native-reanimated';
 
 import { ActionSheet } from '@/components/ActionSheet';
 import { AppText } from '@/components/AppText';
@@ -32,6 +38,8 @@ import { errorCopy } from '@/lib/error-copy';
 import { formatDateLong } from '@/lib/format';
 import { haptics } from '@/lib/haptics';
 import { invalidateLedger, queryClient, queryKeys } from '@/lib/query-client';
+import { loanReminder, shareReminder } from '@/lib/remind';
+import { springLively } from '@/theme/motion';
 import { useTheme } from '@/theme/theme-provider';
 import { radius, space } from '@/theme/tokens';
 
@@ -103,16 +111,26 @@ function TimelineItem({
     </View>
   );
 }
-/** Fully repaid: a calm success state instead of enabled actions (design.md S07, §9.2). */
-function SettledBlock() {
-  const { colors } = useTheme();
+/** Fully repaid. When it has just happened, the check springs in: a small ending worth feeling. */
+function SettledBlock({ celebrate }: { celebrate: boolean }) {
+  const { colors, reduceMotion } = useTheme();
+  const pop = useSharedValue(celebrate && !reduceMotion ? 0 : 1);
+  useEffect(() => {
+    if (celebrate && !reduceMotion) pop.set(withDelay(120, withSpring(1, springLively)));
+  }, [celebrate, reduceMotion, pop]);
+  const checkStyle = useAnimatedStyle(() => ({
+    opacity: pop.get(),
+    transform: [{ scale: 0.4 + pop.get() * 0.6 }, { rotate: `${(1 - pop.get()) * -30}deg` }],
+  }));
   return (
     <View
       accessible
       accessibilityRole="summary"
       style={[styles.settled, { backgroundColor: colors.successSurface }]}
     >
-      <CheckCheck size={22} color={colors.successText} strokeWidth={1.75} />
+      <Animated.View style={[styles.settledCheck, { backgroundColor: colors.surface }, checkStyle]}>
+        <CheckCheck size={20} color={colors.successText} strokeWidth={2.25} />
+      </Animated.View>
       <View style={styles.flex}>
         <AppText variant="rowTitle" color="successText">
           All settled.
@@ -134,6 +152,15 @@ export default function LoanDetailScreen() {
   const snackbar = useSnackbar();
   const [dialog, setDialog] = useState<Dialog>(null);
   const [error, setError] = useState<string | null>(null);
+
+  // Celebrate only the transition from open to settled while this screen is showing.
+  const outstandingNow = loan.data?.outstandingPaise;
+  const [lastOutstanding, setLastOutstanding] = useState(outstandingNow);
+  const [celebrate, setCelebrate] = useState(false);
+  if (outstandingNow !== lastOutstanding) {
+    setLastOutstanding(outstandingNow);
+    setCelebrate(outstandingNow === 0 && (lastOutstanding ?? 0) > 0);
+  }
 
   // A loan that no longer exists takes its device-only receipt with it (§8).
   const missing = loan.error instanceof ApiError && loan.error.code === 'NOT_FOUND';
@@ -235,7 +262,7 @@ export default function LoanDetailScreen() {
             />
           </View>
         ) : (
-          <SettledBlock />
+          <SettledBlock celebrate={celebrate} />
         )
       }
     >
@@ -261,7 +288,10 @@ export default function LoanDetailScreen() {
         <ChevronRight size={24} color={colors.textSecondary} strokeWidth={1.75} />
       </Pressable>
 
-      <LoanFinancials loan={data} />
+      <LoanFinancials
+        loan={data}
+        onRemind={lent && outstanding ? () => void shareReminder(loanReminder(data)) : undefined}
+      />
 
       {receiptFailed === '1' && !receipt.uri ? (
         <InlineNotice tone="danger" message={RECEIPT_COPY.saveFailed} />
@@ -407,6 +437,13 @@ const styles = StyleSheet.create({
   section: { gap: space.s3 },
   actions: { gap: space.s3 },
   noRepayments: { paddingBottom: space.s4 },
+  settledCheck: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
   settled: {
     flexDirection: 'row',
     alignItems: 'center',

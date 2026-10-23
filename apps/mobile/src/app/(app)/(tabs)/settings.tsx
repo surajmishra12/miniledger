@@ -209,7 +209,7 @@ export default function SettingsScreen() {
 
       <Section title="Appearance">
         <View style={styles.appearanceTitle}>
-          <IconSquare icon={Palette} tone="warning" />
+          <IconSquare icon={Palette} />
           <AppText>Theme</AppText>
         </View>
         <Divider />
@@ -245,7 +245,7 @@ export default function SettingsScreen() {
 
       <Section title="Your data">
         <View style={[styles.row, styles.paragraph]}>
-          <IconSquare icon={ShieldCheck} tone="lent" />
+          <IconSquare icon={ShieldCheck} />
           <AppText color="textSecondary" style={styles.rowText}>
             Loans and repayments are stored in your account. Receipt photos stay on this device
             only.

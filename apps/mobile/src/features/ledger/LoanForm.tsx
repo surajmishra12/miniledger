@@ -73,7 +73,7 @@ function DirectionSwitch({
   onChange: (value: Direction) => void;
   disabled?: boolean;
 }) {
-  const { colors } = useTheme();
+  const { colors, shadow } = useTheme();
   const options: { value: Direction; label: string; icon: typeof ArrowUpRight }[] = [
     { value: 'LENT', label: 'I lent', icon: ArrowUpRight },
     { value: 'BORROWED', label: 'I borrowed', icon: ArrowDownLeft },
@@ -88,7 +88,8 @@ function DirectionSwitch({
         const selected = option.value === value;
         const Icon = option.icon;
         const tone = option.value === 'LENT' ? 'lentText' : 'borrowedText';
-        const color = disabled ? 'textTertiary' : selected ? tone : 'textSecondary';
+        const color = disabled ? 'textTertiary' : selected ? 'textPrimary' : 'textSecondary';
+        const iconColor = disabled ? 'textTertiary' : selected ? tone : 'textSecondary';
         return (
           <Pressable
             key={option.value}
@@ -102,16 +103,15 @@ function DirectionSwitch({
             }}
             style={[
               styles.directionOption,
+              // A raised neutral thumb; only the arrow carries the direction colour (v2).
               selected && {
-                // The chosen direction wears its own colour: green lent, rose borrowed (v1.6).
-                backgroundColor: disabled
-                  ? colors.surfaceRaised
-                  : colors[option.value === 'LENT' ? 'lentSurface' : 'borrowedSurface'],
-                borderColor: disabled ? colors.outline : colors[tone],
+                backgroundColor: colors.surfaceRaised,
+                borderColor: colors.outline,
               },
+              selected && shadow('s1'),
             ]}
           >
-            <Icon size={22} color={colors[color]} strokeWidth={2} />
+            <Icon size={22} color={colors[iconColor]} strokeWidth={2.25} />
             <AppText variant="button" color={color}>
               {option.label}
             </AppText>

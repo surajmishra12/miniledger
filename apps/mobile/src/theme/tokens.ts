@@ -38,6 +38,8 @@ export type ColorTokens = {
   scrim: string;
   /** Neutral black behind full-screen receipt photos in both themes (design.md §6.1 S11). */
   viewerCanvas: string;
+  /** Controls and captions on the receipt viewer. */
+  onViewer: string;
 };
 
 /** Terracotta & Cream (design.md §2.1). */
@@ -73,9 +75,10 @@ export const lightColors: ColorTokens = {
   dangerSurface: '#FDECEF',
   scrim: 'rgba(0, 0, 0, 0.48)',
   viewerCanvas: '#000000',
+  onViewer: '#F5F0EB',
 };
 
-/** Onyx & Ember (design.md §2.2) — neutral black surfaces, ember accents, espresso summary card. */
+/** Onyx & Ember (design.md §2.2) — neutral black surfaces, ember accents, the logo-cream summary card. */
 export const darkColors: ColorTokens = {
   canvas: '#0B0B0C',
   surface: '#161618',
@@ -86,11 +89,11 @@ export const darkColors: ColorTokens = {
   textTertiary: '#948D88',
   outline: '#2F2F33',
   outlineStrong: '#6B6663',
-  heroSurface: '#2A1C17',
-  onHero: '#F5E9D8',
-  onHeroMuted: '#CDB9A8',
-  heroPositive: '#7FCB98',
-  heroAlert: '#FF8A7A',
+  heroSurface: '#F3E6D2',
+  onHero: '#2A1B17',
+  onHeroMuted: '#6B5243',
+  heroPositive: '#2E7048',
+  heroAlert: '#B3203F',
   brandPrimary: '#F08A65',
   brandPressed: '#E07450',
   onBrand: '#2A0F07',
@@ -108,6 +111,7 @@ export const darkColors: ColorTokens = {
   dangerSurface: '#2C1318',
   scrim: 'rgba(0, 0, 0, 0.68)',
   viewerCanvas: '#000000',
+  onViewer: '#F5F0EB',
 };
 
 /** Spacing and radii in dp (design.md §4). */

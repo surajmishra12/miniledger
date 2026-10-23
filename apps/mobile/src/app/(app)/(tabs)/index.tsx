@@ -15,6 +15,7 @@ import { EmptyState } from '@/components/EmptyState';
 import { Group } from '@/components/Group';
 import { IconBadge } from '@/components/IconBadge';
 import { InlineNotice } from '@/components/InlineNotice';
+import { LoanRow } from '@/components/LoanRow';
 import { Rise } from '@/components/Rise';
 import { SectionHeader } from '@/components/SectionHeader';
 import { SkeletonBlock, SkeletonList } from '@/components/Skeleton';
@@ -23,7 +24,6 @@ import { Tappable } from '@/components/Tappable';
 import { Wordmark } from '@/components/Wordmark';
 import { useAddSheet } from '@/features/ledger/AddSheet';
 import { useLoanList, useSummary } from '@/features/ledger/api';
-import { AttentionRow } from '@/features/ledger/AttentionRow';
 import { EmptyLedgerIllustration } from '@/features/ledger/illustrations';
 import { openLoans } from '@/features/ledger/navigation';
 import { errorCopy } from '@/lib/error-copy';
@@ -101,7 +101,7 @@ function Attention({ items, hasOpen }: { items: LoanDto[]; hasOpen: boolean }) {
   return (
     <Group inset={68}>
       {items.map((loan) => (
-        <AttentionRow key={loan.id} loan={loan} onPress={openLoan} />
+        <LoanRow key={loan.id} loan={loan} onPress={openLoan} remind />
       ))}
     </Group>
   );

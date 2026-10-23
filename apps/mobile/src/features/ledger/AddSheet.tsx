@@ -46,25 +46,16 @@ function Option({
       onPress={onPress}
       ripple
       scaleTo={0.985}
-      style={[
-        styles.option,
-        { backgroundColor: colors[tone === 'lent' ? 'lentSurface' : 'borrowedSurface'] },
-      ]}
+      style={[styles.option, { backgroundColor: colors.surface, borderColor: colors.outline }]}
     >
-      <IconBadge icon={icon} tone={tone} size={44} onTint />
+      <IconBadge icon={icon} tone={tone} size={44} />
       <View style={styles.optionText}>
-        <AppText variant="rowTitle" color={tone === 'lent' ? 'lentText' : 'borrowedText'}>
-          {title}
-        </AppText>
+        <AppText variant="rowTitle">{title}</AppText>
         <AppText variant="secondary" color="textSecondary">
           {body}
         </AppText>
       </View>
-      <ChevronRight
-        size={20}
-        color={colors[tone === 'lent' ? 'lentText' : 'borrowedText']}
-        strokeWidth={1.75}
-      />
+      <ChevronRight size={20} color={colors.textTertiary} strokeWidth={1.75} />
     </Tappable>
   );
 }
@@ -117,6 +108,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: space.s4,
     minHeight: 80,
     borderRadius: radius.lg,
+    borderWidth: StyleSheet.hairlineWidth * 2,
   },
   optionText: { flex: 1, gap: 2 },
 });
