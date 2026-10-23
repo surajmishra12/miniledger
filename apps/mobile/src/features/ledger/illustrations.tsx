@@ -1,71 +1,98 @@
 /**
- * Optional empty-state vectors that consume theme tokens (design.md §10.2).
+ * Empty-state art that consumes theme tokens (design.md §10.2). Accents are semantic
+ * (green owed to you, rose you owe), never the terracotta action colour.
  */
+import { StyleSheet, View } from 'react-native';
 import Svg, { Circle, Path, Rect } from 'react-native-svg';
 
+import { HeroWallet } from '@/components/HeroWallet';
 import { useTheme } from '@/theme/theme-provider';
 
-/** The logo's wallet-notebook in outline: page, entry lines, binder rings, a check. */
+/** The brand wallet resting on a soft disc with a ruled page and a green check. */
 export function EmptyLedgerIllustration() {
-  const { colors, scheme } = useTheme();
-  const stroke = scheme === 'dark' ? colors.textTertiary : colors.textPrimary;
-  const fill = scheme === 'dark' ? 'transparent' : colors.surface;
+  const { colors } = useTheme();
   return (
-    <Svg
-      width={156}
-      height={126}
-      viewBox="0 0 156 126"
+    <View
+      style={styles.ledger}
       accessibilityElementsHidden
       importantForAccessibility="no-hide-descendants"
     >
-      <Rect
-        x={34}
-        y={14}
-        width={92}
-        height={100}
-        rx={14}
-        fill={fill}
-        stroke={stroke}
+      <Svg width={168} height={132} viewBox="0 0 168 132" style={StyleSheet.absoluteFill}>
+        <Circle cx={84} cy={70} r={58} fill={colors.surfaceMuted} />
+        <Rect
+          x={14}
+          y={84}
+          width={56}
+          height={40}
+          rx={10}
+          fill={colors.surface}
+          stroke={colors.outline}
+          strokeWidth={1.5}
+        />
+        <Path
+          d="M24 98h30M24 110h20"
+          stroke={colors.textTertiary}
+          strokeWidth={2}
+          strokeLinecap="round"
+        />
+        <Circle cx={136} cy={100} r={14} fill={colors.lentSurface} />
+        <Path
+          d="M129.5 100.5l4.5 4.5 8-8.5"
+          stroke={colors.lentText}
+          strokeWidth={2.25}
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          fill="none"
+        />
+      </Svg>
+      <View style={styles.wallet}>
+        <HeroWallet size={96} />
+      </View>
+    </View>
+  );
+}
+
+/** Two overlapping initial circles, green and rose, joined by a gentle stroke; no faces. */
+export function EmptyPeopleIllustration() {
+  const { colors } = useTheme();
+  return (
+    <Svg
+      width={136}
+      height={108}
+      viewBox="0 0 136 108"
+      accessibilityElementsHidden
+      importantForAccessibility="no-hide-descendants"
+    >
+      <Circle cx={68} cy={54} r={50} fill={colors.surfaceMuted} />
+      <Circle
+        cx={54}
+        cy={50}
+        r={22}
+        fill={colors.lentSurface}
+        stroke={colors.lentText}
         strokeWidth={2}
       />
-      <Path d="M58 46h48M58 64h36" stroke={stroke} strokeWidth={2} strokeLinecap="round" />
-      {[38, 62, 86].map((y) => (
-        <Path key={y} d={`M26 ${y}h16`} stroke={stroke} strokeWidth={2} strokeLinecap="round" />
-      ))}
-      <Circle cx={106} cy={90} r={12} fill="none" stroke={colors.brandPrimary} strokeWidth={2} />
+      <Circle
+        cx={84}
+        cy={50}
+        r={22}
+        fill={colors.borrowedSurface}
+        stroke={colors.borrowedText}
+        strokeWidth={2}
+        fillOpacity={0.85}
+      />
       <Path
-        d="M100 90l4 4 8-8"
-        stroke={colors.brandPrimary}
+        d="M36 90c12-8 52-8 64 0"
+        stroke={colors.textTertiary}
         strokeWidth={2}
         strokeLinecap="round"
-        strokeLinejoin="round"
         fill="none"
       />
     </Svg>
   );
 }
 
-/** Two overlapping initial circles with a connecting stroke; no faces. */
-export function EmptyPeopleIllustration() {
-  const { colors, scheme } = useTheme();
-  const stroke = scheme === 'dark' ? colors.textTertiary : colors.textPrimary;
-  return (
-    <Svg
-      width={128}
-      height={104}
-      viewBox="0 0 128 104"
-      accessibilityElementsHidden
-      importantForAccessibility="no-hide-descendants"
-    >
-      <Circle cx={50} cy={52} r={26} fill="none" stroke={stroke} strokeWidth={2} />
-      <Circle cx={80} cy={52} r={26} fill="none" stroke={colors.brandPrimary} strokeWidth={2} />
-      <Path
-        d="M30 92c10-8 58-8 68 0"
-        stroke={stroke}
-        strokeWidth={2}
-        strokeLinecap="round"
-        fill="none"
-      />
-    </Svg>
-  );
-}
+const styles = StyleSheet.create({
+  ledger: { width: 168, height: 132 },
+  wallet: { position: 'absolute', left: 36, top: 10, transform: [{ rotate: '-6deg' }] },
+});

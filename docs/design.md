@@ -926,8 +926,8 @@ The app maps `error.code` (`architecture.md` §6.6) to copy; it never displays s
 
 Define **exactly two** reusable empty-state concepts if time permits; both must work in light and dark mode by consuming tokens, not hard-coded colors:
 
-1. **`EmptyLedgerIllustration`** — the logo's wallet-notebook drawn in outline: an open page with two understated entry lines, three binder rings and a small circular check. Canvas ~156×126dp; light theme espresso strokes, cream fill and one terracotta accent; dark theme neutral gray strokes and one small ember accent, transparent background. Use on the empty Home screen; do not repeat it on the same page.
-2. **`EmptyPeopleIllustration`** — two overlapping rounded initial circles with a gentle connecting stroke. Canvas ~128×104dp; no faces, no stock people. Use only on an empty People screen.
+1. **`EmptyLedgerIllustration`** (v1.6) — the flat brand wallet mark (`HeroWallet`, still) resting on a soft `surfaceMuted` disc, with a small ruled page and a green `lentText` check. Canvas ~168×132dp. Use on empty Home and Loans; do not repeat it on the same page.
+2. **`EmptyPeopleIllustration`** (v1.6) — two overlapping initial circles, green (`lent*`) and rose (`borrowed*`), with a gentle connecting stroke on a soft disc. Canvas ~136×108dp; no faces, no stock people. Use only on an empty People screen.
 
 **Vector construction rules:** 1.5–2dp line weight, round line caps, no more than 3 tonal fills, plenty of whitespace, no detailed texture, gradients, glows, blur filters, animated paths or heavyweight Lottie bundles. Export as viewBox-based vectors, not screenshots. The illustrations are optional enhancements; screens remain complete without them. Do not create a decorative logo as a third competing hero illustration.
 

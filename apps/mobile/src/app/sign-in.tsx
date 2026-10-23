@@ -5,6 +5,7 @@ import { IDENTIFIER_MESSAGES, normalizeEmail, normalizePhone } from '@miniledger
 import { router } from 'expo-router';
 import { useState } from 'react';
 import { Linking, StyleSheet, View } from 'react-native';
+import Svg, { Circle } from 'react-native-svg';
 
 import { AppText } from '@/components/AppText';
 import { Button } from '@/components/Button';
@@ -12,12 +13,38 @@ import { InlineNotice } from '@/components/InlineNotice';
 import { Screen } from '@/components/Screen';
 import { SkeletonBlock } from '@/components/Skeleton';
 import { TextField } from '@/components/TextField';
+import { HeroWallet } from '@/components/HeroWallet';
 import { Wordmark } from '@/components/Wordmark';
 import { requestOtp, useAuthConfig } from '@/features/auth/api';
 import { useSession } from '@/features/auth/session';
 import { PRIVACY_URL } from '@/lib/config';
 import { errorCopy } from '@/lib/error-copy';
+import { useTheme } from '@/theme/theme-provider';
 import { space } from '@/theme/tokens';
+
+/** The wallet mark inside faint ledger rings: the one decorated moment before sign-in. */
+function BrandMark() {
+  const { colors } = useTheme();
+  return (
+    <View style={styles.mark} importantForAccessibility="no-hide-descendants">
+      <Svg width={200} height={140} viewBox="0 0 200 140" style={StyleSheet.absoluteFill}>
+        {[34, 50, 66].map((r) => (
+          <Circle
+            key={r}
+            cx={100}
+            cy={70}
+            r={r}
+            fill="none"
+            stroke={colors.textPrimary}
+            strokeOpacity={0.07}
+            strokeWidth={1.5}
+          />
+        ))}
+      </Svg>
+      <HeroWallet size={84} />
+    </View>
+  );
+}
 
 export default function SignInScreen() {
   const config = useAuthConfig();
@@ -64,6 +91,7 @@ export default function SignInScreen() {
       }
     >
       <View style={styles.brand}>
+        <BrandMark />
         <Wordmark size="large" />
         <AppText variant="title" align="center">
           Your money, clearly tracked.
@@ -150,7 +178,8 @@ export default function SignInScreen() {
 }
 
 const styles = StyleSheet.create({
-  content: { paddingTop: space.s10, gap: space.s5 },
+  content: { paddingTop: space.s6, gap: space.s5 },
   pending: { gap: space.s2 },
   brand: { alignItems: 'center', gap: space.s3, marginBottom: space.s4 },
+  mark: { width: 200, height: 140, alignItems: 'center', justifyContent: 'center' },
 });

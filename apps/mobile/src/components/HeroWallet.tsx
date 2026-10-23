@@ -3,7 +3,11 @@
  * (design.md §10.3). The cover flap swings open a little while the hero is pressed.
  */
 import { StyleSheet, View } from 'react-native';
-import Animated, { useAnimatedStyle, type SharedValue } from 'react-native-reanimated';
+import Animated, {
+  useAnimatedStyle,
+  useSharedValue,
+  type SharedValue,
+} from 'react-native-reanimated';
 import Svg, { Circle, Path, Rect } from 'react-native-svg';
 
 import { useTheme } from '@/theme/theme-provider';
@@ -23,16 +27,20 @@ const VIEW_BOX = '0 0 512 512';
 
 type Props = {
   size: number;
-  /** 0 = closed, 1 = flap open; driven by the hero's press. */
-  open: SharedValue<number>;
+  /** 0 = closed, 1 = flap open; driven by the hero's press. Omit for a still mark. */
+  open?: SharedValue<number>;
+  /** Draw the faint rim on dark-chocolate surfaces (the light-mode hero). */
+  rimmed?: boolean;
 };
 
-export function HeroWallet({ size, open }: Props) {
-  const { colors, scheme } = useTheme();
+export function HeroWallet({ size, open, rimmed = false }: Props) {
+  const { colors } = useTheme();
+  const still = useSharedValue(0);
+  const angle = open ?? still;
   // On the dark-chocolate hero the espresso frame needs a faint rim to separate from the card.
-  const rim = scheme === 'light' ? colors.onHero : 'transparent';
+  const rim = rimmed ? colors.onHero : 'transparent';
   const flap = useAnimatedStyle(() => ({
-    transform: [{ perspective: 700 }, { rotateY: `${-open.get() * 26}deg` }],
+    transform: [{ perspective: 700 }, { rotateY: `${-angle.get() * 26}deg` }],
   }));
 
   return (

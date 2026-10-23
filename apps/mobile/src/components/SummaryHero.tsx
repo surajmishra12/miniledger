@@ -139,7 +139,7 @@ export function SummaryHero({
       >
         <LineArt />
         <View style={styles.wallet}>
-          <HeroWallet size={WALLET} open={open} />
+          <HeroWallet size={WALLET} open={open} rimmed={scheme === 'light'} />
         </View>
       </View>
 

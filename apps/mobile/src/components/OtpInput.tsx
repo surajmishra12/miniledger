@@ -1,5 +1,14 @@
-import { useRef, useState, type ComponentRef } from 'react';
+import { useEffect, useRef, useState, type ComponentRef } from 'react';
 import { Pressable, StyleSheet, TextInput, View } from 'react-native';
+
+import Animated, {
+  cancelAnimation,
+  useAnimatedStyle,
+  useSharedValue,
+  withRepeat,
+  withSequence,
+  withTiming,
+} from 'react-native-reanimated';
 
 import { useTheme } from '@/theme/theme-provider';
 import { radius, space } from '@/theme/tokens';
@@ -15,6 +24,24 @@ type Props = {
 };
 
 const LENGTH = 6;
+
+/** Soft blinking caret in the active empty cell; steady under reduce motion. */
+function Caret() {
+  const { colors, reduceMotion } = useTheme();
+  const opacity = useSharedValue(1);
+  useEffect(() => {
+    if (reduceMotion) return;
+    opacity.set(
+      withRepeat(
+        withSequence(withTiming(0.15, { duration: 480 }), withTiming(1, { duration: 480 })),
+        -1,
+      ),
+    );
+    return () => cancelAnimation(opacity);
+  }, [opacity, reduceMotion]);
+  const style = useAnimatedStyle(() => ({ opacity: opacity.get() }));
+  return <Animated.View style={[styles.caret, { backgroundColor: colors.focusRing }, style]} />;
+}
 
 /** One logical 6-digit field shown as six cells; supports paste and SMS autofill (design.md S03). */
 export function OtpInput({ value, onChange, error, editable = true, autoFocus = true }: Props) {
@@ -50,7 +77,7 @@ export function OtpInput({ value, onChange, error, editable = true, autoFocus = 
               style={[
                 styles.cell,
                 {
-                  backgroundColor: colors.surface,
+                  backgroundColor: value[i] && !error ? colors.surfaceRaised : colors.surface,
                   borderColor: error
                     ? colors.dangerText
                     : active
@@ -60,9 +87,13 @@ export function OtpInput({ value, onChange, error, editable = true, autoFocus = 
                 },
               ]}
             >
-              <AppText variant="cardAmount" tabular>
-                {value[i] ?? ''}
-              </AppText>
+              {active && !value[i] ? (
+                <Caret />
+              ) : (
+                <AppText variant="cardAmount" tabular>
+                  {value[i] ?? ''}
+                </AppText>
+              )}
             </View>
           );
         })}
@@ -75,6 +106,7 @@ const styles = StyleSheet.create({
   wrap: { position: 'relative' },
   hiddenInput: { position: 'absolute', width: '100%', height: '100%', opacity: 0 },
   cells: { flexDirection: 'row', gap: space.s2, justifyContent: 'space-between' },
+  caret: { width: 2, height: 26, borderRadius: 1 },
   cell: {
     flex: 1,
     aspectRatio: 0.85,
