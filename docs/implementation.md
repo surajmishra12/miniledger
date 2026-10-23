@@ -80,7 +80,7 @@ This file sequences the work and tracks progress. It **adds no rules**: behavior
 - [ ] Monochrome themed icon (`adaptive-monochrome.png`) — waiting for the asset
 - [ ] Core components: buttons, `TextField`, `MoneyField`, `DateField`, `OtpInput`, `PersonPicker`, `LoanRow`, `StatusChip`, `SummaryHero`, `Metric`, `EmptyState`, `InlineNotice`, `ConfirmDialog`, `Snackbar` (design §7)
 - [ ] Loading, cold-start, offline and error states for these screens (design §9.1, §9.4)
-- [ ] README: what MiniLedger is, setup, reading the OTP from the log, API examples (the brief's "friend name" = `personName`), running tests, running on a phone
+- [x] README: what MiniLedger is, setup, reading the OTP from the log, API examples (the brief's "friend name" = `personName`), running tests, running on a phone
 
 **Exit criteria (assignment gate)**
 - Every PRD §10 **P0** checkbox passes from a clean checkout following only the README.
@@ -193,7 +193,7 @@ This file sequences the work and tracks progress. It **adds no rules**: behavior
 - [ ] Play Console: listing (described as a personal record-keeping tool that does not offer or arrange loans), Data Safety, financial-features declaration, deletion URL, reviewer test mailbox (arch §7.4)
 - [ ] Internal testing track, then the full manual smoke test (arch §12.3)
 - [ ] If Play Console requires a closed test for this app, run it (12 testers, 14 days) before applying for production
-- [x] README: production deployment and operations
+- [x] Production deployment and operations guide (`docs/deployment.md`, linked from the README)
 
 **Exit criteria (production gate)**
 - Every PRD §10 **P1** checkbox and every arch §15 checkbox passes.
