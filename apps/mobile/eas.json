@@ -17,7 +17,7 @@
       "android": { "buildType": "apk" },
       "env": {
         "APP_VARIANT": "preview",
-        "EXPO_PUBLIC_API_URL": "https://miniledger-api.onrender.com/v1"
+        "EXPO_PUBLIC_API_URL": "https://miniledger-api.surajmishra.me/v1"
       }
     },
     "production": {
@@ -25,7 +25,7 @@
       "android": { "buildType": "app-bundle" },
       "env": {
         "APP_VARIANT": "production",
-        "EXPO_PUBLIC_API_URL": "https://miniledger-api.onrender.com/v1"
+        "EXPO_PUBLIC_API_URL": "https://miniledger-api.surajmishra.me/v1"
       }
     }
   },

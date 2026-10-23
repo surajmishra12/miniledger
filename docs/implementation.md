@@ -181,7 +181,7 @@ This file sequences the work and tracks progress. It **adds no rules**: behavior
 
 **Goal:** a publicly available, supportable Android app.
 
-- [ ] Neon project (pooled and direct URLs); Resend with `mail.surajmishra.me` verified; Render web service with the production env (arch §11)
+- [ ] Neon project (pooled and direct URLs); Resend with `surajmishra.me` verified (sender `miniledger@surajmishra.me`); Render web service with the production env (arch §11)
 - [x] Protected manual migration workflow (`.github/workflows/migrate.yml`) and Render Blueprint (`render.yaml`)
 - [ ] First `prisma migrate deploy` against Neon (arch §11.3) — needs the Neon project
 - [x] Weekly encrypted backup workflow (`backup.yml`, `pg_dump` + `age`, 30-day artifacts)

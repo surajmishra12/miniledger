@@ -5,12 +5,13 @@ Production uses email OTP (Resend), Neon PostgreSQL and a Render web service. Ph
 ## Production API
 
 1. **Neon:** create a project (PostgreSQL 17) and copy the **pooled** URL (`DATABASE_URL`) and the **direct** URL (`DIRECT_URL`), both with `sslmode=require`.
-2. **Resend:** verify the `mail.surajmishra.me` domain (SPF/DKIM records) and create an API key with sending access only.
+2. **Resend:** verify the `surajmishra.me` domain (SPF/DKIM records) so mail can be sent as `miniledger@surajmishra.me` and create an API key with sending access only.
 3. **GitHub:** create the `production` environment (Settings → Environments) with required reviewers, the secret `DIRECT_URL` and the variable `BACKUP_AGE_RECIPIENT` (public key from `age-keygen`; keep the private key offline).
 4. **Migrate:** Actions → _Migrate production database_ → type `migrate`. Always run this before deploying code that needs a new schema; the server never migrates on boot.
 5. **Render:** New → Blueprint → this repository. `render.yaml` defines the service; enter the secrets it asks for (`DATABASE_URL`, `PUBLIC_API_ORIGIN`, `RESEND_API_KEY` and three different 32+ byte secrets from `openssl rand -base64 48`). The API refuses to start if any value is missing, weak or unsafe.
-6. **Verify:** `curl https://<service>.onrender.com/health`; a phone number on `/v1/auth/otp/request` must return `422`; an email address must receive a code.
-7. **Pages:** Settings → Pages → Source _GitHub Actions_, custom domain `miniledger.surajmishra.me` (DNS `CNAME miniledger → <github-user>.github.io`), Enforce HTTPS. The _Pages_ workflow publishes `web/`.
+6. **Custom domain:** Render → the service → Settings → Custom Domains → add `miniledger-api.surajmishra.me`, then at your DNS provider add `CNAME miniledger-api → miniledger-api.onrender.com` (the exact target Render shows). Render issues the HTTPS certificate once DNS resolves.
+7. **Verify:** `curl https://miniledger-api.surajmishra.me/health`; a phone number on `/v1/auth/otp/request` must return `422`; an email address must receive a code.
+8. **Pages:** Settings → Pages → Source _GitHub Actions_, custom domain `miniledger.surajmishra.me` (DNS `CNAME miniledger → <github-user>.github.io`), Enforce HTTPS. The _Pages_ workflow publishes `web/`.
 
 ## Android release (EAS)
 

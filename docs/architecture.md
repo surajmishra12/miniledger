@@ -824,8 +824,8 @@ Routes are listed in §3 and map to `design.md` S01–S14. Five bottom slots (`d
 | `OTP_HMAC_SECRET` | required | required | ≥ 32 bytes, distinct; also keys `ip_hash` |
 | `REFRESH_TOKEN_HMAC_SECRET` | required | required | ≥ 32 bytes, distinct |
 | `RESEND_API_KEY` | — | required | |
-| `RESEND_FROM_EMAIL` | — | required | `MiniLedger <no-reply@mail.surajmishra.me>` (verified subdomain) |
-| `PUBLIC_API_ORIGIN` | — | required | `https://<service>.onrender.com` |
+| `RESEND_FROM_EMAIL` | — | required | `MiniLedger <miniledger@surajmishra.me>` (verified domain `surajmishra.me`) |
+| `PUBLIC_API_ORIGIN` | — | required | `https://miniledger-api.surajmishra.me` (Render custom domain) |
 | `OTP_DAILY_SEND_LIMIT` | — | default `90` | Below Resend Free's 100/day |
 | `TRUST_PROXY_HOPS` | `0` | `1` | |
 | `LOG_LEVEL` | `debug` | `info` | |
@@ -840,7 +840,7 @@ Routes are listed in §3 and map to `design.md` S01–S14. Five bottom slots (`d
 |---|---|---|---|
 | `development` | `com.surajmishra.miniledger.dev` | `http://localhost:4000/v1` with `adb reverse tcp:4000 tcp:4000` (USB), or the PC's LAN IP | Cleartext allowed only here |
 | `preview` | `com.surajmishra.miniledger.dev` | The HTTPS production API (release builds block cleartext) | Internal APK |
-| `production` | `com.surajmishra.miniledger` | `https://<service>.onrender.com/v1` | Signed AAB; cleartext disabled |
+| `production` | `com.surajmishra.miniledger` | `https://miniledger-api.surajmishra.me/v1` | Signed AAB; cleartext disabled |
 
 Separate application IDs let both builds coexist. Before release, verify the production AAB has no cleartext permission and no local URL, and that sign-in shows email.
 
@@ -854,7 +854,7 @@ Separate application IDs let both builds coexist. Before release, verify the pro
 5. `pnpm test` runs all suites.
 
 **Production:**
-1. Create the Neon project (pooled + direct URLs), verify `mail.surajmishra.me` in Resend, create the Render web service (build: `pnpm install --frozen-lockfile && pnpm build`; start: `pnpm --filter @miniledger/api start`; health check `/health`).
+1. Create the Neon project (pooled + direct URLs), verify `surajmishra.me` in Resend, create the Render web service (build: `pnpm install --frozen-lockfile && pnpm build`; start: `pnpm --filter @miniledger/api start`; health check `/health`).
 2. Run `prisma migrate deploy` with `DIRECT_URL` from a protected manual GitHub Actions workflow **before** deploying code that needs the schema. Never migrate on server boot.
 3. Deploy; verify `/health`, that `curl` phone OTP returns `422`, and real email delivery.
 4. Build the production AAB with EAS; test on the Play internal track.

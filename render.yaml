@@ -28,11 +28,11 @@ services:
       - key: OTP_DAILY_SEND_LIMIT
         value: '90'
       - key: RESEND_FROM_EMAIL
-        value: MiniLedger <no-reply@mail.surajmishra.me>
+        value: MiniLedger <miniledger@surajmishra.me>
       # Neon pooled URL with sslmode=require
       - key: DATABASE_URL
         sync: false
-      # https://<service>.onrender.com
+      # Custom domain: https://miniledger-api.surajmishra.me (no /v1, no trailing slash)
       - key: PUBLIC_API_ORIGIN
         sync: false
       - key: RESEND_API_KEY
