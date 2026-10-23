@@ -7,7 +7,7 @@ services:
     runtime: node
     plan: free
     region: singapore
-    branch: master
+    branch: main
     autoDeploy: true
     # NODE_ENV=production would skip devDependencies, but the build needs prisma and esbuild.
     buildCommand: corepack enable && NODE_ENV=development pnpm install --frozen-lockfile && pnpm build
