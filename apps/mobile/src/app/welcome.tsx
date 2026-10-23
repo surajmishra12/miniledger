@@ -3,6 +3,7 @@
  * with a coin peek, three swipeable pages explain the app, and the next button grows into
  * "Get started" on the last page. Everything follows the swipe; reduce motion keeps it still.
  */
+import { router } from 'expo-router';
 import { ArrowRight } from 'lucide-react-native';
 import { useEffect, useRef, useState } from 'react';
 import { Pressable, StyleSheet, useWindowDimensions, View } from 'react-native';
@@ -79,11 +80,12 @@ function Page({
   const { reduceMotion } = useTheme();
   // Gentle parallax: the art drifts slower than the page and fades at the edges.
   const art = useAnimatedStyle(() => {
+    // p < 0: page is to the right; it trails further right so it never peeks in early.
     const p = x.get() / width - index;
     return {
-      opacity: interpolate(Math.abs(p), [0, 0.8], [1, 0.2], Extrapolation.CLAMP),
+      opacity: interpolate(Math.abs(p), [0, 0.7], [1, 0], Extrapolation.CLAMP),
       transform: [
-        { translateX: reduceMotion ? 0 : p * width * 0.35 },
+        { translateX: reduceMotion ? 0 : -p * width * 0.3 },
         { scale: reduceMotion ? 1 : interpolate(Math.abs(p), [0, 1], [1, 0.92]) },
       ],
     };
@@ -152,13 +154,19 @@ export default function WelcomeScreen() {
     ),
   }));
 
+  // Mark as seen, then go to Sign-in explicitly (the route guard also closes this screen).
+  const done = () => {
+    finish();
+    router.replace('/sign-in');
+  };
+
   const goTo = (index: number) => {
     scroll.current?.scrollTo({ x: index * width, animated: !reduceMotion });
   };
   const next = () => {
     if (page >= LAST) {
       haptics.success();
-      finish();
+      done();
     } else {
       goTo(page + 1);
     }
@@ -171,7 +179,7 @@ export default function WelcomeScreen() {
           <Pressable
             accessibilityRole="button"
             accessibilityLabel="Skip introduction"
-            onPress={finish}
+            onPress={done}
             hitSlop={12}
             style={({ pressed }) => [styles.skip, pressed && { opacity: 0.6 }]}
           >
@@ -184,7 +192,7 @@ export default function WelcomeScreen() {
 
       <View style={styles.brand}>
         <HeroWallet size={92} open={open} coin />
-        <Wordmark size="large" />
+        <Wordmark size="large" mark={false} />
         <AppText color="textSecondary" align="center">
           Lend, borrow, stay on good terms.
         </AppText>

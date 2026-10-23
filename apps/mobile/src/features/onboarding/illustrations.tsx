@@ -2,7 +2,7 @@
  * Welcome-page art (design.md S00, §10.2): flat, faceless, brand palette plus the semantic
  * green / rose in small doses. Every piece sits on a soft `surfaceMuted` disc.
  */
-import Svg, { Circle, G, Path, Rect, Text as SvgText } from 'react-native-svg';
+import Svg, { Circle, ClipPath, Defs, G, Path, Rect, Text as SvgText } from 'react-native-svg';
 
 import { useTheme } from '@/theme/theme-provider';
 
@@ -85,9 +85,17 @@ function Arm({ sleeve }: { sleeve: string }) {
 export function HandoverArt({ width }: { width: number }) {
   return (
     <Frame width={width}>
-      <Arm sleeve={BRAND.terracotta} />
-      <G transform={`translate(${W},0) scale(-1,1)`}>
-        <Arm sleeve={BRAND.espresso} />
+      {/* The arms reach in from the disc's edge instead of being cut off by the canvas. */}
+      <Defs>
+        <ClipPath id="handover-disc">
+          <Circle cx={140} cy={104} r={88} />
+        </ClipPath>
+      </Defs>
+      <G clipPath="url(#handover-disc)">
+        <Arm sleeve={BRAND.terracotta} />
+        <G transform={`translate(${W},0) scale(-1,1)`}>
+          <Arm sleeve={BRAND.espresso} />
+        </G>
       </G>
       <Coin cx={140} cy={86} r={22} />
       <Sparkle x={100} y={62} s={6} />

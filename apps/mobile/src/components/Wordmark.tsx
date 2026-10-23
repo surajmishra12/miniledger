@@ -9,16 +9,27 @@ import { AppText } from './AppText';
 // eslint-disable-next-line @typescript-eslint/no-require-imports
 const MARK = require('../../assets/brand/mark.png') as number;
 
-/** Mark + live two-tone wordmark: "Mini" brand, "Ledger" text color (design.md §1.2). */
-export function Wordmark({ size = 'small' }: { size?: 'small' | 'large' }) {
-  const mark = size === 'large' ? 88 : 32;
+/**
+ * Mark + live two-tone wordmark: "Mini" brand, "Ledger" text color (design.md §1.2).
+ * `mark={false}` when the screen already shows the animated wallet mark (Welcome, Sign-in).
+ */
+export function Wordmark({
+  size = 'small',
+  mark = true,
+}: {
+  size?: 'small' | 'large';
+  mark?: boolean;
+}) {
+  const markSize = size === 'large' ? 88 : 32;
   return (
     <View
       style={[styles.row, size === 'large' && styles.column]}
       accessibilityRole="header"
       accessibilityLabel="MiniLedger"
     >
-      <Image source={MARK} style={{ width: mark, height: mark }} contentFit="contain" />
+      {mark ? (
+        <Image source={MARK} style={{ width: markSize, height: markSize }} contentFit="contain" />
+      ) : null}
       <AppText variant={size === 'large' ? 'title' : 'section'}>
         <AppText variant={size === 'large' ? 'title' : 'section'} color="brandPrimary">
           Mini

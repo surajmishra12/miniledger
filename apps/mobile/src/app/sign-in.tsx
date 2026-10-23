@@ -2,9 +2,10 @@
  * S02 Sign-in. Phone in assignment mode, email in production — chosen by the server.
  */
 import { IDENTIFIER_MESSAGES, normalizeEmail, normalizePhone } from '@miniledger/shared';
-import { router } from 'expo-router';
-import { useState } from 'react';
+import { Redirect, router } from 'expo-router';
+import { useEffect, useState } from 'react';
 import { Linking, StyleSheet, View } from 'react-native';
+import { useSharedValue, withDelay, withSequence, withSpring } from 'react-native-reanimated';
 import Svg, { Circle } from 'react-native-svg';
 
 import { AppText } from '@/components/AppText';
@@ -17,14 +18,26 @@ import { HeroWallet } from '@/components/HeroWallet';
 import { Wordmark } from '@/components/Wordmark';
 import { requestOtp, useAuthConfig } from '@/features/auth/api';
 import { useSession } from '@/features/auth/session';
+import { useWelcome } from '@/features/onboarding/welcome-state';
 import { PRIVACY_URL } from '@/lib/config';
 import { errorCopy } from '@/lib/error-copy';
+import { springLively } from '@/theme/motion';
 import { useTheme } from '@/theme/theme-provider';
 import { space } from '@/theme/tokens';
 
-/** The wallet mark inside faint ledger rings: the one decorated moment before sign-in. */
+/** The wallet mark inside faint ledger rings; it opens once to greet (design.md S02). */
 function BrandMark() {
-  const { colors } = useTheme();
+  const { colors, reduceMotion } = useTheme();
+  const open = useSharedValue(0);
+  useEffect(() => {
+    if (reduceMotion) return;
+    open.set(
+      withDelay(
+        300,
+        withSequence(withSpring(1, springLively), withDelay(450, withSpring(0, springLively))),
+      ),
+    );
+  }, [open, reduceMotion]);
   return (
     <View style={styles.mark} importantForAccessibility="no-hide-descendants">
       <Svg width={200} height={140} viewBox="0 0 200 140" style={StyleSheet.absoluteFill}>
@@ -41,12 +54,13 @@ function BrandMark() {
           />
         ))}
       </Svg>
-      <HeroWallet size={84} />
+      <HeroWallet size={84} open={open} coin />
     </View>
   );
 }
 
 export default function SignInScreen() {
+  const { welcomed } = useWelcome();
   const config = useAuthConfig();
   const { notice } = useSession();
   const [value, setValue] = useState('');
@@ -76,6 +90,9 @@ export default function SignInScreen() {
     }
   };
 
+  // First launch: the welcome pages come first (design.md S00).
+  if (!welcomed) return <Redirect href="/welcome" />;
+
   return (
     <Screen
       scroll
@@ -92,7 +109,7 @@ export default function SignInScreen() {
     >
       <View style={styles.brand}>
         <BrandMark />
-        <Wordmark size="large" />
+        <Wordmark mark={false} />
         <AppText variant="title" align="center">
           Your money, clearly tracked.
         </AppText>
