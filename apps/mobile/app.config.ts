@@ -80,6 +80,11 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
       },
     ],
   ],
+  // EAS project @suraj-mishra/miniledger (EAS can't write to a TypeScript config itself).
+  owner: 'suraj-mishra',
+  extra: {
+    eas: { projectId: '7de8f56c-6886-4c31-970b-c7327c298693' },
+  },
   experiments: {
     reactCompiler: true,
   },
