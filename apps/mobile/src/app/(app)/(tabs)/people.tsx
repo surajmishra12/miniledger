@@ -2,7 +2,7 @@
  * S09 People: Active / Archived, search, add person; people with an open balance first
  * (design.md S09, §2.7).
  */
-import { normalizeText } from '@miniledger/shared';
+import { normalizeText, type PersonDto } from '@miniledger/shared';
 import { router, useScrollToTop } from 'expo-router';
 import { UserPlus } from 'lucide-react-native';
 import { useMemo, useRef, useState, type ComponentRef } from 'react';
@@ -32,6 +32,8 @@ import { useTheme } from '@/theme/theme-provider';
 import { radius, space } from '@/theme/tokens';
 
 type Tab = 'active' | 'archived';
+
+const openPerson = (person: PersonDto) => router.push(`/people/${person.id}`);
 export default function PeopleScreen() {
   const { colors } = useTheme();
   const snackbar = useSnackbar();
@@ -97,7 +99,7 @@ export default function PeopleScreen() {
           },
         ]}
       >
-        <PersonRow person={item.person} onPress={() => router.push(`/people/${item.person.id}`)} />
+        <PersonRow person={item.person} onPress={openPerson} />
         {item.last ? null : <Divider inset={72} />}
       </View>
     );

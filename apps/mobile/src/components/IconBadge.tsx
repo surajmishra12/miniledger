@@ -6,7 +6,7 @@ import type { ColorTokens } from '@/theme/tokens';
 
 export type BadgeTone = 'lent' | 'borrowed' | 'success' | 'warning' | 'danger' | 'neutral';
 
-const TONES: Record<BadgeTone, { fg: keyof ColorTokens; bg: keyof ColorTokens }> = {
+export const TONES: Record<BadgeTone, { fg: keyof ColorTokens; bg: keyof ColorTokens }> = {
   lent: { fg: 'lentText', bg: 'lentSurface' },
   borrowed: { fg: 'borrowedText', bg: 'borrowedSurface' },
   success: { fg: 'successText', bg: 'successSurface' },
@@ -20,13 +20,16 @@ export function IconBadge({
   icon: Icon,
   tone,
   size = 36,
+  onTint = false,
 }: {
   icon: LucideIcon;
   tone: BadgeTone;
   size?: number;
+  /** The badge sits on its own tone's tint (tiles, cards): use a plain surface circle instead. */
+  onTint?: boolean;
 }) {
   const { colors } = useTheme();
-  const t = TONES[tone];
+  const t = onTint ? { ...TONES[tone], bg: 'surface' as const } : TONES[tone];
   return (
     <View
       importantForAccessibility="no-hide-descendants"

@@ -284,7 +284,7 @@ Depth tells the user what sits above what: the page, then content, then the thin
 | S3 | y 4, blur 12, 8% | y 16, blur 40, 14% |
 
 - Shadows are **never used in dark mode** and never colored (no brand-tinted or glowing shadows in either theme).
-- **Hero tonal depth (the one permitted gradient):** a vertical two-stop shift within the hero's own hue, top 4% lighter to bottom base color (light `#56302A` → `#4A2620`; dark `#9A432B` → `#8E3B24`). It must read as a lit surface, never as a visible gradient; text contrast is measured against the lighter (top) stop, where it is lowest (`onHeroMuted` ≥ 4.5:1 in both themes). No other element in the product uses a gradient.
+- **Hero tonal depth (the one permitted gradient):** a vertical two-stop shift within the hero's own hue, top 4% lighter to bottom base color (light `#45291E` → `#3B2218`; dark `#FFF9F0` → `#F3E6D2`). It must read as a lit surface, never as a visible gradient; text contrast is measured against the lighter (top) stop, where it is lowest (`onHeroMuted` ≥ 4.5:1 in both themes). No other element in the product uses a gradient.
 - Implementation uses React Native `boxShadow` (supported on Android with the new architecture) with the two-layer recipes; where unsupported, fall back to `elevation` 1/3/6 for S1/S2/S3.
 
 ### 2.7 At-a-glance encoding

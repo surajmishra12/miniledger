@@ -7,7 +7,7 @@ import { radius, space, type ColorTokens } from '@/theme/tokens';
 
 import { AnimatedAmount } from './AnimatedAmount';
 import { AppText } from './AppText';
-import { IconBadge, type BadgeTone } from './IconBadge';
+import { IconBadge, TONES, type BadgeTone } from './IconBadge';
 import { Tappable } from './Tappable';
 
 type Props = {
@@ -17,29 +17,31 @@ type Props = {
   paise: number;
   context?: string | null;
   contextColor?: keyof ColorTokens;
-  amountColor?: keyof ColorTokens;
   countUp?: boolean;
   onPress?: () => void;
   hint?: string;
 };
 
 /**
- * Home tile: badge → label → amount → context (design.md S04). Neutral amount unless the caller
- * marks a warning figure (overdue) with `amountColor`.
+ * Figure tile: badge → label → amount → context on a subtle tint of its tone, with an oversized
+ * faded glyph in the corner (design.md S04). The amount takes the tone's text colour; a neutral
+ * tile (zero / settled) stays quiet.
  */
 export function SummaryTile({
-  icon,
+  icon: Icon,
   tone,
   label,
   paise,
   context,
   contextColor = 'textSecondary',
-  amountColor = 'textPrimary',
   countUp,
   onPress,
   hint,
 }: Props) {
-  const { colors } = useTheme();
+  const { colors, scheme } = useTheme();
+  const t = TONES[tone];
+  const neutral = tone === 'neutral';
+  const tint = neutral ? 'surface' : t.bg;
   const spoken = [label, formatPaise(paise), context].filter(Boolean).join(', ');
   return (
     <Tappable
@@ -49,10 +51,26 @@ export function SummaryTile({
       disabled={!onPress}
       onPress={onPress}
       shadow="s1"
-      style={[styles.tile, { backgroundColor: colors.surface, borderColor: colors.outline }]}
+      style={[
+        styles.tile,
+        {
+          backgroundColor: colors[tint],
+          borderColor: neutral || scheme === 'dark' ? colors.outline : 'transparent',
+        },
+      ]}
     >
+      <View
+        style={styles.clip}
+        pointerEvents="none"
+        accessibilityElementsHidden
+        importantForAccessibility="no-hide-descendants"
+      >
+        <View style={[styles.glyph, { opacity: scheme === 'dark' ? 0.12 : 0.09 }]}>
+          <Icon size={76} color={colors[neutral ? 'textTertiary' : t.fg]} strokeWidth={1.5} />
+        </View>
+      </View>
       <View style={styles.top}>
-        <IconBadge icon={icon} tone={tone} />
+        <IconBadge icon={Icon} tone={tone} onTint={!neutral} />
         {onPress ? <ChevronRight size={18} color={colors.textTertiary} strokeWidth={1.75} /> : null}
       </View>
       <AppText variant="secondary" color="textSecondary" numberOfLines={1}>
@@ -62,7 +80,7 @@ export function SummaryTile({
         paise={paise}
         countUp={countUp}
         variant="tileAmount"
-        color={amountColor}
+        color={neutral ? 'textPrimary' : t.fg}
         numberOfLines={1}
         adjustsFontSizeToFit
       />
@@ -84,6 +102,16 @@ const styles = StyleSheet.create({
     padding: space.s4,
     gap: 2,
   },
+  clip: {
+    position: 'absolute',
+    top: 0,
+    right: 0,
+    bottom: 0,
+    left: 0,
+    borderRadius: radius.lg,
+    overflow: 'hidden',
+  },
+  glyph: { position: 'absolute', right: -14, bottom: -14, transform: [{ rotate: '-10deg' }] },
   top: {
     flexDirection: 'row',
     alignItems: 'flex-start',

@@ -17,11 +17,13 @@ import {
   type PatchLoanInput,
   type PatchPersonInput,
   type PatchRepaymentInput,
+  type PeopleListResponse,
+  type PersonDto,
 } from '@miniledger/shared';
 import { keepPreviousData, useInfiniteQuery, useQuery } from '@tanstack/react-query';
 
 import { api } from '@/lib/api-client';
-import { queryKeys } from '@/lib/query-client';
+import { queryClient, queryKeys } from '@/lib/query-client';
 import { queryString } from '@/lib/query-string';
 
 export type LoanFilters = {
@@ -72,10 +74,21 @@ export function usePeople(filters: { search?: string; archived?: boolean }) {
   });
 }
 
+/** The person as last seen in any cached People list, to paint Person detail on the first frame. */
+function cachedPerson(id: string): PersonDto | undefined {
+  for (const [, data] of queryClient.getQueriesData<PeopleListResponse>({ queryKey: ['people'] })) {
+    const hit = data?.items.find((p) => p.id === id);
+    if (hit) return hit;
+  }
+  return undefined;
+}
+
 export function usePerson(id: string) {
   return useQuery({
     queryKey: queryKeys.person(id),
     queryFn: () => api(`/people/${id}`, personDtoSchema),
+    // Shown immediately while the fresh copy loads; never written to the person cache.
+    placeholderData: () => cachedPerson(id),
   });
 }
 

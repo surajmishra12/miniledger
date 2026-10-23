@@ -1,4 +1,4 @@
-import { darkColors, lightColors } from './tokens';
+import { darkColors, heroGradientTop, lightColors } from './tokens';
 
 /** WCAG relative luminance of a #RRGGBB color. */
 function luminance(hex: string): number {
@@ -29,7 +29,7 @@ describe('theme tokens', () => {
   it.each([
     ['light', lightColors],
     ['dark', darkColors],
-  ] as const)('meets WCAG AA for key text pairings in %s mode', (_name, c) => {
+  ] as const)('meets WCAG AA for key text pairings in %s mode', (scheme, c) => {
     const pairs: [string, string, number][] = [
       [c.textPrimary, c.canvas, 4.5],
       [c.textSecondary, c.surface, 4.5],
@@ -58,6 +58,20 @@ describe('theme tokens', () => {
       [c.dangerText, c.surface, 4.5],
       [c.dangerText, c.surfaceRaised, 4.5],
       [c.focusRing, c.surface, 3],
+      // v1.6: tinted tiles, pills and the decorated hero.
+      [c.lentText, c.canvas, 4.5],
+      [c.borrowedText, c.canvas, 4.5],
+      [c.lentText, c.surfaceMuted, 4.5],
+      [c.borrowedText, c.surfaceMuted, 4.5],
+      [c.textSecondary, c.lentSurface, 4.5],
+      [c.textSecondary, c.borrowedSurface, 4.5],
+      [c.textSecondary, c.warningSurface, 4.5],
+      [c.textSecondary, c.dangerSurface, 4.5],
+      [c.textSecondary, c.successSurface, 4.5],
+      [c.dangerText, c.borrowedSurface, 4.5],
+      [c.onHero, heroGradientTop[scheme], 4.5],
+      [c.onHeroMuted, heroGradientTop[scheme], 4.5],
+      [c.heroAccent, c.heroSurface, 3],
     ];
     for (const [fg, bg, min] of pairs) {
       expect(contrast(fg, bg)).toBeGreaterThanOrEqual(min);

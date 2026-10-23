@@ -4,7 +4,7 @@
  */
 import { formatPaise, type LoanDto, type SummaryDto } from '@miniledger/shared';
 import { router, useScrollToTop } from 'expo-router';
-import { ArrowDownLeft, ArrowUpRight, CheckCheck, CircleAlert } from 'lucide-react-native';
+import { ArrowDownLeft, CalendarClock, CheckCheck, CircleAlert } from 'lucide-react-native';
 import { useEffect, useRef, useState, type ComponentRef } from 'react';
 import { RefreshControl, ScrollView, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -37,20 +37,22 @@ let introPlayed = false;
 
 function Tiles({ summary, countUp }: { summary: SummaryDto; countUp: boolean }) {
   const overdue = summary.overdueAmount > 0;
+  const owe = summary.outstandingBorrowed > 0;
+  const dueSoon = summary.dueSoonLent + summary.dueSoonBorrowed;
   const share = repaidShare(summary.totalRepaid, summary.totalLent);
   return (
     <View style={styles.tiles}>
       <View style={styles.tileRow}>
         <SummaryTile
           icon={ArrowDownLeft}
-          tone="borrowed"
+          tone={owe ? 'borrowed' : 'neutral'}
           label="You owe"
           paise={summary.outstandingBorrowed}
           countUp={countUp}
           context={
             summary.overdueBorrowed > 0
               ? `${formatPaise(summary.overdueBorrowed)} overdue`
-              : summary.outstandingBorrowed > 0
+              : owe
                 ? `to ${plural(summary.peopleYouOwe, 'person', 'people')}`
                 : 'Nothing to pay back'
           }
@@ -60,11 +62,10 @@ function Tiles({ summary, countUp }: { summary: SummaryDto; countUp: boolean }) 
         />
         <SummaryTile
           icon={overdue ? CircleAlert : CheckCheck}
-          tone={overdue ? 'danger' : 'success'}
+          tone={overdue ? 'danger' : 'neutral'}
           label="Overdue"
           paise={summary.overdueAmount}
           countUp={countUp}
-          amountColor={overdue ? 'dangerText' : 'textPrimary'}
           context={overdue ? plural(summary.overdueLoans, 'loan') : 'Nothing overdue'}
           hint="Shows overdue loans you lent"
           onPress={() => openLoans({ direction: 'LENT', status: 'overdue' })}
@@ -72,18 +73,22 @@ function Tiles({ summary, countUp }: { summary: SummaryDto; countUp: boolean }) 
       </View>
       <View style={styles.tileRow}>
         <SummaryTile
-          icon={ArrowUpRight}
-          tone="lent"
-          label="Total lent"
-          paise={summary.totalLent}
+          icon={CalendarClock}
+          tone={dueSoon > 0 ? 'warning' : 'neutral'}
+          label="Due this week"
+          paise={dueSoon}
           countUp={countUp}
-          context={plural(summary.lentLoans, 'loan')}
-          hint="Shows every loan you lent"
-          onPress={() => openLoans({ direction: 'LENT' })}
+          context={
+            summary.dueSoonLoans > 0
+              ? plural(summary.dueSoonLoans, 'loan')
+              : 'Nothing due this week'
+          }
+          hint="Shows open loans, soonest due first"
+          onPress={() => openLoans({ status: 'outstanding' })}
         />
         <SummaryTile
           icon={CheckCheck}
-          tone="success"
+          tone={summary.totalRepaid > 0 ? 'success' : 'neutral'}
           label="Repaid to you"
           paise={summary.totalRepaid}
           countUp={countUp}
@@ -93,7 +98,6 @@ function Tiles({ summary, countUp }: { summary: SummaryDto; countUp: boolean }) 
     </View>
   );
 }
-
 function Attention({ items, hasOpen }: { items: LoanDto[]; hasOpen: boolean }) {
   const { colors } = useTheme();
   if (!hasOpen) {
@@ -156,7 +160,7 @@ export default function HomeScreen() {
   } else if (!data) {
     body = (
       <View style={styles.blocks} accessibilityLabel="Loading" accessibilityRole="progressbar">
-        <SkeletonBlock height={156} rounded={22} />
+        <SkeletonBlock height={200} rounded={22} />
         <View style={styles.tileRow}>
           <SkeletonBlock height={132} width="48%" rounded={16} />
           <SkeletonBlock height={132} width="48%" rounded={16} />
@@ -186,6 +190,9 @@ export default function HomeScreen() {
         <Rise animate={animateIntro}>
           <SummaryHero
             outstandingLentPaise={data.outstandingLent}
+            totalLentPaise={data.totalLent}
+            totalRepaidPaise={data.totalRepaid}
+            overduePaise={data.overdueAmount}
             peopleOwingYou={data.peopleOwingYou}
             countUp={animateIntro}
             onPress={() => openLoans({ direction: 'LENT', status: 'outstanding' })}

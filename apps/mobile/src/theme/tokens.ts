@@ -48,7 +48,7 @@ export const lightColors: ColorTokens = {
   textTertiary: '#8C7B73',
   outline: '#E6DCD2',
   outlineStrong: '#A08F86',
-  heroSurface: '#4A2620',
+  heroSurface: '#3B2218',
   onHero: '#FFF8EF',
   onHeroMuted: '#E3CBBE',
   heroAccent: '#F0936E',
@@ -57,10 +57,10 @@ export const lightColors: ColorTokens = {
   onBrand: '#FFFFFF',
   brandSubtle: '#FBEAE3',
   focusRing: '#B4472B',
-  lentText: '#A8432A',
-  lentSurface: '#FBEAE3',
-  borrowedText: '#34558A',
-  borrowedSurface: '#E9EFF8',
+  lentText: '#2E7048',
+  lentSurface: '#E7F3EB',
+  borrowedText: '#A6405C',
+  borrowedSurface: '#FBEDF1',
   successText: '#2F6B45',
   successSurface: '#E8F3EB',
   warningText: '#8A5710',
@@ -71,7 +71,7 @@ export const lightColors: ColorTokens = {
   viewerCanvas: '#000000',
 };
 
-/** Onyx & Ember (design.md §2.2) — neutral black surfaces, ember accents only. */
+/** Onyx & Ember (design.md §2.2) — neutral black surfaces, ember accents only, cream hero. */
 export const darkColors: ColorTokens = {
   canvas: '#0B0B0C',
   surface: '#161618',
@@ -82,25 +82,25 @@ export const darkColors: ColorTokens = {
   textTertiary: '#948D88',
   outline: '#2F2F33',
   outlineStrong: '#6B6663',
-  heroSurface: '#8E3B24',
-  onHero: '#FFF8EF',
-  onHeroMuted: '#F6D8C9',
-  heroAccent: '#FFD3BF',
+  heroSurface: '#F3E6D2',
+  onHero: '#2A1B17',
+  onHeroMuted: '#6B5243',
+  heroAccent: '#B4472B',
   brandPrimary: '#F08A65',
   brandPressed: '#E07450',
   onBrand: '#2A0F07',
   brandSubtle: '#221916',
   focusRing: '#F08A65',
-  lentText: '#F39A78',
-  lentSurface: '#221916',
-  borrowedText: '#9DB7E6',
-  borrowedSurface: '#161D29',
+  lentText: '#7FCB98',
+  lentSurface: '#13211A',
+  borrowedText: '#EBA3B5',
+  borrowedSurface: '#261619',
   successText: '#7FCB98',
   successSurface: '#13211A',
   warningText: '#F2C46B',
   warningSurface: '#241E12',
-  dangerText: '#FF8A9E',
-  dangerSurface: '#28141A',
+  dangerText: '#FF6F82',
+  dangerSurface: '#2C1318',
   scrim: 'rgba(0, 0, 0, 0.68)',
   viewerCanvas: '#000000',
 };
@@ -174,10 +174,11 @@ export const shadowRecipes = {
 } as const;
 export type ShadowLevel = keyof typeof shadowRecipes;
 
-/** Hero tonal depth: the one permitted gradient (design.md §2.6). */
+/** Hero tonal depth: the one permitted gradient (design.md §2.6). Top stops are tested for contrast. */
+export const heroGradientTop = { light: '#45291E', dark: '#FFF9F0' } as const;
 export const heroGradient = {
-  light: 'linear-gradient(180deg, #56302A 0%, #4A2620 100%)',
-  dark: 'linear-gradient(180deg, #9A432B 0%, #8E3B24 100%)',
+  light: 'linear-gradient(180deg, #45291E 0%, #3B2218 100%)',
+  dark: 'linear-gradient(180deg, #FFF9F0 0%, #F3E6D2 100%)',
 } as const;
 
 export type Theme = {

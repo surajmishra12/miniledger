@@ -38,6 +38,7 @@ import { PersonNameDialog } from '@/features/ledger/PersonNameDialog';
 import { ApiError } from '@/lib/api-client';
 import { errorCopy } from '@/lib/error-copy';
 import { plural } from '@/lib/format';
+import { useTransitionDone } from '@/lib/hooks';
 import { invalidateLedger } from '@/lib/query-client';
 import { useTheme } from '@/theme/theme-provider';
 import { radius, space } from '@/theme/tokens';
@@ -50,6 +51,8 @@ export default function PersonDetailScreen() {
   const snackbar = useSnackbar();
   const person = usePerson(id);
   const loans = useLoanList({ personId: id, sort: 'attention' });
+  // Rows mount after the push animation so the slide stays smooth (design.md S09).
+  const settled = useTransitionDone();
   const [dialog, setDialog] = useState<Dialog>(null);
   const [error, setError] = useState<string | null>(null);
 
@@ -191,14 +194,14 @@ export default function PersonDetailScreen() {
       <View style={styles.tiles}>
         <SummaryTile
           icon={ArrowUpRight}
-          tone="lent"
+          tone={data.owesYouPaise > 0 ? 'lent' : 'neutral'}
           label="They owe you"
           paise={data.owesYouPaise}
           context={data.owesYouPaise > 0 ? 'Still to receive' : 'Nothing owed'}
         />
         <SummaryTile
           icon={ArrowDownLeft}
-          tone="borrowed"
+          tone={data.youOwePaise > 0 ? 'borrowed' : 'neutral'}
           label="You owe them"
           paise={data.youOwePaise}
           context={data.youOwePaise > 0 ? 'Still to pay back' : 'Nothing to pay back'}
@@ -208,27 +211,28 @@ export default function PersonDetailScreen() {
     </View>
   );
 
-  const empty = loans.isPending ? (
-    <SkeletonList rows={3} />
-  ) : loans.isError ? (
-    <InlineNotice
-      tone="offline"
-      message="Couldn't load your loans."
-      actionLabel="Retry"
-      onAction={() => void loans.refetch()}
-    />
-  ) : (
-    <EmptyState
-      title={`No loans with ${data.name} yet.`}
-      body="Loans you add for them appear here."
-    />
-  );
+  const empty =
+    !settled || loans.isPending ? (
+      <SkeletonList rows={3} />
+    ) : loans.isError ? (
+      <InlineNotice
+        tone="offline"
+        message="Couldn't load your loans."
+        actionLabel="Retry"
+        onAction={() => void loans.refetch()}
+      />
+    ) : (
+      <EmptyState
+        title={`No loans with ${data.name} yet.`}
+        body="Loans you add for them appear here."
+      />
+    );
 
   return (
     <SafeAreaView style={[styles.fill, { backgroundColor: colors.canvas }]}>
       <ConnectingNotice />
       <FlatList
-        data={rows}
+        data={settled ? rows : []}
         keyExtractor={(loan) => loan.id}
         ListHeaderComponent={header}
         ListEmptyComponent={empty}
